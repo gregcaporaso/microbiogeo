@@ -13,7 +13,7 @@ __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from Bio.qiime.anosim import anosim, anosim_p_test, _format_anosim_results
+from python.qiime.anosim import anosim, anosim_p_test, _format_anosim_results
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 import os
 
