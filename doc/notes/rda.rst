@@ -23,10 +23,14 @@ it is called `partial` redundancy analysis [:ref:`4 <rdaref4>`].
 [:ref:`2 <rdaref2>`] (may need to be on NAU VPN to access PDF) details a very
 interesting approach in what they call 'distance-based RDA', or 'db-RDA' for
 short. This method basically takes a distance matrix of any type, performs
-principal coordinates analysis (PCoA) on it, and then performs RDA on the result
-and another matrix of environmental dummy variables to analyze their
-relationship. This application of RDA might be the most relevant to
-QIIME/microbial ecology, so it may be worth looking into.
+principal coordinates analysis (PCoA) on it, corrects for negative eigenvalues,
+and then performs RDA on the result and another matrix of environmental dummy
+variables to analyze their relationship. This application of RDA might be the
+most relevant to QIIME/microbial ecology, so it may be worth looking into.
+
+Another paper challenges the method used in the previously described paper
+[:ref:`6 <rdaref6>`]. The authors argue that the negative eigenvalue correction
+step is not necessary.
 
 Existing Implementations
 ------------------------
@@ -44,7 +48,15 @@ There are existing implementations of RDA in the following statistical packages:
 
 XLSTAT must be purchased and is only available on Windows and Mac OSX. The
 implementations in R seems to be our best bet because it is open source and
-people are already familiar with using R.
+people are already familiar with using R. There are three implementations that
+I've found in R so far: vegan::rda, vegan::capscale, and calibrate::rda.
+
+vegan::rda allows you to do partial and/or constrained RDA, while calibrate::rda
+forces you to do constrained RDA. vegan::capscale is an implementation of
+db-RDA, in that it can accept a community data matrix or a distance matrix. It
+allows you to decide whether you want to correct for negative eigenvalues or not
+(see the discussion in the introduction section for more details on this
+dispute).
 
 I wrote a quick R script to demo vegan's RDA on a QIIME distance matrix. It
 currently does not accept input for Y and Z matrices. It has been checked into
@@ -136,3 +148,7 @@ References
 .. _rdaref5:
 
 [5] http://www.bio.umontreal.ca/legendre/indexEn.html#RFunctions
+
+.. _rdaref6:
+
+[6] http://www.esajournals.org/doi/abs/10.1890/0012-9658(2001)082%5B0290:FMMTCD%5D2.0.CO;2
