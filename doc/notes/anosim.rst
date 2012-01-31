@@ -1,5 +1,3 @@
-.. _anosim:
-
 ==============================================================
 Analysis of Similarities (ANOSIM) Statistical Method Reference
 ==============================================================
@@ -19,10 +17,11 @@ R = (rb-rw)/(N(N-1)/4)
 
 where rb is the mean rank of all distances between groups and rw is the mean
 rank of all distances within groups. An R value near +1 means
-that there is dissimilarity between the groups [:ref:`2 <ref2>`].
+that there is dissimilarity between the groups [:ref:`2 <anosimref2>`].
 
 The original paper referencing ANOSIM is a paper by K.R. Clarke
-[:ref:`3 <ref3>`]. Here is a helpful description taken from [:ref:`1 <ref1>`]:
+[:ref:`3 <anosimref3>`]. Here is a helpful description taken from
+[:ref:`1 <anosimref1>`]:
 
 The ANOSIM (Analysis of similarities) permutation method allows for testing for
 group structure in the observations. If the original data contains abundance of
@@ -44,8 +43,6 @@ variable. ANOSIM can only be applied if "Association between samples" is
 selected. ANOSIM can be applied on 1-way data, 2-way nested data, 2-way crossed
 data with replication and 2-way crossed data with no replication.
 
-.. _existingimplementations:
-
 Existing Implementations
 ------------------------
 There are several existing implementations of ANOSIM in statistical packages
@@ -65,8 +62,6 @@ ANOSIM has already been implemented in Python by Andrew Cochran but has not yet
 been added to QIIME. The implementation has been checked into the Qiimeutils
 repository under :file:`microbiogeo/python/`. The following sections of the
 document will explain how to run Andrew's implementation of ANOSIM.
-
-.. _setup:
 
 System Setup and Required Dependencies
 --------------------------------------
@@ -97,8 +92,6 @@ Next, run the following command to test if you can run the ANOSIM script: ::
 This should run the script in "help" mode. If instructions for how to run the
 script are printed, you have successfully configured your system.
 
-.. _inputfiles:
-
 Input Files
 -----------
 The ANOSIM script requires a distance matrix file (i.e. the result of
@@ -115,8 +108,6 @@ The -c option specifies which column in the mapping file will be used to group
 the samples. The `Treatment` column has two values: 'Control' and 'Fast'. Thus,
 ANOSIM will be used to calculate the dissimilarity between the control and fast
 groups. The -o option specifies the file that we want the results written to.
-
-.. _outputfiles:
 
 Output Files
 ------------
@@ -138,14 +129,14 @@ example, the control and fast groups are dissimilar.
 
 References
 ----------
-.. _ref1:
+.. _anosimref1:
 
 [1] http://www.brodgar.com/manual/Chapter6BMS.pdf
 
-.. _ref2:
+.. _anosimref2:
 
 [2] http://folk.uio.no/ohammer/past/multivar.html
 
-.. _ref3:
+.. _anosimref3:
 
 [3] Clarke, K.R. 1993. Non-parametric multivariate analysis of changes in community structure. Australian Journal of Ecology 18:117-143.
