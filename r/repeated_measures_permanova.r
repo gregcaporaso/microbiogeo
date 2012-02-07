@@ -1,10 +1,14 @@
-# Runs vegan function RDA on QIIME distance file.
+# Runs a repeated-measures PERMANOVA over a QIIME distance matrix using the
+# given category representing a time series to control the permutation model.
+#
+# Much of this code was taken from http://thebiobucket.blogspot.com/2011/04/repeat-measure-adonis-lately-i-had-to.html#more
+# and modified to work with R version 2.13.1 and vegan version 2.0-2.
 #
 # Usage:
-# R --slave --args -d distance_matrix.txt -m mapping_file.txt -c Treatment < r/rda.r
+# R --slave --args -d distance_matrix.txt -m mapping_file.txt -c Time < r/repeated_measures_permanova.r
 # 
 # Print help string:
-# R --slave --args -h < r/rda.r
+# R --slave --args -h < r/repeated_measures_permanova.r
 #
 # Requires environment variable QIIME_DIR pointing to top-level QIIME directory.
 
@@ -26,7 +30,7 @@ option_list <- list(
     make_option(c("-m", "--mapfile"), type="character",
         help="Input metadata mapping file [required]."),
     make_option(c("-c", "--category"), type="character",
-        help="Metadata column header giving cluster IDs [required]"),
+        help="Metadata column header representing time series. Must be numeric [required]"),
     make_option(c("-o", "--outdir"), type="character", default='.',
         help="Output directory [default %default]")
 )
@@ -51,15 +55,38 @@ if (nrow(qiime.data$map) == 0)
 if (!is.element(opts$category, colnames(qiime.data$map)))
     stop(sprintf('\n\nHeader %s not found in mapping file.\n\n', opts$category))
 
-# Run DB-RDA and create a plot of the results.
-factor = as.factor((qiime.data$map[[opts$category]]))
-factors.frame <- data.frame(factor)
-capscale.results <- capscale(as.dist(qiime.data$distmat) ~ factor, factors.frame)
-capscale.results.filepath <- sprintf('%s/rda_results.txt', opts$outdir)
-sink(capscale.results.filepath)
-print(capscale.results)
-sink(NULL)
+time = as.factor((qiime.data$map[[opts$category]]))
+time.frame <- data.frame(time)
 
-plot.filepath <- sprintf('%s/rda_plot.pdf', opts$outdir)
-pdf(plot.filepath)
-plot(capscale.results, display=c("wa", "bp"))
+# Compute the true R2 value.
+fit <- adonis(as.dist(qiime.data$distmat) ~ time, time.frame, permutations=1)
+print("True R2 value:")
+print(fit)
+
+# The number of permutations (this should be user-configurable eventually).
+num.perms <- 1999
+
+# Set up frame which will be populated by random R2 values. The first entry will
+# be the true R2.
+pop <- rep(NA, num.perms + 1)
+pop[1] <- fit$aov.tab[1, 5]
+
+# Set up a "permControl" object to make the permuations respect the time series
+# variable. Turn off mirroring as time should only flow in one direction.
+ctrl <- permControl(within = Within(type = "series", mirror = FALSE))
+
+# Number of samples:
+num.samples <- nrow(qiime.data$distmat)
+
+# In adonis(...) you need to put permutations = 1, otherwise adonis will not
+# run.
+for(i in 2:(num.perms + 1)) {
+     idx <- shuffle(num.samples, control = ctrl)
+     fit.rand <- adonis(as.dist(qiime.data$distmat) ~ time[idx], time.frame, permutations = 1)
+     pop[i] <- fit.rand$aov.tab[1,5]
+}
+
+# Get the p-value.
+pval <- sum(pop >= pop[1]) / (num.perms + 1)
+print("p-value:")
+print(pval)

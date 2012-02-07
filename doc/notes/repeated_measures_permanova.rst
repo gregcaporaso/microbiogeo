@@ -34,7 +34,7 @@ of this statistical method.
 The rest of the document will explain how to set up your system to run the
 repeated measures PERMANOVA example that I found online. You may obtain the
 script from the Qiimeutils repository under
-:file:`microbiogeo/r/repeated_measures_permanova_example.r`.
+:file:`microbiogeo/r/repeated_measures_permanova.r`.
 
 System Setup and Required Dependencies
 --------------------------------------
@@ -57,23 +57,29 @@ up with vegan version 2.0-2.
 
 Input Files
 -----------
+The script requires a distance matrix file (i.e. the result of
+beta_diversity.py) and a metadata mapping file. I used the unweighted Unifrac
+distance matrix and a modified mapping file from the QIIME overview tutorial.
+You can get the distance matrix
+:download:`here <../downloads/overview_unweighted_unifrac_dm.txt>` and the
+modified mapping file
+:download:`here <../downloads/Fasting_Map_rep_meas_perm.txt>`. The mapping file
+was modified to include a "Time" column. `The values in the "Time" column are
+completely contrived to use as example input to this script.`
+
 Execute the following command to run the script: ::
 
-    R --slave < repeated_measures_permanova_example.r
+    R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map_rep_meas_perm.txt -c Time < r/repeated_measures_permanova.r
 
-The R script is the only input file needed, as the script generates its own
-random data.
 
 Output Files
 ------------
 There are no output files from this script as it prints all of its information
-to stdout. The example generates some random data for three timepoints and adds
-a time effect at timepoint 3. The script then runs a repeated measures PERMANOVA
-over the data with the time effect, and the data without the time effect. It
-prints out a lot of information, but the p-values that are printed out are of
-particular interest. The data with the time effect has a very small p-value (I
-got 0.001 when I ran it) and the data without the time effect has a much larger
-p-value (I got 0.143).
+to stdout. It prints the true R2 value (i.e. no permutations) and then prints
+the p-value based on the permutations that it computes. When I ran this example
+a few times, the p-value was sitting around 0.1, which may indicate that the
+"Time" category is a good indicator of variability in the samples. More
+extensive testing will have to be done on real time series data.
 
 References
 ----------

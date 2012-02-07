@@ -21,7 +21,7 @@ from X before X is processed any further. Z is also optional, and if it is used,
 it is called `partial` redundancy analysis [:ref:`4 <rdaref4>`].
 
 [:ref:`2 <rdaref2>`] (may need to be on NAU VPN to access PDF) details a very
-interesting approach in what they call 'distance-based RDA', or 'db-RDA' for
+interesting approach in what they call 'distance-based RDA', or 'DB-RDA' for
 short. This method basically takes a distance matrix of any type, performs
 principal coordinates analysis (PCoA) on it, corrects for negative eigenvalues,
 and then performs RDA on the result and another matrix of environmental dummy
@@ -53,15 +53,25 @@ I've found in R so far: vegan::rda, vegan::capscale, and calibrate::rda.
 
 vegan::rda allows you to do partial and/or constrained RDA, while calibrate::rda
 forces you to do constrained RDA. vegan::capscale is an implementation of
-db-RDA, in that it can accept a community data matrix or a distance matrix. It
+DB-RDA, in that it can accept a community data matrix or a distance matrix. It
 allows you to decide whether you want to correct for negative eigenvalues or not
 (see the discussion in the introduction section for more details on this
 dispute).
 
-I wrote a quick R script to demo vegan's RDA on a QIIME distance matrix. It
-currently does not accept input for Y and Z matrices. It has been checked into
-the Qiimeutils repository under :file:`microbiogeo/r/rda.r`. The following
-sections of the document will explain how to set up your system to run the demo.
+I wrote a quick R script to demo vegan's capscale (DB-RDA) function on a QIIME
+distance matrix. After meeting with our clients, it was determined that I should
+focus on DB-RDA rather than the other two implementations of traditional RDA
+since it is designed to work on a distance matrix, not a community data matrix
+like the others. I used a series of posts [:ref:`7 <rdaref7>`] to a mailing list
+as a guide for how to use capscale.
+
+The script accepts a mapping file and a single category from the mapping file
+that will be used as the constraining environmental variable (this can be
+continuous, discrete, or categorical). The category will be used by capscale to
+determine how much of the variability can be attributed to it. The script has
+been checked into the Qiimeutils repository under :file:`microbiogeo/r/rda.r`.
+The following sections of the document will explain how to set up your system to
+run the script.
 
 System Setup and Required Dependencies
 --------------------------------------
@@ -110,22 +120,26 @@ script are printed, you have successfully configured your system.
 Input Files
 -----------
 The RDA script requires a distance matrix file (i.e. the result of
-beta_diversity.py). I used the unweighted Unifrac distance matrix from the QIIME
-overview tutorial. You can get the distance matrix
-:download:`here <../downloads/overview_unweighted_unifrac_dm.txt>`.
+beta_diversity.py) and a metadata mapping file. I used the unweighted Unifrac
+distance matrix and mapping file from the QIIME overview tutorial. You can get
+the distance matrix
+:download:`here <../downloads/overview_unweighted_unifrac_dm.txt>` and the
+mapping file :download:`here <../downloads/Fasting_Map.txt>`.
 
 Next, run the following command to execute the RDA script: ::
 
-    R --slave --args -d overview_unweighted_unifrac_dm.txt < r/rda.r
+    R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment < r/rda.r
 
 Output Files
 ------------
-The command in the previous section creates a single output file named
-:file:`rda_plot.pdf`. This file contains a 2D plot of each of the samples. It
-seems that the sample IDs colored black represent a PCoA plot, while the red
-colored sample IDs are the RDA plot. From comparison with the 2D PCoA plot
-generatd by QIIME's make_2D_plots.py, it appears the same clustering exists for
-RDA that we see in PCoA.
+The command in the previous section creates two output files named
+:file:`rda_plot.pdf` and :file:`rda_results.txt`. The first file contains a 2D
+plot of each of the samples. It seems very similar to the clustering shown by a
+PCoA plot. The factor "Fast" overlayed on the plot is accompanied with a vector
+showing what constraining factor clustered the fasting samples together. The
+other output file contains information about the DB-RDA results. Notice that the
+"Treatment" category accounts for 24.7% of the variability in the samples (this
+information is found in the "Constrained" row of the results table).
 
 References
 ----------
@@ -152,3 +166,7 @@ References
 .. _rdaref6:
 
 [6] http://www.esajournals.org/doi/abs/10.1890/0012-9658(2001)082%5B0290:FMMTCD%5D2.0.CO;2
+
+.. _rdaref7:
+
+[7] http://r.789695.n4.nabble.com/R-question-about-capscale-vegan-td812694.html
