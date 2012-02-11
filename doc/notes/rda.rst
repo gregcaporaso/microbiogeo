@@ -32,6 +32,29 @@ Another paper challenges the method used in the previously described paper
 [:ref:`6 <rdaref6>`]. The authors argue that the negative eigenvalue correction
 step is not necessary.
 
+:note: After meeting with our clients, it was determined that I should focus on DB-RDA rather than the other two implementations of traditional RDA since it is designed to work on a distance matrix, not a community data matrix like the others. The other two methods assume Euclidean distances, which may not always be useful for our purposes.
+
+More research into DB-RDA yielded some more options that we might consider
+including in our own implementation of the method, or at least test them out
+during the evaluation phase. The first option deals with how many environmental
+variables (i.e. categories in the mapping file) should be used as constraints.
+The author of capscale recommends to ``not`` add too many constraining variables
+because the DB-RDA ends up becoming unconstrained ordination
+(e.g. PCA, CA, etc.) and you cannot perform hypothesis testing
+[:ref:`8 <rdaref8>`]. He also argues that many of the constraining variables
+used may end up being insignificant in their contribution to explaining
+variation in samples. So should users be able to specify all environmental
+variables? A large number of them? Or just one?
+
+The second issue that might be of interest is using a second distance matrix
+containing spatial distances to "partial out" the effect of spatial distance
+before running DB-RDA, or to use the spatial distances as a constraining
+environment variable. A series of posts details how to accomplish this using
+DB-RDA [:ref:`9 <rdaref9>`]. It basically consists of running a Principal
+Coordinates of Neighborhood Matrix (PCNM) over the spatial distance matrix and
+using the output of that as an environment variable input to DB-RDA (can either
+be a constraining variable or a partialling-out variable).
+
 Existing Implementations
 ------------------------
 There are existing implementations of RDA in the following statistical packages:
@@ -59,10 +82,7 @@ allows you to decide whether you want to correct for negative eigenvalues or not
 dispute).
 
 I wrote a quick R script to demo vegan's capscale (DB-RDA) function on a QIIME
-distance matrix. After meeting with our clients, it was determined that I should
-focus on DB-RDA rather than the other two implementations of traditional RDA
-since it is designed to work on a distance matrix, not a community data matrix
-like the others. I used a series of posts [:ref:`7 <rdaref7>`] to a mailing list
+distance matrix. I used a series of posts [:ref:`7 <rdaref7>`] to a mailing list
 as a guide for how to use capscale.
 
 The script accepts a mapping file and a single category from the mapping file
@@ -141,6 +161,31 @@ other output file contains information about the DB-RDA results. Notice that the
 "Treatment" category accounts for 24.7% of the variability in the samples (this
 information is found in the "Constrained" row of the results table).
 
+Testing Results
+---------------
+This section will describe different tests that were run on the RDA script.
+
+:note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used, as long as you have access to the MicroBioGeo dataset area (final location yet to be determined).
+
+For the Whole Body study, I used the BODY_SITE category as the constraining
+environmental variable: ::
+
+    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE -o whole_body_output < r/rda.r
+
+After running the command, there are two resulting files residing in the
+:file:`whole_body_output` directory. The PDF contains a plot of the RDA, showing
+clear clustering of fecal samples at the bottom right of the plot. Clustering of
+tongue samples can also be seen at the top right, and there is also noticable
+clustering of outer ear samples at the bottom left. The plot also contains
+overlayed vectors indicating which body sites explain the clustering (not sure
+how better to explain this).
+
+The second output file :file:`rda_results.txt` shows that the BODY_SITE
+constraining variable explained 27.86% of the variability in the samples.
+
+These results seem to match very closely with the 3D PCoA plot that came with
+this dataset (in terms of clustering found on the plot).
+
 References
 ----------
 .. _rdaref1:
@@ -170,3 +215,11 @@ References
 .. _rdaref7:
 
 [7] http://r.789695.n4.nabble.com/R-question-about-capscale-vegan-td812694.html
+
+.. _rdaref8:
+
+[8] http://cc.oulu.fi/~jarioksa/opetus/metodi/mmmbeam2.pdf
+
+.. _rdaref9:
+
+[9] http://r.789695.n4.nabble.com/partial-dbRDA-or-CCA-with-two-distance-objects-in-Vegan-td2548762.html

@@ -10,6 +10,8 @@ dissimilarities, scaled into the range −1...+1. It is a non-parametric variant
 of Analysis of Variance (ANOVA). This method operates on a distance matrix using
 a given grouping of samples.
 
+:note: ANOSIM only works with a categorical variable that is used to do the grouping. Mantel is recommended for continuous variables.
+
 The R statistic that is calculated by ANOSIM is determined by the following
 formula:
 
@@ -37,11 +39,9 @@ the same transect, and Dij between observations of different transects. A
 statistic based on both the between and within sub-matrices is used to test the
 differences among the 4 groups. Further details can be found in Legendre and
 Legendre (1998), or in Chapter 10 of Zuur et al. (2007). A p-value for the
-statistic is obtained by permutation. To tell Brodgar which samples belong to
-the same group, a nominal variable needs to be selected as the blocking
-variable. ANOSIM can only be applied if "Association between samples" is
-selected. ANOSIM can be applied on 1-way data, 2-way nested data, 2-way crossed
-data with replication and 2-way crossed data with no replication.
+statistic is obtained by permutation. ANOSIM can be applied on 1-way data,
+2-way nested data, 2-way crossed data with replication and 2-way crossed data
+with no replication.
 
 Existing Implementations
 ------------------------
@@ -65,7 +65,6 @@ document will explain how to run Andrew's implementation of ANOSIM.
 
 System Setup and Required Dependencies
 --------------------------------------
-
 :note: The following instructions have been tested on 64-bit Linux Mint (essentially Debian) using Python 2.6.7. However, they `should` work across different linux distros and on Macs. The instructions assume you use bash as your shell.
 
 First, your system must have a version of QIIME installed (I used the latest
@@ -126,6 +125,20 @@ p-trials is 0).
 The value of the R statistic can fall between -1 and +1, with a positive value
 close to 1 indicating that the groups are highly dissimilar. Thus, in this
 example, the control and fast groups are dissimilar.
+
+Testing Results
+---------------
+This section will describe different tests that were run on the ANOSIM script.
+
+:note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used, as long as you have access to the MicroBioGeo dataset area (final location yet to be determined).
+
+For the Whole Body study, I used the sex category as the grouping variable: ::
+
+    anosim.py -i datasets/Whole\ Body/meta_analysis_tmpW9iDHnm9LRR0DGi04CNS_map_and_otu_table/unweighted_unifrac_dm.txt -m datasets/Whole\ Body/meta_analysis_tmpW9iDHnm9LRR0DGi04CNS_map_and_otu_table/meta_analysis_tmpW9iDHnm9LRR0DGi04CNS_map.txt -c SEX -o anosim_results.txt
+
+The resulting R statistic is 0.0354433583741, which is very close to 0,
+indicating that the two groups are not significantly different. This result
+makes sense to me because I wouldn't expect there to be clustering based on sex.
 
 References
 ----------

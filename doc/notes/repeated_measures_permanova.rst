@@ -32,8 +32,8 @@ We may be able to use this implementation as a guide to our own implementation
 of this statistical method.
 
 The rest of the document will explain how to set up your system to run the
-repeated measures PERMANOVA example that I found online. You may obtain the
-script from the Qiimeutils repository under
+repeated measures PERMANOVA script that I put together based on the example I
+found online. You may obtain the script from the Qiimeutils repository under
 :file:`microbiogeo/r/repeated_measures_permanova.r`.
 
 System Setup and Required Dependencies
