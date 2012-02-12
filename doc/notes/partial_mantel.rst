@@ -55,7 +55,7 @@ The process is automatic after this step.
 
 On this system I'm running vegan 2.0-2 and optparse version 0.9.4
 
-Next, run the following command to test if you can run the RDA script: ::
+Next, run the following command in order to test if you can run the partial Mantel script: ::
 
     R --slave --args -h < pmantel.r
 
@@ -70,7 +70,7 @@ for instance a Unifrac distance matrix as output by beta_diversity.py, a Euclide
 distance matrix and a mean distance matrix as a control.
 :download:`here <../downloads/not_yet_available.txt>`.
 
-Next, run the following command to execute the RDA script: ::
+Next, run the following command and execute the partial Mantel script: ::
 
     R --slave --args -d1 matrix1.txt -d2 matrix2.txt -d3 control_matrix.txt < r/pmantel.r
 
