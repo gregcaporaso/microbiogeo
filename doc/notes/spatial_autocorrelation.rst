@@ -17,6 +17,8 @@ The Moran's I equation is:
 
 This equation returns a value between -1 and 1. The value indicates what type of correlation to expect for the data analyzed. In the case of -1 it represents perfect dispersion, where there is an equal amount of variation throughout. A positive 1 is called perfect correlation, where two points always occur together. Lastly, when you get a value closer to 0 that indicates that there is random patterning being detected.
 
+What the null hypothesis tests for when using Morans I, is if there's no spacial correlation among communities.
+
 Selected Implementation
 -----------------------
 
@@ -82,7 +84,7 @@ Each of these values, except for the p-value, should be between -1 and 1.
 
 Testing Results
 ---------------
-Testing needs to be performed further to understand the results and what I should be expecting as output. In the mean time, using the :ref:`Link QIIME Overview <http://qiime.org/tutorials/tutorial.html>` data I ran Morans I and received the following back:
+Testing needs to be performed further to understand the results and what I should be expecting as output. In the mean time, using the :ref:`QIIME Overview <http://qiime.org/tutorials/tutorial.html>`_ data I ran Morans I and received the following back:
 
 ===========  ===========  ===========  ===========
 observed     expected     sd           p.value
@@ -107,11 +109,11 @@ Identify the qiime location for where it is installed. In the case of the AWS, u
 Step 3:
 You need to define an environment variable to tell the script where to look for the r utility functions in qiime. Run the following command, changing the path to point to the location of your qiime install:
 
-    export qiime_dir=/home/jrideout/qiime/trunk
+    export qiime_dir=/home/<username>/qiime/trunk
 
 If you dont want to have to perform this step each time you open a new terminal, run the following command to add it to your .bashrc:
 
-    echo "export qiime_dir=/home/jrideout/qiime/trunk" >> ~/.bashrc
+    echo "export qiime_dir=/home/<username>/qiime/trunk" >> ~/.bashrc
     source ~/.bashrc
 
 OR
