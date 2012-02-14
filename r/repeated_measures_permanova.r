@@ -79,11 +79,12 @@ ctrl <- permControl(within = Within(type = "series", mirror = FALSE))
 num.samples <- nrow(qiime.data$distmat)
 
 # In adonis(...) you need to put permutations = 1, otherwise adonis will not
-# run.
+# run. TODO: Does the time category need to be in sorted order before doing this
+# step?
 for(i in 2:(num.perms + 1)) {
-     idx <- shuffle(num.samples, control = ctrl)
-     fit.rand <- adonis(as.dist(qiime.data$distmat) ~ time[idx], time.frame, permutations = 1)
-     pop[i] <- fit.rand$aov.tab[1,5]
+    idx <- shuffle(num.samples, control = ctrl)
+    fit.rand <- adonis(as.dist(qiime.data$distmat) ~ time[idx], time.frame, permutations = 1)
+    pop[i] <- fit.rand$aov.tab[1,5]
 }
 
 # Get the p-value.

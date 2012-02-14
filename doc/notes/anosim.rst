@@ -130,7 +130,7 @@ Testing Results
 ---------------
 This section will describe different tests that were run on the ANOSIM script.
 
-:note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used, as long as you have access to the MicroBioGeo dataset area (final location yet to be determined).
+:note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used.
 
 For the Whole Body study, I used the sex category as the grouping variable: ::
 

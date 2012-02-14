@@ -17,19 +17,29 @@ the correlation between space/time, thus inflating p-values
 [:ref:`4 <rmpermref4>`]. [:ref:`5 <rmpermref5>`] is a good reference for an
 explanation of fixed versus random factors.
 
+From what I can gather, the problem with applying traditional PERMANOVA to a
+time gradient is that the permutation model doesn't treat the time factor
+appropriately. The traditional model will produce unrestricted permutations of
+the time factor and this can lead to inflated p-values. Instead, it has been
+suggested to use a restricted permutation model to only produce time
+permutations that keep the same relative ordering of time points and that do not
+generate time points that flow in the opposite direction (i.e. go backwards in
+time). For example, if you have time points 1, 2, 3, and 4, a valid permutation
+might be 3, 4, 1, 2, but not 3, 2, 4, 1.
+
 Existing Implementations
 ------------------------
 The only existing implementation of repeated measures PERMANOVA I could find was
-in PRIMER v6 with PERMANOVA+ extension [:ref:`3 <rmpermref3>`].
+in PRIMER v6 with PERMANOVA+ extension [:ref:`3 <rmpermref3>`]. PRIMER must be
+purchased, and it looks pretty expensive.
 
-PRIMER must be purchased, and it looks pretty expensive. The adonis function in
-R's vegan package, which is used to do normal PERMANOVAs, might be used to
-create our own repeated measures PERMANOVA implementation, though we must be
-careful in how we set up the data and inputs to the adonis function in order to
-account for time correctly. [:ref:`2 <rmpermref2>`] presents an R script that
-supposedly runs repeated measures PERMANOVA over data taken at three timepoints.
-We may be able to use this implementation as a guide to our own implementation
-of this statistical method.
+The adonis function in R's vegan package, which is used to do normal PERMANOVAs,
+might be used to create our own repeated measures PERMANOVA implementation,
+though we must be careful in how we set up the data and inputs to the adonis
+function in order to account for time correctly. [:ref:`2 <rmpermref2>`]
+presents an R script that supposedly runs repeated measures PERMANOVA over data
+taken at three timepoints. We may be able to use this implementation as a guide
+to our own implementation of this statistical method.
 
 The rest of the document will explain how to set up your system to run the
 repeated measures PERMANOVA script that I put together based on the example I
@@ -71,7 +81,6 @@ Execute the following command to run the script: ::
 
     R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map_rep_meas_perm.txt -c Time < r/repeated_measures_permanova.r
 
-
 Output Files
 ------------
 There are no output files from this script as it prints all of its information
@@ -80,6 +89,15 @@ the p-value based on the permutations that it computes. When I ran this example
 a few times, the p-value was sitting around 0.1, which may indicate that the
 "Time" category is a good indicator of variability in the samples. More
 extensive testing will have to be done on real time series data.
+
+Testing Results
+---------------
+I could not find a good dataset to test this script on because none of the
+datasets have a field representing time. The only study that might be useful for
+this script is the Glen Canyon study, but the mapping file is malformed and
+cannot be processed by the R routine that loads QIIME mapping files (we are
+currently looking into obtaining a cleaned up version of this mapping file).
+Data simulation code will also come in handy for testing this method.
 
 References
 ----------
