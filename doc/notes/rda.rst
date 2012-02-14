@@ -186,6 +186,15 @@ constraining variable explained 27.86% of the variability in the samples.
 These results seem to match very closely with the 3D PCoA plot that came with
 this dataset (in terms of clustering found on the plot).
 
+Next, I ran the same command using the SEX category as the constraining
+variable: ::
+
+    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX -o whole_body_output < r/rda.r
+
+The resulting RDA results show that sex only explains 0.69% of the
+variation in the data. The resulting plot also does not show any clear
+clustering of samples, which matches the results seen in the 3D PCoA plot.
+
 References
 ----------
 .. _rdaref1:

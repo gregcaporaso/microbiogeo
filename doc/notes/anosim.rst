@@ -140,6 +140,13 @@ The resulting R statistic is 0.0354433583741, which is very close to 0,
 indicating that the two groups are not significantly different. This result
 makes sense to me because I wouldn't expect there to be clustering based on sex.
 
+Next, I ran the following command to test the BODY_SITE category: ::
+
+    anosim.py -i datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE -o anosim_results.txt
+
+This yielded an R value of 0.469648075442, indicating that body sites are
+significantly different due to a "large" positive R value.
+
 References
 ----------
 .. _anosimref1:
