@@ -1,0 +1,153 @@
+{
+'background_color':'black',
+
+'sample_coloring':
+	{
+		'BarcodeSequence':
+		{
+			'column':'BarcodeSequence',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'ORIGINAL_SAMPLE_SITE':
+		{
+			'column':'ORIGINAL_SAMPLE_SITE',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'COMMON_SAMPLE_SITE':
+		{
+			'column':'COMMON_SAMPLE_SITE',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'HOST_TAXID':
+		{
+			'column':'HOST_TAXID',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'TAXON_ID':
+		{
+			'column':'TAXON_ID',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'BODY_SITE':
+		{
+			'column':'BODY_SITE',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'RUN_DATE':
+		{
+			'column':'RUN_DATE',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'RUN_PREFIX':
+		{
+			'column':'RUN_PREFIX',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'SEX':
+		{
+			'column':'SEX',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'RUN_ALIAS':
+		{
+			'column':'RUN_ALIAS',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'HOST_SUBJECT_ID':
+		{
+			'column':'HOST_SUBJECT_ID',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'POOL_PROPORTION':
+		{
+			'column':'POOL_PROPORTION',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'BODY_HABITAT':
+		{
+			'column':'BODY_HABITAT',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'ENV_MATTER':
+		{
+			'column':'ENV_MATTER',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'AGE_UNIT':
+		{
+			'column':'AGE_UNIT',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'ANATOMICAL_SAMPLE_SITE':
+		{
+			'column':'ANATOMICAL_SAMPLE_SITE',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'HOST_INDIVIDUAL':
+		{
+			'column':'HOST_INDIVIDUAL',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		},
+		'Description':
+		{
+			'column':'Description',
+			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+		}
+	},
+'MONTE_CARLO_GROUP_DISTANCES':
+	{
+		'BarcodeSequence': 10,
+		'ORIGINAL_SAMPLE_SITE': 10,
+		'COMMON_SAMPLE_SITE': 10,
+		'HOST_TAXID': 10,
+		'TAXON_ID': 10,
+		'BODY_SITE': 10,
+		'RUN_DATE': 10,
+		'RUN_PREFIX': 10,
+		'SEX': 10,
+		'RUN_ALIAS': 10,
+		'HOST_SUBJECT_ID': 10,
+		'POOL_PROPORTION': 10,
+		'BODY_HABITAT': 10,
+		'ENV_MATTER': 10,
+		'AGE_UNIT': 10,
+		'ANATOMICAL_SAMPLE_SITE': 10,
+		'HOST_INDIVIDUAL': 10,
+		'Description': 10
+	},
+'FIELDS':
+	[
+		'ORIGINAL_SAMPLE_SITE',
+		'POOL_PROPORTION',
+		'Description',
+		'RUN_DATE',
+		'COMMON_SAMPLE_SITE',
+		'RUN_PREFIX',
+		'BarcodeSequence',
+		'AGE_UNIT',
+		'SEX',
+		'BODY_HABITAT',
+		'ANATOMICAL_SAMPLE_SITE',
+		'HOST_TAXID',
+		'RUN_ALIAS',
+		'TAXON_ID',
+		'HOST_INDIVIDUAL',
+		'ENV_MATTER',
+		'HOST_SUBJECT_ID',
+		'BODY_SITE'
+	],
+'taxonomy_coloring':
+	{
+		'Level_1':
+		{
+			'column':'1',
+			'colors':
+			{
+				'Root;Bacteria':('red0',(0,100,100))
+			}
+		}
+	},
+'ball_scale':'1.000000',
+'arrow_line_color':'white',
+'arrow_head_color':'red'
+}

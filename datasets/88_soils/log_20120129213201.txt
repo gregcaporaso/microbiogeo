@@ -1,0 +1,66 @@
+Logging started at 21:32:01 on 29 Jan 2012
+QIIME version: 1.4.0-dev, svn revision 2520
+
+qiime_config values:
+rdp_classifier_fp	/rdp_classifier/rdp_classifier/rdp_classifier-2.0.jar
+pynast_template_alignment_fp	/home/wwwuser/software/core_set_aligned.fasta.imputed
+cluster_jobs_fp	/home/wwwuser/make_cluster_jobs.py
+torque_queue	friendlyq
+template_alignment_lanemask_fp	/home/wwwuser/software/lanemask_in_1s_and_0s.txt
+jobs_to_start	1
+cloud_environment	False
+qiime_scripts_dir	/home/wwwuser/software/Qiime_svn/scripts
+denoiser_min_per_core	50
+working_dir	/tmp/
+python_exe_fp	/home/wwwuser/software/bin/python2.7
+temp_dir	/tmp/
+blastall_fp	blastall
+seconds_to_sleep	60
+
+parameter file values:
+alpha_diversity:metrics	chao1,observed_species,PD_whole_tree
+make_3d_plots:n_taxa_keep	10
+make_3d_plots:ellipsoid_method	IQR
+make_3d_plots:output_format	king
+make_3d_plots:rms_path	RMS_output.txt
+make_3d_plots:ellipsoid_smoothness	1
+make_3d_plots:polyhedron_offset	1.5
+make_3d_plots:polyhedron_points	4
+make_3d_plots:ellipsoid_opacity	0.33
+make_3d_plots:background_color	black
+make_otu_heatmap_html:num_otu_hits	5
+beta_diversity:metrics	unweighted_unifrac,weighted_unifrac
+summarize_taxa:delimiter	';'
+summarize_taxa:level	2,3,4,5,6
+make_rarefaction_plots:resolution	75
+make_rarefaction_plots:background_color	white
+make_rarefaction_plots:imagetype	png
+make_rarefaction_plots:std_type	stddev
+plot_taxa_summary:label_type	categorical
+plot_taxa_summary:bar_width	0.75
+plot_taxa_summary:labels	Phylum,Class,Order,Family,Genus
+plot_taxa_summary:type_of_file	pdf
+plot_taxa_summary:x_width	12
+plot_taxa_summary:chart_type	bar,area
+plot_taxa_summary:num_categories	20
+plot_taxa_summary:background_color	white
+plot_taxa_summary:y_height	6
+plot_taxa_summary:dpi	80
+multiple_rarefactions:num-reps	10
+make_distance_histograms:fields	SampleID
+make_distance_histograms:background_color	white
+make_2d_plots:ellipsoid_method	IQR
+make_2d_plots:background_color	white
+make_2d_plots:ellipsoid_opacity	0.33
+
+Executing commands.
+
+# Beta Diversity Through Plots command 
+/home/wwwuser/software/bin/python2.7 /home/wwwuser/software/Qiime_svn/scripts/beta_diversity_through_plots.py -i /home/wwwuser/user_data/studies/meta_analysis_510/otu_table_files/meta_analysis_tmpUGKXGuU1uZTM7mgvaK6h_otu_table.txt -m /home/wwwuser/user_data/studies/meta_analysis_510/mapping_files/meta_analysis_tmpUGKXGuU1uZTM7mgvaK6h_map.txt -o /home/wwwuser/user_data/studies/meta_analysis_510/bdiv/tmpUEeRWh40LUnyLRUI3tcf -t /home/wwwuser/software/gg_otus_4feb2011/trees/gg_97_otus_4feb2011.tre -p /home/wwwuser/user_data/studies/meta_analysis_510/queries/qiime_custom_parameters_UGcwg1Z9yFXGCVS7BTVn.txt -f -e 500 --suppress_2d_plots
+
+Stdout:
+
+Stderr:
+
+
+Logging stopped at 21:32:22 on 29 Jan 2012
