@@ -13,10 +13,10 @@ __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from Bio.qiime.permanova import permanova, permanova_p_test,\
+from python.qiime.permanova import permanova, permanova_p_test,\
      _format_permanova_results
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict,\
-     parse_mapping_file
+parse_mapping_file
 import os
 
 options_lookup = get_options_lookup()

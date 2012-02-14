@@ -17,3 +17,4 @@ There are currently notes on the following statistical methods:
    notes/anosim
    notes/repeated_measures_permanova
    notes/rda
+   notes/permanova
