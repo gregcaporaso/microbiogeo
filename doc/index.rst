@@ -15,7 +15,9 @@ There are currently notes on the following statistical methods:
    :maxdepth: 1
 
    notes/anosim
+   notes/best 
    notes/MultiCoLA
+   notes/partial_mantel
+   notes/permanova
    notes/repeated_measures_permanova
    notes/rda
-   notes/permanova

@@ -47,7 +47,7 @@ Not sure yet. Need to pursue the BIOENV and BVSTEP leads.
 
 References
 ----------
-.. _partial_mantelref1:
+.. _primere_bestref1:
 
 [1] http://www.primer-e.com/
 

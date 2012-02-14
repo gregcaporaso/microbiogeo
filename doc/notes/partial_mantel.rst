@@ -36,15 +36,12 @@ for now at least, I think the R implementation will be the best way to test.
 
 System Setup and Required Dependencies
 --------------------------------------
-:note: The instructions that follow have been tested only on Mac OS x 10.7.3, but should 
-be backward compatible for most Intel based Macs.
+:note: The instructions that follow have been tested only on Mac OS x 10.7.3, but should be backward compatible for most Intel based Macs.
 
-The following used a local install of QIIME 1.4.0-dev
-
-First, install R. A binary is available in a self install PKG `here <http://cran.r-project.org/bin/macosx/>`
+The following used a local install of QIIME 1.4.0-dev. First, install R. A binary is available in a self install PKG `here <http://cran.r-project.org/bin/macosx/>`.
 
 The python version is included and it does run (directions below), but I haven't been able to compare it to
-the R version(werid optparse issue)
+the R version(werid optparse issue).
 
 Next, you will need to install the vegan package and the optparse package
 simply execute the following commands : ::
@@ -65,17 +62,17 @@ Next, run the following command in order to test if you can run the partial Mant
     R --slave --args -h < pmantel.r
 
 :note: R script is not yet complete.
+
 This should run the script in "help" mode. If instructions for how to run the
 script are printed, you have successfully configured your system.
-
 
 Input Files
 -----------
 The Partial Mantel script requires three distance(dissimilarity) matrices as input, 
 for instance a Unifrac distance matrix as output by beta_diversity.py, a Euclidean
 distance matrix and a median distance matrix as a control.
-:download:`here <../downloads/not_yet_available.zip>`. To derive the matrices yourself
-you will need the original data and utilities(not finished,) which you can :download:`here <../downloads/not_yet_available.zip>`
+:download:`here <../downloads/partial_mantel_ready_to_run.zip>`. To derive the matrices yourself
+you will need the original data and utilities(not finished,) which you can :download:`here <../downloads/partial_mantel_generate_own_matrices.zip>`
 
 Please skip to the R script at the bottom if you don't wish to generate the matrices.
 
@@ -90,7 +87,7 @@ first matrix(derived from the unweighted uniifrac of the keyboard study): ::
 To get our second matrix we will use the the euclidean distance between the physical keys
 on the keyboard. In order to get a proper matrix, I had to use the list of element identifiers
 from the previous output matrix, and using data extracted from a keyboard image annotated with  
-GraphClick [:ref:`partial_mantelref6`]. The utility(not finished) is run as so: ::
+GraphClick [:ref:`6 <partial_mantelref6>`]. The utility(not finished) is run as so: ::
 
   ./get_euclidian_dist_matrix.py -i unweighted_unifrac_dm_keyboard_only_239.txt -o unweighted_euclidean_dm.txt
 
