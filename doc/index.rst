@@ -14,10 +14,12 @@ There are currently notes on the following statistical methods:
 .. toctree::
    :maxdepth: 1
 
+   notes/adonis
    notes/anosim
    notes/best 
    notes/MultiCoLA
    notes/partial_mantel
    notes/permanova
+   notes/spatial_autocorrelation
    notes/repeated_measures_permanova
    notes/rda
