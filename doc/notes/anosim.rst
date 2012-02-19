@@ -132,7 +132,7 @@ This section will describe different tests that were run on the ANOSIM script.
 
 :note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used.
 
-For the Whole Body study, I used the sex category as the grouping variable: ::
+For the Whole Body study, I used the `SEX` category as the grouping variable: ::
 
     anosim.py -i datasets/Whole\ Body/meta_analysis_tmpW9iDHnm9LRR0DGi04CNS_map_and_otu_table/unweighted_unifrac_dm.txt -m datasets/Whole\ Body/meta_analysis_tmpW9iDHnm9LRR0DGi04CNS_map_and_otu_table/meta_analysis_tmpW9iDHnm9LRR0DGi04CNS_map.txt -c SEX -o anosim_results.txt
 
@@ -140,12 +140,22 @@ The resulting R statistic is 0.0354433583741, which is very close to 0,
 indicating that the two groups are not significantly different. This result
 makes sense to me because I wouldn't expect there to be clustering based on sex.
 
-Next, I ran the following command to test the BODY_SITE category: ::
+Next, I ran the following command to test the `BODY_SITE` category: ::
 
     anosim.py -i datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE -o anosim_results.txt
 
 This yielded an R value of 0.469648075442, indicating that body sites are
-significantly different due to a "large" positive R value.
+significantly different due to a relatively "large" positive R value.
+
+I also tested ANOSIM on the Glen Canyon dataset, grouping on the `CurrentlyWet`
+category (values can either be `Yes` or `No`): ::
+
+    anosim.py -i datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o anosim_results.txt -p 9999
+
+This yielded an R value of 0.9984007035, indicating an extremely high difference
+(i.e. clustering) between wet and dry samples (p-value = 0.0001). These results
+confirm the clustering that can be seen in the 3D PCoA plots included with this
+dataset (wet samples are in their own distinct cluster separated from the rest).
 
 References
 ----------

@@ -167,7 +167,7 @@ This section will describe different tests that were run on the RDA script.
 
 :note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used.
 
-For the Whole Body study, I used the BODY_SITE category as the constraining
+For the Whole Body study, I used the `BODY_SITE` category as the constraining
 environmental variable: ::
 
     R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE -o whole_body_output < r/rda.r
@@ -178,15 +178,17 @@ clear clustering of fecal samples at the bottom right of the plot. Clustering of
 tongue samples can also be seen at the top right, and there is also noticable
 clustering of outer ear samples at the bottom left. The plot also contains
 overlayed vectors indicating which body sites explain the clustering (not sure
-how better to explain this).
+how better to explain this):
 
-The second output file :file:`rda_results.txt` shows that the BODY_SITE
-constraining variable explained 27.86% of the variability in the samples.
+.. image:: ../images/rda_whole_body1.png
+   :align: center
 
-These results seem to match very closely with the 3D PCoA plot that came with
-this dataset (in terms of clustering found on the plot).
+The second output file :file:`rda_results.txt` shows that the `BODY_SITE`
+constraining variable explained 27.86% of the variability in the samples. These
+results seem to match very closely with the 3D PCoA plot that came with this
+dataset (in terms of clustering found on the plot).
 
-Next, I ran the same command using the SEX category as the constraining
+Next, I ran the same command using the `SEX` category as the constraining
 variable: ::
 
     R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX -o whole_body_output < r/rda.r
@@ -194,6 +196,24 @@ variable: ::
 The resulting RDA results show that sex only explains 0.69% of the
 variation in the data. The resulting plot also does not show any clear
 clustering of samples, which matches the results seen in the 3D PCoA plot.
+
+I also tested DB-RDA on the Glen Canyon dataset, using the `CurrentlyWet`
+category as the constraining factor: ::
+
+    R --slave --args -d datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o rda_output < r/rda.r
+
+`CurrentlyWet`, when used as a constraining factor, explained 23.28% of the
+variation between samples. The resulting RDA plot shows a clear separation
+between wet and dry samples based on the CAP1 axis (which is our constrained
+axis):
+
+.. image:: ../images/rda_glen_canyon1.png
+   :align: center
+
+Notice the blue arrow and the text `factorYes` overlayed on the plot. This
+indicates that samples with a `CurrentlyWet` factor of value `Yes` are clustered
+on the right side of the plot. These results confirm the clustering based on wet
+or dry that are found in the dataset's 3D PCoA plots.
 
 References
 ----------

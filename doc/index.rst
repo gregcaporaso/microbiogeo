@@ -17,9 +17,10 @@ There are currently notes on the following statistical methods:
    notes/adonis
    notes/anosim
    notes/best 
+   notes/mrpp
    notes/MultiCoLA
    notes/partial_mantel
    notes/permanova
-   notes/spatial_autocorrelation
-   notes/repeated_measures_permanova
    notes/rda
+   notes/repeated_measures_permanova
+   notes/spatial_autocorrelation
