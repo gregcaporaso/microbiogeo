@@ -66,7 +66,7 @@ the mapping file :download:`here <../../doc/downloads/Fasting_Map.txt>`.
 
 Next, run the following command to execute the Permanova script: ::
 
-    Permanova.py -i overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o anosim_results.txt
+    ./permanova.py -i ../../doc/downloads/overview_unweighted_unifrac_dm.txt -m ../../doc/downloads/Fasting_Map.txt -c Treatment -o permanova_results.txt
 
 The -c option specifies which column in the mapping file will be used to group
 the samples. The `Treatment` column has two values: 'Control' and 'Fast'. Thus,
@@ -93,13 +93,95 @@ Investigate why not like Jai's: ::
 	close to 1 indicating that the groups are highly dissimilar. Thus, in this
 	example, the control and fast groups are dissimilar. 
 
-Input Files
------------
 
+Whole Body
+----------
 
-Output Files
-------------
+Evaluated by ORIGINAL_SAMPLE_SITE: ::
 
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c ORIGINAL_SAMPLE_SITE -o permanova_results.txt
+
+Returns: ::
+
+	Input_filepath						permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm.txt	9.05965249449		NA
+	
+	
+Evaluated by TARGET_SUBFRAGMENT: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c TARGET_SUBFRAGMENT -o permanova_results.txt
+
+Returns: ::
+
+	FloatingPointError: divide by zero encountered in double_scalars
+	
+Evaluated by COMMON_SAMPLE_SITE: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c COMMON_SAMPLE_SITE -o permanova_results.txt
+
+Returns: ::
+
+	Input_filepath						permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm.txt	9.05965249449		NA
+	
+Evaluated by COMMON_NAME: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c COMMON_NAME -o permanova_results.txt
+
+Returns: ::
+
+	FloatingPointError: divide by zero encountered in double_scalars
+	
+Evaluated by BIOLOGICAL_SPECIMEN: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BIOLOGICAL_SPECIMEN -o permanova_results.txt
+
+Returns: ::
+
+	FloatingPointError: divide by zero encountered in double_scalars
+	
+Evaluated by SAMP_SIZE: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SAMP_SIZE -o permanova_results.txt
+
+Returns: ::
+
+	FloatingPointError: divide by zero encountered in double_scalars
+	
+Evaluated by BODY_HABITAT: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BODY_HABITAT -o permanova_results.txt
+
+Returns: ::
+
+	Input_filepath						permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm.txt	30.1660567245		NA
+	
+Evaluated by SEQUENCING_METH: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SEQUENCING_METH -o permanova_results.txt
+
+Returns: ::
+
+	FloatingPointError: divide by zero encountered in double_scalars
+	
+Evaluated by SAMP_COLLECT_DEVICE: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SAMP_COLLECT_DEVICE -o permanova_results.txt
+
+Returns: ::
+
+	FloatingPointError: divide by zero encountered in double_scalars
+
+Evaluated by ENV_MATTER: ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c ENV_MATTER -o permanova_results.txt
+
+Returns: ::
+
+	Input_filepath						permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm.txt	28.067284235		NA
+	
 
 References
 ----------
