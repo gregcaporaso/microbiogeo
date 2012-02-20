@@ -16,11 +16,13 @@ There are currently notes on the following statistical methods:
 
    notes/adonis
    notes/anosim
-   notes/best 
+   notes/best
+   notes/mantel 
    notes/mrpp
    notes/MultiCoLA
    notes/partial_mantel
    notes/permanova
+   notes/permdisp
    notes/rda
    notes/repeated_measures_permanova
    notes/simulation_code_example
