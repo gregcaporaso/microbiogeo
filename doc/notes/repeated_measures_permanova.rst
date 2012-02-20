@@ -46,6 +46,8 @@ repeated measures PERMANOVA script that I put together based on the example I
 found online. You may obtain the script from the Qiimeutils repository under
 :file:`microbiogeo/r/repeated_measures_permanova.r`.
 
+:note: Since most papers reference PRIMER's PERMANOVA+ add-on for repeated measure designs, we should test that implementation instead of the R script I put together. I don't even know if it works correctly as it is based purely off of someone's blog, and there are no sources indicating whether it is the correct approach or not. The PERMANOVA+ manual contains instructions for how to set up a repeated measures PERMANOVA within PRIMER.
+
 System Setup and Required Dependencies
 --------------------------------------
 :note: The following instructions have been tested on 64-bit Linux Mint (essentially Debian). However, they `should` work across different Linux distros and on Macs, though some commands may need to be tweaked, or different package names might have to be used. The instructions assume you use bash as your shell.
@@ -94,10 +96,10 @@ Testing Results
 ---------------
 I could not find a good dataset to test this script on because none of the
 datasets have a field representing time. The only study that might be useful for
-this script is the Glen Canyon study, but the mapping file is malformed and
-cannot be processed by the R routine that loads QIIME mapping files (we are
-currently looking into obtaining a cleaned up version of this mapping file).
-Data simulation code will also come in handy for testing this method.
+this script is the Glen Canyon study because elevation is a proxy for time. The
+moving pictures dataset might also be useful (though we do not have it in our
+dataset collection yet). Data simulation code will also come in handy for
+testing this method.
 
 References
 ----------
