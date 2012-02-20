@@ -94,6 +94,36 @@ observed     expected     sd           p.value
 
 I'm not especially sure how accurate this is, but it's useful to see what was received.
 
+Testing With Whole Body Datasets
+--------------------------------
+
+By taking the data from the whole body data sets I was able to retrieve the Moran's I analyses by entering the command: ::
+  
+  R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c LATITUDE, LONGITUDE -o morans_i < morans_i
+
+The output that's retrieved from the morans_i directory contains the following information: ::
+
+  $observed
+  [1] -0.06005486
+
+  $expected
+  [1] -0.125
+
+  $sd
+  [1] 0.01590547
+
+  $p.value
+  [1] 4.442088e-05
+
+Interpretation
+--------------
+
+When looking at the obeserved value you can infer the type of correlation being observed. Because the observed value is -.06 one could say that the output was essentially 0. As such if Moran's I outputs 0 the spatial relationship that is implied is that it's random. If the relationship is random, then the information provides no useful information.
+
+The p-value is ``43442088e-05`` which is actually ``.00004442088e``. Because of this it indicates that there is not any real correlation between the information.
+
+
+
 System Setup and Required Dependencies
 --------------------------------------
 Step 1:
