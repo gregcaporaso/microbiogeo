@@ -11,8 +11,8 @@ in a person or a plot over time.
 This statistical method is very elusive and hard to track down. There doesn't
 really seem to be a consensus regarding how time should be treated in these
 types of data. Many people simply use traditional PERMANOVA, but this ignores
-the correlation between space/time, thus inflating p-values
-[:ref:`2 <rmpermref2>`]. Others use time as a fixed factor
+the correlation between samples taken at different timepoints, thus inflating
+p-values [:ref:`2 <rmpermref2>`]. Others use time as a fixed factor
 [:ref:`1 <rmpermref1>`], while others still use time as a random factor
 [:ref:`4 <rmpermref4>`]. [:ref:`5 <rmpermref5>`] is a good reference for an
 explanation of fixed versus random factors.
@@ -91,6 +91,8 @@ the p-value based on the permutations that it computes. When I ran this example
 a few times, the p-value was sitting around 0.1, which may indicate that the
 "Time" category is a good indicator of variability in the samples. More
 extensive testing will have to be done on real time series data.
+
+:note: This script does not take blocking into account (e.g. samples taken at different points in time from the same subject or site). It should be pretty easy to modify the script to incorporate a blocking design (which is assumed for repeated measure studies), but testing should be done using PRIMER's implementation first before more time is spent on this script. The blog post that this script was based upon accounts for blocking (they use sites in their example), so it should be a good reference.
 
 Testing Results
 ---------------
