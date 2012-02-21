@@ -17,7 +17,8 @@ There are currently notes on the following statistical methods:
    notes/adonis
    notes/anosim
    notes/best
-   notes/mantel 
+   notes/mantel
+   notes/mantel_correlogram
    notes/mrpp
    notes/MultiCoLA
    notes/partial_mantel

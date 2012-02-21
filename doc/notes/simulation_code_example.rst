@@ -1,6 +1,6 @@
-==================================================================
+=======================
 Simulation Code Example
-==================================================================
+=======================
 
 Below is an short example of how to utilize the simulation code.
 
@@ -22,7 +22,7 @@ The first parameter represents OTUs (must be a power of 2) and the second is the
 
 The function can also has some additional parameters that are set by default. These addition parameters are distribution_f, distro_mean, abundance_mode, ab_low, ab_high, and oneEnvAb. For this example we will not be overriding any of the defaulted parameters.
 
-The result of this method call will be a 2d list. The first element in the list is a cogent tree object, and the second element is a dictionary (abundance dictionary) which gives the name of the node in the tree and the abundance of bacteria found at that node: ::
+The result of this method call will be a tuple with two elements. The first element is a cogent tree object, and the second element is an abundance dictionary which gives the name of the node in the tree and the abundance of bacteria found at that node for each environment: ::
 
 	tree = result[0]
 
@@ -30,7 +30,7 @@ Assign the first element in the list, the cogent tree object, to the variable tr
 
 	tree.root().Sequence
 
-This list corresponds to how many microbes are in each environent: ::
+This list corresponds to how many microbes are in each environment: ::
 
 	print tree.asciiArt()
 
