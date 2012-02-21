@@ -143,6 +143,39 @@ This section will describe different tests that were run on the MRPP script.
 
 :note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used.
 
+From testing on a few different empirical datasets, it is not clear that MRPP
+gives biologically-meaningful results. The p-value that is calculated during an
+MRPP run indicates the significance of whether the sample groups are different.
+For all of the tests that I ran, I got p-values that were less than 0.008, even
+for groupings that shouldn't be significantly different.
+
+For the Whole Body study, I used the `SEX` category as the grouping variable: ::
+
+    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX < r/examples/mrpp.r
+
+The resulting p-value for the delta statistic was 0.001, based on 999
+permutations. This result indicates that there are significant differences
+between samples from males and females, but all of the other tests of this
+nature indicate the opposite. Thus, this result does not make much sense to me.
+
+For the Glen Canyon study, I used the `Day` cateogry to do the grouping: ::
+
+    R --slave --args -d datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c Day < r/examples/mrpp.r
+
+The resulting p-value of 0.001 indicates a significant difference in samples
+that were taken on three different days. ANOSIM does not confirm this result (it
+gives an R-value of 0.129348088523, which is pretty close to 0. The PCoA plots,
+when colored by day, also do not seem to strongly indicate a clustering of
+samples at different days (there is some clustering by day, but it isn't nearly
+as strong as the results reported by MRPP).
+
+I also ran MRPP on various other categories from the two studies listed above,
+and it always reports an extremely small p-value. I think we might be getting
+these results because MRPP sometimes detects differences in groups based on
+spread, not center (see the discussion on this topic in the introduction). Maybe
+it is not a good method for microbial ecology because groupings of samples can
+have very different degrees of variability?
+
 References
 ----------
 .. _mrppref1:
