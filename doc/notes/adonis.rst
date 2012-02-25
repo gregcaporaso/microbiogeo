@@ -1,8 +1,8 @@
 .. _adonisstartref:
 
-======================================================
+================================================================================
 Permutational Multivariate Analysis of Variance Using Distance Matrices (Adonis)
-======================================================
+================================================================================
 Introduction
 ------------
 Adonis is a statistical method that operates in the same manner that Permutational Multivariate Analysis of Variance(Permanova) does. Adonis is essentially the same thing, except it uses distance matrices. Because it is a variation of Permanova, the way which it handles the information passed in is similar.
@@ -10,23 +10,6 @@ Adonis is a statistical method that operates in the same manner that Permutation
 This has been called a "nonparemetric manova". To elaborate on what is being said, this variation of the method does not make the same assumptions as MANOVA does. As such it may not determine the same information with the same accuracy.
 
 The primary input that this method is concerned with, is receiving a formula. From there the data that is passed in is used in conjunction with the formula to calculate the desired information.
-
-An additional option is the ability to use different methods in conjunction with this for altering how pairwise distances are calculated. This can be done using "vegdist" in the vegan package. Some of the alternate methods are:
-
- * binomial
- * bray
- * canberra
- * chao
- * euclideani
- * gower
- * horn
- * jaccard 
- * kulczynski
- * manhattan
- * morisita
- * mountford
- * raup
-
 
 Selected Implementation
 -----------------------
@@ -45,7 +28,7 @@ Outside of the selected implementation there were no other alternatives to this 
 
 An issue that was discovered while researching this is that there appears to be more documentation that is not related to the orginal site that the original documentation was located on.
 
-This alternative can be found `here<http://rss.acs.unt.edu/Rdoc/library/vegan/html/adonis.html>`_.
+This alternative can be found `here <http://rss.acs.unt.edu/Rdoc/library/vegan/html/adonis.html>`_.
 
 The documentation for the selected implementation and the above implementation are virtually the same and no indication is given that there is a distinct difference between the two. The only difference is that the alternative implementation lists it as a version that is not permutational. This leads me to believe that there is no difference and somehow I stumbled upon an alternate form of the documentation, hosted by someone else.
 
@@ -100,7 +83,7 @@ qiime.data$map[[opts$category]]  1   0.45007 0.45007  2.2967 0.24704  0.004 **
 Residuals                        7   1.37177 0.19597         0.75296
 Total                            8   1.82183                 1.00000
 ---
-Signif. codes:  0 â***â 0.001 â**â 0.01 â*â 0.05 â.â 0.1 â â 1
+Signif. codes:  0 0.001 0.01 0.05 0.1 1
 
 I have no idea what this output means.
 
