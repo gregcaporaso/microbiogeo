@@ -231,7 +231,7 @@ The following was output to stdout: ::
      90%    95%  97.5%    99% 
   0.0453 0.0590 0.0706 0.0828 
 
-Test 3
+Test 4
 ~~~~~~~
 **Description:**
 
