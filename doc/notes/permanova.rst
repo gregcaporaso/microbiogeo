@@ -8,7 +8,7 @@ Introduction
 
 The permutational multivariate analysis of variance (PERMANOVA) method is a computer program for testing 
 the simultaneous response of one or more variables to one or more factors in an ANOVA experimental design
-on the basis of any distance measure. It returns a R value and a P value.
+on the basis of any distance metric. It returns a R value and a P value.
 
 The first thing it does is calculate the distances between each pair of sampled units to obtain a distance matrix.
 It then calculates the test-statistics from this according to the relevant experimental design.
@@ -88,8 +88,8 @@ Output Files
 The command in the previous section creates a single output file named
 :file:`permanova_results.txt`. The resulting file should look like this: ::
 
-	Input_filepath	permanova_R_value	p_value
-	overview_unweighted_unifrac_dm.txt	2.29665065171	NA
+	Input_filepath				permanova_R_value	p_value
+	overview_unweighted_unifrac_dm.txt	2.29665065171		NA
 
 The first field lists the distance matrix file that was used as input. The
 second field lists the R statistic that was computed (remember that this is the
@@ -114,167 +114,102 @@ Test 1
 ~~~~~~
 **Description:**
 
-Evaluated by ORIGINAL_SAMPLE_SITE
+This test uses the `BODY_SITE` category as a positive control.
+We expect there to be significant clustering due to previous analysis done on
+the Whole Body dataset.
 
 **Command:** ::
 
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c ORIGINAL_SAMPLE_SITE -o permanova_results.txt
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
 
 **Results:**
 
 The following output file is created: ::
 
 	Input_filepath						permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm.txt	9.05965249449		NA
+	../../datasets/whole_body/unweighted_unifrac_dm.txt	13.2670596158		0.001
 	
 
 Test 2
 ~~~~~~
 **Description:**
 
-Evaluated by TARGET_SUBFRAGMENT
+This test uses the `SEX` category as a negative control.
+We expect there to be less clustering due to previous analysis done on
+the Whole Body dataset.
 
 **Command:** ::
 
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c TARGET_SUBFRAGMENT -o permanova_results.txt
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SEX -o permanova_results.txt -p 999
 
 **Results:**
 
 The following output file is created: ::
 
-	FloatingPointError: divide by zero encountered in double_scalars
+	Input_filepath						permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm.txt	21.0188242485		0.001
+
 
 Test 3
 ~~~~~~
 **Description:**
-	
-Evaluated by COMMON_SAMPLE_SITE
+
+This test uses the `BODY_SITE` category with a shuffled distance matrix as a negative control.
+We expect there to be less clustering due to previous analysis done on
+the Whole Body dataset.
 
 **Command:** ::
 
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c COMMON_SAMPLE_SITE -o permanova_results.txt
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
 
 **Results:**
 
 The following output file is created: ::
 
-	Input_filepath						permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm.txt	9.05965249449		NA
+	Input_filepath							permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt	1.98060081904		0.031
+	
 
 Test 4
 ~~~~~~
 **Description:**
-	
-Evaluated by COMMON_NAME
+
+This test uses the `BODY_SITE` category with a shuffled distance matrix as a negative control.
+We expect there to be less clustering due to previous analysis done on
+the Whole Body dataset.
 
 **Command:** ::
 
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c COMMON_NAME -o permanova_results.txt
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
 
 **Results:**
 
 The following output file is created: ::
 
-	FloatingPointError: divide by zero encountered in double_scalars
+	Input_filepath							permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt	1.81015551855		0.623
+	
 
 Test 5
 ~~~~~~
 **Description:**
+
+This test uses the `BODY_SITE` category with a shuffled distance matrix as a negative control.
+We expect there to be less clustering due to previous analysis done on
+the Whole Body dataset.
+
+**Command:** ::
+
+	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
+
+**Results:**
+
+The following output file is created: ::
+
+	Input_filepath							permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
 	
-Evaluated by BIOLOGICAL_SPECIMEN
 
-**Command:** ::
-
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BIOLOGICAL_SPECIMEN -o permanova_results.txt
-
-**Results:**
-
-The following output file is created: ::
-
-	FloatingPointError: divide by zero encountered in double_scalars
-
-Test 6
-~~~~~~
-**Description:**
-	
-Evaluated by SAMP_SIZE
-
-**Command:** ::
-
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SAMP_SIZE -o permanova_results.txt
-
-**Results:**
-
-The following output file is created: ::
-
-	FloatingPointError: divide by zero encountered in double_scalars
-
-Test 7
-~~~~~~
-**Description:**
-	
-Evaluated by BODY_HABITAT
-
-**Command:** ::
-
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BODY_HABITAT -o permanova_results.txt
-
-**Results:**
-
-The following output file is created: ::
-
-	Input_filepath						permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm.txt	30.1660567245		NA
-
-Test 8
-~~~~~~
-**Description:**
-	
-Evaluated by SEQUENCING_METH
-
-**Command:** ::
-
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SEQUENCING_METH -o permanova_results.txt
-
-**Results:**
-
-The following output file is created: ::
-
-	FloatingPointError: divide by zero encountered in double_scalars
-
-Test 9
-~~~~~~
-**Description:**
-
-Evaluated by SAMP_COLLECT_DEVICE
-
-**Command:** ::
-
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SAMP_COLLECT_DEVICE -o permanova_results.txt
-
-**Results:**
-
-The following output file is created: ::
-
-	FloatingPointError: divide by zero encountered in double_scalars
-
-Test 10
-~~~~~~~
-**Description:**
-
-Evaluated by ENV_MATTER
-
-**Command:** ::
-
-	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c ENV_MATTER -o permanova_results.txt
-
-**Results:**
-
-The following output file is created: ::
-
-	Input_filepath						permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm.txt	28.067284235		NA
-	
 
 References
 ----------

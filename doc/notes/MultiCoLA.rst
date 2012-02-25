@@ -116,7 +116,7 @@ Test 1
 
 **Results:**
 
-The following output file is created: ::
+The following output file is created
 
 
 
