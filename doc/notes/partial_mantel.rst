@@ -115,7 +115,7 @@ unweighted_euclidean_dm.txt and unifrac_median_dm.txt.
 
 Finally, run the following command and execute the partial Mantel script: ::
 
-    R --slave --args -d1 unweighted_unifrac_dm_keyboard_only_239.txt -d2 unweighted_euclidean_dm.txt -d3 unifrac_median_dm.txt < r/pmantel.r
+    R --slave --args -a unweighted_unifrac_dm_keyboard_only_239.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < r/pmantel.r
 
 To run the python version (requires test.py and compare_distance_matrices.py, included in download): ::
 
@@ -133,21 +133,114 @@ Testing Results
 ----------------
 The keyboard data (outlined above) was used to test the Python implementation of the partial Mantel test
 
-To run the Python implementation: ::
 
-  ./compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239.txt,unweighted_euclidean_dm.txt,unifrac_median_dm.txt -o mantel_out.txt -n 1000 -m partial_mantel
+Keyboard
+^^^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
 
-:note: need to fix a bug in the R version, but it should give the same result.
+This test uses the Python version of the partial Mantel. The three distance matrices derived
+previously will be used.
 
-The results are a little difficult to explain. The p-value basically splits the difference at ~0.5, which isn't definitive 
-in support or in contrast to the hypothesis. More analysis will be necessary: ::
+**Command:** ::
 
-  # Number of entries refers to the number of rows (or cols) 
-  # retained in each distance matrix after filtering the distance matrices 
-  # to include only those samples that were in all three distance matrices. 
-  # p-value contains the correct number of significant digits.
+  ./compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239.txt,unweighted_euclidean_dm.txt,unifrac_median_dm.txt -o mantel_out.txt -n 9999 -m partial_mantel
+
+**Results:**
+
+The following output file is created: ::
+
   DM1	DM2	DM3	Number of entries	Partial Mantel p-value
-  unweighted_unifrac_dm_keyboard_only_239.txt	unweighted_euclidean_dm.txt	unifrac_median_dm.txt	74	0.505
+  unweighted_unifrac_dm_keyboard_only_239.txt	unweighted_euclidean_dm.txt	unifrac_median_dm.txt	74	0.506
+
+The results are a little difficult to explain. The r-value basically splits the difference at ~0.5, which isn't definitive 
+in support or in contrast to the hypothesis. We'll see also that the R version does not agree with Python version. 
+For this reason, subsequent testing will use only the R version as it is more extensively documented and utilized.
+
+Test 2
+~~~~~~
+**Description:**
+
+In this test we use the vegan implementation of the partial Mantel test. As before we are looking at the
+three distance matrices for the keyboard data set as derived above.
+
+**Command:** ::
+
+  R --slave --args -a unweighted_unifrac_dm_keyboard_only_239.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < pmantel.r 
+
+**Results:**
+
+The following was output to stdout: ::
+
+  Mantel statistic r: 0.05618 
+        Significance: 0.0583 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0451 0.0590 0.0723 0.0878
+  
+
+Test 3
+~~~~~~
+**Description:**
+
+Negative Control: shuffle unifrac distmat
+
+In this test we use the vegan implementation of the partial Mantel test.
+
+**Command:** ::
+
+  R --slave --args -a unweighted_unifrac_dm_keyboard_only_239_shuffled_1.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < pmantel.r
+
+**Results:**
+
+The following was output to stdout: ::
+
+  Mantel statistic r: 0.05618 
+        Significance: 0.0588 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0451 0.0593 0.0717 0.0869 
+
+Its not clear why the r-statistic did no change appreciably as we would expect for this 
+negative control. We'll see that none of our shuffle matrices make any difference when 
+applied to this method.
+
+Test 3
+~~~~~~
+**Description:**
+
+Negative Control: second shuffle of unifrac distmat
+
+In this test we use the vegan implementation of the partial Mantel test.
+
+**Command:** ::
+
+  R --slave --args -a unweighted_unifrac_dm_keyboard_only_239_shuffled_2.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < pmantel.r
+
+**Results:**
+
+The following was output to stdout: ::
+
+Test 3
+~~~~~~
+**Description:**
+
+Negative Control: shuffle unifrac distmat
+
+In this test we use the vegan implementation of the partial Mantel test.
+
+**Command:** ::
+
+  R --slave --args -a unweighted_unifrac_dm_keyboard_only_239_shuffled_1.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < pmantel.r
+
+**Results:**
+
+The following was output to stdout: ::
+
+
 
 References
 ----------
