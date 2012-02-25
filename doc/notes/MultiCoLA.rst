@@ -66,14 +66,14 @@ Answered the questions:
 	
 The following files were created:
 
-:download:`Phylum.matrix.txt <../downloads/Phylum.matrix.txt>`
-:download:`Class.matrix.txt <../downloads/Class.matrix.txt>`	
-:download:`Order.matrix.txt <../downloads/Order.matrix.txt>`
-:download:`Family.matrix.txt <../downloads/Family.matrix.txt>`
-:download:`Genus.matrix.txt <../downloads/Genus.matrix.txt>`
-:download:`MultiCoLA.RData <../downloads/MultiCoLA.RData>`
-:download:`OTUs_completeDS.matrix.txt <../downloads/OTUs_completeDS.matrix.txt>`
-:download:`OTUs_wholeDS.matrix.txt <../downloads/OTUs_wholeDS.matrix.txt>`
+:download:`Phylum.matrix.txt <../downloads/MultiCoLA/Phylum.matrix.txt>`
+:download:`Class.matrix.txt <../downloads/MultiCoLA/Class.matrix.txt>`	
+:download:`Order.matrix.txt <../downloads/MultiCoLA/Order.matrix.txt>`
+:download:`Family.matrix.txt <../downloads/MultiCoLA/Family.matrix.txt>`
+:download:`Genus.matrix.txt <../downloads/MultiCoLA/Genus.matrix.txt>`
+:download:`MultiCoLA.RData <../downloads/MultiCoLA/MultiCoLA.RData>`
+:download:`OTUs_completeDS.matrix.txt <../downloads/MultiCoLA/OTUs_completeDS.matrix.txt>`
+:download:`OTUs_wholeDS.matrix.txt <../downloads/MultiCoLA/OTUs_wholeDS.matrix.txt>`
 
 
 Ran the commands: ::

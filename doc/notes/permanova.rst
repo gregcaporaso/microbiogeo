@@ -5,6 +5,18 @@ Permutational Multivariate Analysis of Variance (PERMANOVA) Statistical Method R
 Introduction
 ------------
 
+The permutational multivariate analysis of variance (PERMANOVA) method is a computer program for testing 
+the simultaneous response of one or more variables to one or more factors in an ANOVA experimental design
+on the basis of any distance measure. It returns a R value and a P value.
+
+The first thing it does is calculate the distances between each pair of sampled units to obtain a distance matrix.
+It then calculates the test-statistics from this according to the relevant experimental design.
+See Anderson (2001a) and McArdle and Anderson (2001).
+
+
+
+
+
 
 Existing Implementations
 ------------------------
