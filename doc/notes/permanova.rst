@@ -154,64 +154,92 @@ Test 3
 ~~~~~~
 **Description:**
 
-This test uses the `BODY_SITE` category with a shuffled distance matrix as a negative control.
-We expect there to be less clustering due to previous analysis done on
-the Whole Body dataset.
+This test uses three shuffled distance matrices and the BODY_SITE category to perform three negative control 
+tests. Since the labels of the distance matrices are shuffled, we don’t expect to see clustering any more on 
+this category.
 
-**Command:** ::
+**Commands:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
-
-**Results:**
-
-The following output file is created: ::
-
-	Input_filepath							permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt	1.98060081904		0.031
-	
-
-Test 4
-~~~~~~
-**Description:**
-
-This test uses the `BODY_SITE` category with a shuffled distance matrix as a negative control.
-We expect there to be less clustering due to previous analysis done on
-the Whole Body dataset.
-
-**Command:** ::
-
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
-
-**Results:**
-
-The following output file is created: ::
-
-	Input_filepath							permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt	1.81015551855		0.623
-	
-
-Test 5
-~~~~~~
-**Description:**
-
-This test uses the `BODY_SITE` category with a shuffled distance matrix as a negative control.
-We expect there to be less clustering due to previous analysis done on
-the Whole Body dataset.
-
-**Command:** ::
-
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt -m ../../datasets/whole_body/map.txt -c BODY_SITE -o permanova_results.txt -p 999
 
 **Results:**
 
-The following output file is created: ::
+The following output files were created: ::
 
 	Input_filepath							permanova_R_value	p_value
-	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
-	
+	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt	1.98060081904		0.031
 
+::
+	
+	Input_filepath							permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt	1.81015551855		0.623
+
+::
+		
+	Input_filepath							permanova_R_value	p_value
+	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
+
+Keyboard
+^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
+
+This test uses the `HOST_SUBJECT_ID` category as a positive control. We expect
+there to be significant clustering on host subjects due to previous analysis
+done on the keyboard study dataset.
+
+**Command:** ::
+
+    ./permanova.py -i ../../datasets/keyboard/unweighted_unifrac_dm.txt -m ../../datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova_results.txt -p 999
+
+**Results:**
+
+The following output file is created: ::
+
+        Input_filepath                                          permanova_R_value       p_value
+        ../../datasets/keyboard/unweighted_unifrac_dm.txt       5.17880475397           0.001
+
+The R value of 0.794026410205 indicates that samples taken from different hosts
+are significantly different (i.e. there is clustering) due to its "large"
+positive value. This is a result that we would expect. The p-value of 0.001
+indicates that the result is significant.
+
+Test 2
+~~~~~~
+**Description:**
+
+This test uses three shuffled distance matrices and the `HOST_SUBJECT_ID`
+category to perform three negative control tests. Since the labels of the
+distance matrices are shuffled, we don't expect to see clustering any more on
+this category.
+
+**Command:** ::
+
+    ./permanova.py -i ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt -m ../../datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova_results_1.txt -p 999
+    ./permanova.py -i ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt -m ../../datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova_results_2.txt -p 999
+    ./permanova.py -i ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt -m ../../datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova_results_3.txt -p 999
+
+**Results:**
+
+The following output files are created: ::
+
+        Input_filepath                                                  permanova_R_value       p_value
+        ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt    1.04303546137           0.31
+
+::
+
+        Input_filepath                                                  permanova_R_value       p_value
+        ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt    1.03699740907           0.317
+
+::
+
+        Input_filepath                                                  permanova_R_value       p_value
+        ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt    0.959082333436          0.648
 
 References
 ----------
 
-Jai's anosim.rst
+Jai's permanova.rst
