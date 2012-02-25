@@ -7,12 +7,12 @@ Morans I is also known as Morans autocorrelation coefficient. It is an extension
 
 The Moran's I equation is:
 
-.. image:: ../images/morans_i/MoransIEquation.PNG
+.. image:: ../images/MoransIEquation.PNG
   :align: center
 
 ... where wij is the weight between observation i and j, and S0 is the sum of all wij 's. Which can be seen here:
 
-.. image:: ../images/morans_i/MoransISubVar.PNG
+.. image:: ../images/MoransISubVar.PNG
   :align: center
 
 This equation returns a value between -1 and 1. The value indicates what type of correlation to expect for the data analyzed. In the case of -1 it represents perfect dispersion, where there is an equal amount of variation throughout. A positive 1 is called perfect correlation, where two points always occur together. Lastly, when you get a value closer to 0 that indicates that there is random patterning being detected.
