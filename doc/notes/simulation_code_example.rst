@@ -10,11 +10,9 @@ Open a python terminal and complete the following steps by typing them into the 
 
 Where the file path points to the local file flow_ms.py.
 
-This will return the message: ::
+:note: This may return the message:  "UserWarning: Not using MPI as mpi4py not found from cogent.util import parallel, terminal". This will not effect the functionality of the program.
 
-	UserWarning: Not using MPI as mpi4py not found from cogent.util import parallel, terminal
-
-This will not effect the functionality of the program: ::
+::
 
 	result = simulate_flow_with_rand_e_mat(16,4)
 

@@ -60,12 +60,14 @@ There are many different specifications that the user can control. To cover all 
 Nature of the data in the input file: 
 1) raw data (n x p) 
 2) distance matrix (n x n)
+
 2
 
 ANOVA Experimental design: 
 1) One-way 
 2) Two-way nested 
 3) Two-way crossed (i.e. factorial or orthogonal) 
+
 3
 
 Experimental design of two-way crossed analysis: 
@@ -73,28 +75,36 @@ Experimental design of two-way crossed analysis:
 2) Random effects - both factors are random 
 3) Mixed model - factor 1 is fixed, 2 is random 
 4) Mixed model - factor 1 is random, 2 is fixed 
+
 1 
 
 What is the name of factor 1? 
+
 distance
 
 Type the number of levels for factor 1 
+
 1
 
 What is the name of factor 2? 
+
 difference 
 
 Type the number of levels for factor 2 
+
 1
  
 What is the number of replicates? 
+
 4
  
 How many permutations do you want for the tests? (i.e. 99, 499, 999, 4999, etc.) 
+
 99
  
 Type an integer to be used as the seed 
 for the random permutations 
+
 9
 
 
@@ -102,6 +112,157 @@ Output Files
 ------------
 
 The output file will contain the "Experimental Design" that contains the information that the user input when the program was ran. It will also contain the result of the tests for heterogeneity in the average dissimilarities of points from the central location of their group, which will be displayed in an ASCII table.
+
+Testing Results
+---------------
+This section will describe different tests that were run on the PERMDISP script.
+These tests will use empirical data from one of the several datasets that the
+team has access to. These data files will not be included for download due to
+their (usually) large size. Unless otherwise noted, the data files that were
+used can be found under the datasets directory.
+
+88 Soils
+^^^^^^^^^^
+Test 1
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 2
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 3
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Face Site
+^^^^^^^^^^
+
+Test 1
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 2
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 3
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Glen Canyon
+^^^^^^^^^^^
+
+Test 1
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 2
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 3
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Keyboard
+^^^^^^^^
+
+Test 1
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 2
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
+
+Test 3
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	Command here
+
+**Results:**
 
 References
 ----------
