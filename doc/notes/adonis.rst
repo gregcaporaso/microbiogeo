@@ -259,7 +259,6 @@ Mapping File:
 .. image:: ../images/adonis/originalData/wholeBodySexResults.png
   :align: center
 
-
 TO DO:
 Perform Analysis
 
