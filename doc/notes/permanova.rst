@@ -239,6 +239,66 @@ The following output files are created: ::
         Input_filepath                                                  permanova_R_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt    0.959082333436          0.648
 
+
+Glen Canyon
+^^^^^^^^^^^
+
+Test 1
+~~~~~~
+**Description:**
+
+This test uses the `CurrentlyWet` category as a positive control. We expect
+there to be significant clustering on this category due to previous analysis
+done on the Glen Canyon dataset.
+
+**Command:** ::
+
+    ./permanova.py -i ../../datasets/glen_canyon/unweighted_unifrac_dm.txt -m ../../datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o permanova_results.txt -p 999
+
+**Results:**
+
+The following output file is created: ::
+
+        Input_filepath                                          permanova_R_value       p_value
+        ../../datasets/glen_canyon/unweighted_unifrac_dm.txt    29.2130439798           0.001
+
+The R value of 0.9984007035 indicates that samples taken from wet and dry
+environments are significantly different (i.e. there is clustering) due to the
+really "large" positive value that is close to 1. This is a result that we would
+expect, as there is also clear clustering in the 3D PCoA plots.
+
+Test 2
+~~~~~~
+**Description:**
+
+This test uses three shuffled distance matrices and the `CurrentlyWet`
+category to perform three negative control tests. Since the labels of the
+distance matrices are shuffled, we don't expect to see clustering any more on
+this category.
+
+**Command:** ::
+
+    ./permanova.py -i ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt -m ../../datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o permanova_results.txt -p 999
+    ./permanova.py -i ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt -m ../../datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o permanova_results.txt -p 999
+    ./permanova.py -i ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt -m ../../datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o permanova_results.txt -p 999
+
+**Results:**
+
+The following output files are created: ::
+
+        Input_filepath                                                  permanova_R_value       p_value
+        ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt 2.03268471405           0.332
+
+::
+
+        Input_filepath                                                  permanova_R_value       p_value
+        ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt 1.91859583429           0.448
+
+::
+
+        Input_filepath                                                  permanova_R_value       p_value
+        ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt 1.68346774545           0.902
+
 References
 ----------
 
