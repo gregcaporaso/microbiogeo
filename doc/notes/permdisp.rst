@@ -1,6 +1,6 @@
-==============================================================
+============================================================================================================================
 Permutational Analysis of Multivariate Dispersions (PERMDISP) Statistical Method Reference
-==============================================================
+============================================================================================================================
 
 Introduction
 ------------
@@ -13,7 +13,7 @@ This statistical method has two steps
 
 * comparison of the average of these distances among groups, using ANOVA
 
-A P-value is then obtained using permutation of the observations. The approach is a multivariate analogue to Levene’s test (Levene 1960). The analysis of these distances to centroids can be done for any two-factor design, just as in PERMANOVA. It is wellknown that the test for differences in location among groups in multivariate space (such as PERMANOVA) is sensitive to differences in dispersion among the groups. Thus, rejection of the null hypothesis for PERMANOVA suggests that groups may differ because of their location, their relative dispersion, or both. 
+A P-value is then obtained using permutation of the observations. The approach is a multivariate analogue to Levene test (Levene 1960). The analysis of these distances to centroids can be done for any two-factor design, just as in PERMANOVA. It is wellknown that the test for differences in location among groups in multivariate space (such as PERMANOVA) is sensitive to differences in dispersion among the groups. Thus, rejection of the null hypothesis for PERMANOVA suggests that groups may differ because of their location, their relative dispersion, or both. 
 The program is designed to be used as a companion to PERMANOVA, to assist in unraveling the possible reasons for rejection of the null hypothesis. It is also useful in its own right, however, to investigate differences in dispersions alone when hypotheses of this nature arise.
 
 Existing Implementations
@@ -53,7 +53,7 @@ Input a file containing raw data or a file containing a symmetric matrix of dist
 dissimilarities. In each case, the file must be saved in tab delimited (ASCII text, *.txt) or comma delimited 
 (*.csv) format.
 
-The program will prompt the user to name the file where the results will be written. Though it is not necessary it is encouraged to name the output file with the extension *.txt.
+The program will prompt the user to name the file where the results will be written. Though it is not necessary it is encouraged to name the output file with the extension .txt.
 
 There are many different specifications that the user can control. To cover all of these would take a considerable amount of time. Because of this one possible path is displayed below.
 
@@ -90,8 +90,7 @@ Type the number of levels for factor 2
 What is the number of replicates? 
 4
  
-How many permutations do you want for the tests? 
- (i.e. 99, 499, 999, 4999, etc.) 
+How many permutations do you want for the tests? (i.e. 99, 499, 999, 4999, etc.) 
 99
  
 Type an integer to be used as the seed 

@@ -1,5 +1,5 @@
 ==============================================================
-Permutational Analysis of Multivariate Dispersions (PERMDISP) Statistical Method Reference
+Mantel Test
 ==============================================================
 
 Introduction
