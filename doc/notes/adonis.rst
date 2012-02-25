@@ -174,15 +174,15 @@ The input being analyzed is specified by -d, -m.
 
 **Command**
 
-``R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r``
+R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r
 
 **Results**
 
 .. image:: ../images/adonis/originalData/qiimeOverviewResults.png
   :align: center
 
-Body Site Analysis (Original Data)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Body Site Analysis (Original Data - BODY_SITE)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
 This test uses the `BODY_SITE` category as a positive control.
@@ -200,7 +200,7 @@ Mapping File:
 \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
 
 
-**Command:** ::
+**Command:**
 
 ``R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c BODY_SITE -o adonis < adonis.r``
 
@@ -231,8 +231,38 @@ TO DO:
 Perform Analysis
 
 
-Test 3
-~~~~~~
+Body Site Analysis (Original Data - SEX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This test uses the `SEX` category as a positive control.
+We expect there to be significant clustering due to previous analysis done on
+the Whole Body dataset.
+
+**Input:**
+
+The files provided are:
+
+Distance Matix:
+\QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
+
+Mapping File:
+\QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+
+
+**Command:**
+
+``R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c SEX -o adonis < adonis.r``
+
+**Results:**
+
+.. image:: ../images/adonis/originalData/wholeBodySexResults.png
+  :align: center
+
+
+TO DO:
+Perform Analysis
+
 
 Keyboard
 ^^^^^^^^
