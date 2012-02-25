@@ -2,6 +2,7 @@
 Permutational Multivariate Analysis of Variance (PERMANOVA) Statistical Method Reference
 ========================================================================================
 
+
 Introduction
 ------------
 
@@ -14,12 +15,9 @@ It then calculates the test-statistics from this according to the relevant exper
 See Anderson (2001a) and McArdle and Anderson (2001).
 
 
-
-
-
-
 Existing Implementations
 ------------------------
+
 
 
 System Setup and Required Dependencies
@@ -106,90 +104,173 @@ Investigate why not like Jai's: ::
 	example, the control and fast groups are dissimilar. 
 
 
-Whole Body
-----------
+Testing Results
+---------------
+This section will describe different tests that were run on the PERMANOVA script.
 
-Evaluated by ORIGINAL_SAMPLE_SITE: ::
+Whole Body
+^^^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
+
+Evaluated by ORIGINAL_SAMPLE_SITE
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c ORIGINAL_SAMPLE_SITE -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	9.05965249449		NA
 	
-	
-Evaluated by TARGET_SUBFRAGMENT: ::
+
+Test 2
+~~~~~~
+**Description:**
+
+Evaluated by TARGET_SUBFRAGMENT
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c TARGET_SUBFRAGMENT -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	FloatingPointError: divide by zero encountered in double_scalars
+
+Test 3
+~~~~~~
+**Description:**
 	
-Evaluated by COMMON_SAMPLE_SITE: ::
+Evaluated by COMMON_SAMPLE_SITE
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c COMMON_SAMPLE_SITE -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	9.05965249449		NA
+
+Test 4
+~~~~~~
+**Description:**
 	
-Evaluated by COMMON_NAME: ::
+Evaluated by COMMON_NAME
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c COMMON_NAME -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	FloatingPointError: divide by zero encountered in double_scalars
+
+Test 5
+~~~~~~
+**Description:**
 	
-Evaluated by BIOLOGICAL_SPECIMEN: ::
+Evaluated by BIOLOGICAL_SPECIMEN
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BIOLOGICAL_SPECIMEN -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	FloatingPointError: divide by zero encountered in double_scalars
+
+Test 6
+~~~~~~
+**Description:**
 	
-Evaluated by SAMP_SIZE: ::
+Evaluated by SAMP_SIZE
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SAMP_SIZE -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	FloatingPointError: divide by zero encountered in double_scalars
+
+Test 7
+~~~~~~
+**Description:**
 	
-Evaluated by BODY_HABITAT: ::
+Evaluated by BODY_HABITAT
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c BODY_HABITAT -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	30.1660567245		NA
+
+Test 8
+~~~~~~
+**Description:**
 	
-Evaluated by SEQUENCING_METH: ::
+Evaluated by SEQUENCING_METH
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SEQUENCING_METH -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	FloatingPointError: divide by zero encountered in double_scalars
-	
-Evaluated by SAMP_COLLECT_DEVICE: ::
+
+Test 9
+~~~~~~
+**Description:**
+
+Evaluated by SAMP_COLLECT_DEVICE
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c SAMP_COLLECT_DEVICE -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	FloatingPointError: divide by zero encountered in double_scalars
 
-Evaluated by ENV_MATTER: ::
+Test 10
+~~~~~~~
+**Description:**
+
+Evaluated by ENV_MATTER
+
+**Command:** ::
 
 	./permanova.py -i ../../datasets/whole_body/unweighted_unifrac_dm.txt -m ../../datasets/whole_body/map.txt -c ENV_MATTER -o permanova_results.txt
 
-Returns: ::
+**Results:**
+
+The following output file is created: ::
 
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	28.067284235		NA
