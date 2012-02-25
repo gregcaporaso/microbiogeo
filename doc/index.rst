@@ -31,7 +31,6 @@ Method Index
    notes/permdisp
    notes/rda
    notes/repeated_measures_permanova
-   notes/spatial_autocorrelation
    notes/simulation_code_example
 
 
