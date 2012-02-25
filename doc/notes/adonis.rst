@@ -21,9 +21,9 @@ Selected Implementation
 
 The implementation being used is from the R software package called Vegan. The documentation explicitly lists this as "Permutational Multivariate Analysis of Variance Using Distance Matrices". It is also stated to be non-parametric.
 
-The website can be found `here <http://vegan.r-forge.r-project.org/>`_
+The website can be found `here <http://vegan.r-forge.r-project.org/>`__
 
-The selected implementations documentation can be found `here <http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html>`_. :ref:`[1] <adonisref1>`
+The selected implementations documentation can be found `here <http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html>`__. :ref:`[1] <adonisref1>`
 
 
 Alternative Implementations
@@ -36,12 +36,6 @@ An issue that was discovered while researching this is that there appears to be 
 This alternative can be found `here <http://rss.acs.unt.edu/Rdoc/library/vegan/html/adonis.html>`_.
 
 The documentation for the selected implementation and the above implementation are virtually the same and no indication is given that there is a distinct difference between the two. The only difference is that the alternative implementation lists it as a version that is not permutational. This leads me to believe that there is no difference and somehow I stumbled upon an alternate form of the documentation, hosted by someone else.
-
-System Setup and Required Dependencies
---------------------------------------
-
-Testing will need to be worked on further. Once I can figure out how to verify the ouput that is received I can start checking the information using tests.
-
 
 System Setup and Required Dependencies
 --------------------------------------
@@ -105,6 +99,7 @@ Method - The specified manner in which pair wise distances are calculated
 Strata - This groups the permutations based on the specified strata
 
 From the command line type: 
+
 ``R --slave --args -d distanceMatrix.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r``
 
 REQUIRED script options:
@@ -163,23 +158,28 @@ Whole Body
 QIIME Overview Test
 ~~~~~~~~~~~~~~~~~~~
 **Description:**
+
 This was the initial test performed with the QIIME overview data in order to identify expected functionality and output.
 
 **Input**
+
 The input being analyzed is specified by -d, -m.
 
- -d represent the distance matrice being supplied. 
+  - d represent the distance matrice being supplied. 
 
--m represents the Fasting map, where samples and their information are provided.
+  - m represents the Fasting map, where samples and their information are provided.
 
--c specifies what information of the input you are analyzing. In the case of the QIIME over view files the parameter passed in was the Treatment category. The columns in that file are half Control and the other half are Fast.
+  - c specifies what information of the input you are analyzing. In the case of the QIIME over view files the parameter passed in was the Treatment category. The columns in that file are half Control and the other half are Fast.
 
 
 **Command**
+
 ``R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r``
 
 **Results**
 
+.. image:: ../images/adonis/originalData/qiimeOverviewResults.png
+  :align: center
 
 Body Site Analysis (Original Data)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
