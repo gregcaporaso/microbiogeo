@@ -13,8 +13,17 @@ that distances between the objects within a given matrix are linearly independen
 of the distances withing those same objects in a separate matrix. [:ref:`2 <partial_mantelref2>`] 
 It builds  on the simple Mantel by adding a third "control" matrix.
 
+The goal is to test the correlation between
+matrices A and B while controlling the effect of a third matrix C, in order to remove spurious 
+correlations
+
 The partial Mantel test accepts three matrices as input, the rest of its parameters it shares 
-with the simple Mantel test, including permutations, strata and method. [:ref:`3 <partial_mantelref3>`] 
+with the simple Mantel test, including permutations, strata and method[:ref:`3 <partial_mantelref3>`].
+Partial Mantel statistic uses partial correlation conditioned on the third matrix. Only the first matrix 
+its permuted so that the correlation structure between second and first matrices is kept constant. 
+The goal is to test the correlation between matrices A and B while controlling the effect of a third 
+matrix C, in order to remove spurious correlations
+
 
 Existing Implementations
 ------------------------
@@ -38,7 +47,7 @@ System Setup and Required Dependencies
 --------------------------------------
 :note: The instructions that follow have been tested only on Mac OS x 10.7.3, but should be backward compatible for most Intel based Macs.
 
-The following used a local install of QIIME 1.4.0-dev. First, install R. A binary is available in a self install PKG `here <http://cran.r-project.org/bin/macosx/>`.
+The following used a local install of QIIME 1.4.0-dev. First, install R. A binary is available in a self install PKG `here <http://cran.r-project.org/bin/macosx/>`_.
 
 The python version is included and it does run (directions below), but I haven't been able to compare it to
 the R version(werid optparse issue).
@@ -80,7 +89,7 @@ With everything set up we need to generate our three matrices. We start with the
 unifrac and extract the keyboard data and the sample subjects M2, M3 and M9. This is our 
 first matrix(derived from the unweighted uniifrac of the keyboard study): ::
 
-  filter_distance_matrix.py -i unweighted_unifrac_dm.txt -o unweighted_unifrac_kboard_HSI239.txt -m meta_analysis_keyboard_map.txt -s 'COMMON_NAME:keyboard;HOST_SUBJECT_ID:M2,M3,M9'
+  filter_distance_matrix.py -i unweighted_unifrac_dm.txt -o unweighted_unifrac_dm_keyboard_only_239.txt -m meta_analysis_keyboard_map.txt -s 'COMMON_NAME:keyboard;HOST_SUBJECT_ID:M2,M3,M9'
 
 :note: The data used is from the Fierer et al Keyboard Study.
 
@@ -119,6 +128,26 @@ R Version: outputs to stdout
 
 Python Version: mantel_out.txt - includes the statistic as computed from the three matrices.
 
+
+Testing Results
+----------------
+The keyboard data (outlined above) was used to test the Python implementation of the partial Mantel test
+
+To run the Python implementation: ::
+
+  ./compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239.txt,unweighted_euclidean_dm.txt,unifrac_median_dm.txt -o mantel_out.txt -n 1000 -m partial_mantel
+
+:note: need to fix a bug in the R version, but it should give the same result.
+
+The results are a little difficult to explain. The p-value basically splits the difference at ~0.5, which isn't definitive 
+in support or in contrast to the hypothesis. More analysis will be necessary: ::
+
+  # Number of entries refers to the number of rows (or cols) 
+  # retained in each distance matrix after filtering the distance matrices 
+  # to include only those samples that were in all three distance matrices. 
+  # p-value contains the correct number of significant digits.
+  DM1	DM2	DM3	Number of entries	Partial Mantel p-value
+  unweighted_unifrac_dm_keyboard_only_239.txt	unweighted_euclidean_dm.txt	unifrac_median_dm.txt	74	0.505
 
 References
 ----------
