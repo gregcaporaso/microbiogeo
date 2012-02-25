@@ -29,3 +29,9 @@ There are currently notes on the following statistical methods:
    notes/rda
    notes/repeated_measures_permanova
    notes/simulation_code_example
+   notes/spatial_autocorrelation
+   notes/simulation_code_example
+
+
+
+
