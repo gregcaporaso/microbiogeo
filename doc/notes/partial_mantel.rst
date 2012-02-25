@@ -224,22 +224,35 @@ In this test we use the vegan implementation of the partial Mantel test.
 
 The following was output to stdout: ::
 
+  Mantel statistic r: 0.05618 
+        Significance: 0.0594 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0453 0.0590 0.0706 0.0828 
+
 Test 3
-~~~~~~
+~~~~~~~
 **Description:**
 
-Negative Control: shuffle unifrac distmat
+Negative Control: third shuffle of unifrac distmat
 
 In this test we use the vegan implementation of the partial Mantel test.
 
 **Command:** ::
-
-  R --slave --args -a unweighted_unifrac_dm_keyboard_only_239_shuffled_1.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < pmantel.r
+  
+  R --slave --args -a unweighted_unifrac_dm_keyboard_only_239_shuffled_3.txt -b unweighted_euclidean_dm.txt -c unifrac_median_dm.txt < pmantel.r
 
 **Results:**
 
 The following was output to stdout: ::
 
+  Mantel statistic r: 0.05618 
+        Significance: 0.059 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0455 0.0595 0.0720 0.0880 
 
 
 References
