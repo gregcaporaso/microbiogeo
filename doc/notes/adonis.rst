@@ -213,17 +213,17 @@ Initial testing was performed using data provided by the QIIME tutorial. The fil
 
 Output is sent to the location specified by -o. The files name should be adonis_results.txt opening it should provide you with the information output:
 
-.. image:: ../images/adonis/originalData/wholeBodyBodySiteRun.png
+.. image:: ../images/adonis/originalData/wholebodyBodySiteRun.png
   :align: center
 
 Again output should be located in the adonis/adonis_results.txt
 
-.. image:: ../images/adonis/originalData/wholeBodyBodySiteChangeDir.png
+.. image:: ../images/adonis/originalData/wholebodyBodySiteChangeDir.png
   :align: center
 
 When you cat it, or open the file the output created was:
 
-.. image:: ../images/adonis/originalData/wholeBodyBodySiteResults.png
+.. image:: ../images/adonis/originalData/wholebodyBodySiteResults.png
   :align: center
 
 
@@ -256,7 +256,7 @@ Mapping File:
 
 **Results:**
 
-.. image:: ../images/adonis/originalData/wholeBodySexResults.png
+.. image:: ../images/adonis/originalData/wholebodySexResults.png
   :align: center
 
 TO DO:
