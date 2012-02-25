@@ -288,12 +288,64 @@ Glen Canyon
 
 Test 1
 ~~~~~~
+**Description:**
+
+This test uses the `CurrentlyWet` category as a positive control. We expect
+there to be significant clustering on this category due to previous analysis
+done on the Glen Canyon dataset.
+
+**Command:** ::
+
+    anosim.py -i datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o anosim_results.txt -p 999
+
+**Results:**
+
+The following output file is created: ::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/glen_canyon/unweighted_unifrac_dm.txt	0.9984007035	0.001
+
+The R value of 0.9984007035 indicates that samples taken from wet and dry
+environments are significantly different (i.e. there is clustering) due to the
+really "large" positive value that is close to 1. This is a result that we would
+expect, as there is also clear clustering in the 3D PCoA plots.
 
 Test 2
 ~~~~~~
+**Description:**
 
-Test 3
-~~~~~~
+This test uses three shuffled distance matrices and the `CurrentlyWet`
+category to perform three negative control tests. Since the labels of the
+distance matrices are shuffled, we don't expect to see clustering any more on
+this category.
+
+**Command:** ::
+
+    anosim.py -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o anosim_results.txt -p 999
+    anosim.py -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o anosim_results.txt -p 999
+    anosim.py -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o anosim_results.txt -p 999
+
+**Results:**
+
+The following output files are created: ::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt	0.0876180335381	0.129
+
+::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt	0.0074529653733	0.415
+
+::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt	-0.0507653473398	0.711
+
+The R values of 0.0876180335381, 0.0074529653733, and -0.0507653473398 indicate
+that samples taken from wet vs. dry environments are no longer significantly
+different once the distance matrices are shuffled, which is what we would
+expect.
 
 References
 ----------
