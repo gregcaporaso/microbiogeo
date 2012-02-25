@@ -140,9 +140,9 @@ Test 1
 ~~~~~~
 **Description:**
 
-This test uses the `BODY_SITE` category as a positive control.
-We expect there to be significant clustering due to previous analysis done on
-the Whole Body dataset.
+This test uses the `BODY_SITE` category as a positive control. We expect there
+to be significant clustering due to previous analysis done on the Whole Body
+dataset.
 
 **Command:** ::
 
@@ -162,21 +162,126 @@ that the result is significant.
 
 Test 2
 ~~~~~~
+**Description:**
+
+This test uses the `SEX` category as a negative control. We don't expect to see
+significant clustering due to previous analysis done on the Whole Body dataset.
+
+**Command:** ::
+
+    anosim.py -i datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX -o anosim_results.txt -p 999
+
+**Results:**
+
+The following output file is created: ::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/whole_body/unweighted_unifrac_dm.txt	0.0354433583741	0.002
+
+The R value of 0.0354433583741 indicates that there isn't significant clustering
+due to sex of the subjects because it is close to zero. This result is what we
+would expect. The only confusing thing is the p-value of 0.002. This is a really
+small p-value, so it **is** indicating that there are significant differences
+between the groups.
 
 Test 3
 ~~~~~~
+**Description:**
+
+This test uses three shuffled distance matrices and the `BODY_SITE` category to
+perform three negative control tests. Since the labels of the distance matrices
+are shuffled, we don't expect to see clustering any more on this category.
+
+**Command:** ::
+
+    anosim.py -i datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt -m datasets/whole_body/map.txt -c BODY_SITE -o anosim_results.txt -p 999
+    anosim.py -i datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt -m datasets/whole_body/map.txt -c BODY_SITE -o anosim_results.txt -p 999
+    anosim.py -i datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt -m datasets/whole_body/map.txt -c BODY_SITE -o anosim_results.txt -p 999
+
+**Results:**
+
+The following output files are created: ::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt	-0.0085666370674	0.771
+
+::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt	-0.00260471465844	0.571
+
+::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	-0.00382322857638	0.632
+
+The R values of -0.0085666370674, -0.00260471465844, and -0.00382322857638
+indicate that body sites are no longer significantly different once the distance
+matrices are shuffled, which is what we would expect.
 
 Keyboard
 ^^^^^^^^
 
 Test 1
 ~~~~~~
+**Description:**
+
+This test uses the `HOST_SUBJECT_ID` category as a positive control. We expect
+there to be significant clustering on host subjects due to previous analysis
+done on the keyboard study dataset.
+
+**Command:** ::
+
+    anosim.py -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim_results.txt -p 999
+
+**Results:**
+
+The following output file is created: ::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/keyboard/unweighted_unifrac_dm.txt	0.794026410205	0.001
+
+The R value of 0.794026410205 indicates that samples taken from different hosts
+are significantly different (i.e. there is clustering) due to its "large"
+positive value. This is a result that we would expect. The p-value of 0.001
+indicates that the result is significant.
 
 Test 2
 ~~~~~~
+**Description:**
 
-Test 3
-~~~~~~
+This test uses three shuffled distance matrices and the `HOST_SUBJECT_ID`
+category to perform three negative control tests. Since the labels of the
+distance matrices are shuffled, we don't expect to see clustering any more on
+this category.
+
+**Command:** ::
+
+    anosim.py -i datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim_results.txt -p 999
+    anosim.py -i datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim_results.txt -p 999
+    anosim.py -i datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim_results.txt -p 999
+
+**Results:**
+
+The following output files are created: ::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt	-0.00712796151372	0.6
+
+::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt	0.00843082850421	0.342
+
+::
+
+    Input_filepath	ANOSIM_R_value	p_value
+    datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt	-0.00611883437807	0.59
+
+The R values of -0.00712796151372, 0.00843082850421, and -0.00611883437807
+indicate that samples taken from different host subjects are no longer
+significantly different once the distance matrices are shuffled, which is what
+we would expect.
 
 Glen Canyon
 ^^^^^^^^^^^
