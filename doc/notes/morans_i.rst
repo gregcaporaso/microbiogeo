@@ -7,12 +7,12 @@ Morans I is also known as Morans autocorrelation coefficient. It is an extension
 
 The Moran's I equation is:
 
-.. image:: ../images/MoransIEquation.png
+.. image:: ../images/morans_i/MoransIEquation.PNG
   :align: center
 
 ... where wij is the weight between observation i and j, and S0 is the sum of all wij 's. Which can be seen here:
 
-.. image:: ../images/MoransISubVar.png
+.. image:: ../images/morans_i/MoransISubVar.PNG
   :align: center
 
 This equation returns a value between -1 and 1. The value indicates what type of correlation to expect for the data analyzed. In the case of -1 it represents perfect dispersion, where there is an equal amount of variation throughout. A positive 1 is called perfect correlation, where two points always occur together. Lastly, when you get a value closer to 0 that indicates that there is random patterning being detected.
@@ -24,9 +24,9 @@ Selected Implementation
 
 The implementation being used is from the R software package.
 
-The documentation for the Morans I method in R can be found :ref:`here<moranref1>`
+The documentation for the Morans I method in R can be found :ref:`here <moranref1>`
 
-As well as the Gittleman and Kot paper referenced from the documentation can be found :ref:`here<moranref3>`
+As well as the Gittleman and Kot paper referenced from the documentation can be found :ref:`here <moranref3>`
 
 Alternative Implementations
 ---------------------------
@@ -67,9 +67,6 @@ The following options must be provided under all circumstances.
 
 Output
 ------
-.. I don’t understand the null  hypothesis, need to ask Dr. Caporaso about that
-.. I get p-value, it represents how similar two items are compared to each other. .05 or less and they’re not similar at all, above .05 is when “similarity begins”
-
 The output of Morans I is a file that is placed in a directory specified by the -o argument. The file will be a text file with 4 values: observed, expected, sd, and p.value.
 
 The observed value is Morans I index of x. This is computed based on the values passed in to be compared with the weights.
@@ -84,7 +81,7 @@ Each of these values, except for the p-value, should be between -1 and 1.
 
 Testing Results
 ---------------
-Testing needs to be performed further to understand the results and what I should be expecting as output. In the mean time, using the :ref:`QIIME Overview <http://qiime.org/tutorials/tutorial.html>`_ data I ran Morans I and received the following back:
+Testing needs to be performed further to understand the results and what I should be expecting as output. In the mean time, using the `QIIME Overview <http://qiime.org/tutorials/tutorial.html>`_ data I ran Morans I and received the following back:
 
 ===========  ===========  ===========  ===========
 observed     expected     sd           p.value
@@ -151,26 +148,31 @@ If youre concerned about updating packages type "update.packages()" in the R con
 References
 ----------
 .. _moranref1:
+
 [1]R Documentation for Morans I
 
 http://svitsrv25.epfl.ch/R-doc/library/ape/html/MoranI.html
 
 .. _moranref2:
+
 [2]How to Work with Morans I in R
 
 http://www.ats.ucla.edu/stat/r/faq/morans_i.htm
 
 .. _moranref3:
+
 [3]Gittleman and Kot paper
 
 http://www.jstor.org/pss/2992183
 
 .. _moranref4:
+
 [4]Hebeler Morans I version
 
 http://www.mathworks.com/matlabcentral/fileexchange/13663-morans-i/content/morans_I.m
 
 .. _moranref5:
+
 [5]Morans I Paper by Emmanuel Paradis
 
 http://cran.r-project.org/web/packages/ape/vignettes/MoranI.pdf
