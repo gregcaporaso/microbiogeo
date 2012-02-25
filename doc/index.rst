@@ -11,6 +11,9 @@ Capstone team.
 
 There are currently notes on the following statistical methods:
 
+Method Index
+--------------
+
 .. toctree::
    :maxdepth: 1
 
@@ -28,8 +31,16 @@ There are currently notes on the following statistical methods:
    notes/permdisp
    notes/rda
    notes/repeated_measures_permanova
-   notes/simulation_code_example
    notes/spatial_autocorrelation
+   notes/simulation_code_example
+
+
+Tutorial Index
+---------------
+
+.. toctree::
+   :maxdepth: 1
+
    notes/simulation_code_example
 
 
