@@ -20,6 +20,7 @@ There are currently notes on the following statistical methods:
    notes/lsa
    notes/mantel
    notes/mantel_correlogram
+   notes/morans_i
    notes/mrpp
    notes/MultiCoLA
    notes/partial_mantel
@@ -28,4 +29,3 @@ There are currently notes on the following statistical methods:
    notes/rda
    notes/repeated_measures_permanova
    notes/simulation_code_example
-   notes/spatial_autocorrelation
