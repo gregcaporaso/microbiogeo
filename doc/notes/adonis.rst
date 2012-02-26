@@ -151,12 +151,8 @@ Testing Results
 
 Testing will need to be worked on further. Once I can figure out how to verify the ouput that is received I can start checking the information using tests.
 
-
-Whole Body
-^^^^^^^^^^
-
 QIIME Overview Test
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 **Description:**
 
 This was the initial test performed with the QIIME overview data in order to identify expected functionality and output.
@@ -178,8 +174,19 @@ The input being analyzed is specified by -d, -m.
 
 **Results**
 
+Initial testing was performed using data provided by the QIIME tutorial. The files were: 
+
+ * Fasting_Map.txt
+ * overview_unweighted_unifrac_dm.txt
+
+Output is sent to the location specified by -o. The files name should be adonis_results.txt opening it should provide you with the information output:
+
+
 .. image:: ../images/adonis/wholebody/originalData/qiimeOverviewResults.png
   :align: center
+
+Whole Body
+^^^^^^^^^^
 
 Body Site Analysis (Original Data - BODY_SITE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -206,12 +213,6 @@ the Whole Body dataset.
 
 **Results:**
 
-Initial testing was performed using data provided by the QIIME tutorial. The files were: 
-
- * Fasting_Map.txt
- * overview_unweighted_unifrac_dm.txt
-
-Output is sent to the location specified by -o. The files name should be adonis_results.txt opening it should provide you with the information output:
 
 .. image:: ../images/adonis/wholebody/originalData/bodysiteRun.png
   :align: center
@@ -225,7 +226,6 @@ When you cat it, or open the file the output created was:
 
 .. image:: ../images/adonis/wholebody/originalData/bodysiteResults.png
   :align: center
-
 
 TO DO:
 Perform Analysis
@@ -392,7 +392,7 @@ Keyboard Analysis (Shuffled Data 1 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a positive correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a negative correlation test.
 
 **Input:**
 
@@ -421,7 +421,7 @@ Keyboard Analysis (Shuffled Data 2 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a positive correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a negative correlation test.
 
 **Input:**
 
@@ -450,7 +450,7 @@ Keyboard Analysis (Shuffled Data 3 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a positive correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a negative correlation test.
 
 **Input:**
 
@@ -477,14 +477,119 @@ Perform Analysis
 Glen Canyon
 ^^^^^^^^^^^
 
-Test 1
-~~~~~~
+Glen Canyon Analysis (Original Data - CurrentlyWet)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
 
-Test 2
-~~~~~~
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output clustering around areas if it was wet, or not. This is being used as a positive correlation test.
 
-Test 3
-~~~~~~
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\map_25Jan2012.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\unweighted_unifrac_dm.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/originalData/unweighted_unifrac_dm.txt -m map_25Jan2012.txt -c CurrentlyWet -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/glencanyon/originalData/currentlyWetResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+Glen Canyon Analysis (Shuffled Data 1 - CurrentlyWet)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output NOT clustering around areas if it was wet, or not wet. This is being used as a negative correlation test.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\map_25Jan2012.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\unweighted_unifrac_dm_shuffled_1.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/shuffledData1/unweighted_unifrac_dm_shuffled_1.txt -m map_25Jan2012.txt -c CurrentlyWet -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/glencanyon/shuffledData1/currentlyWetResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+Glen Canyon Analysis (Shuffled Data 2 - CurrentlyWet)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output NOT clustering around areas if it was wet, or not wet. This is being used as a negative correlation test.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\map_25Jan2012.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\unweighted_unifrac_dm_shuffled_2.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/shuffledData2/unweighted_unifrac_dm_shuffled_2.txt -m map_25Jan2012.txt -c CurrentlyWet -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/glencanyon/shuffledData2/currentlyWetResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+
+Glen Canyon Analysis (Shuffled Data 3 - CurrentlyWet)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output NOT clustering around areas if it was wet, or not wet. This is being used as a negative correlation test.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\map_25Jan2012.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\glen_canyon\unweighted_unifrac_dm_shuffled_3.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/shuffledData3/unweighted_unifrac_dm_shuffled_3.txt -m map_25Jan2012.txt -c CurrentlyWet -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/glencanyon/shuffledData3/currentlyWetResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
 
 References
 ----------
