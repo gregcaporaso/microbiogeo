@@ -1,13 +1,14 @@
-==============================================================
-MultiCoLA
-==============================================================
+===========================================================================
+Multivariate Cutoff Level Analysis (MultiCoLA) Statistical Method Reference
+===========================================================================
 
 Introduction
 ------------
-
+Many microbiological studies have a problem with `rare` sequences in the raw data. The problem is: how do you define rare? Are the rare sequences organic, or simply an artifact of the sequencer?  Do the rare sequences have an effect on your community? MultiCoLA is a proposed solution to this problem.  The idea is that you take your dataset with no rarity cutoff, then you apply increasingly rigorous rarity cutoffs.  You can then study the results to see where significat changes took place, and where the data becomes unpredictable. When preforming the rarity cutoffs the rare sequences are discarded. MultiCoLA allows the definition of OTU to be changed, you can say that if a sequence is off by one base it is in a new OTU, or they can be the same OTU if they are in the same phylum, genus, ect.
 
 Existing Implementations
 ------------------------
+The only implementation seems to be by the authors who suggested this method.  The implementation is in R and is a collection of scripts rather than a all encompassing script.
 
 
 System Setup and Required Dependencies
@@ -22,7 +23,7 @@ First, your system must have R installed, you can get R by running the command: 
 Then launch R by running the command: ::
 
 	R
-	
+
 You should now be in the R console
 
 Now install vegan and mass with the commands, this will take a long time: ::
