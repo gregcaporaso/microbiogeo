@@ -185,8 +185,8 @@ Output is sent to the location specified by -o. The files name should be adonis_
 .. image:: ../images/adonis/wholebody/originalData/qiimeOverviewResults.png
   :align: center
 
-Whole Body
-^^^^^^^^^^
+Whole Body (Clustering)
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Body Site Analysis (Original Data - BODY_SITE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -474,8 +474,8 @@ The files provided are: ::
 TO DO:
 Perform Analysis
 
-Glen Canyon
-^^^^^^^^^^^
+Glen Canyon (Clustering)
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Glen Canyon Analysis (Original Data - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
