@@ -30,7 +30,6 @@ There are currently notes on the following statistical methods:
    notes/permdisp
    notes/rda
    notes/repeated_measures_permanova
-   notes/simulation_code_example
 
 Tutorial Index
 --------------
