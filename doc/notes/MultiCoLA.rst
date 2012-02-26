@@ -53,19 +53,19 @@ Run script and store output in a variable: ::
 	
 My progress understanding MultiCoLA
 -----------------------------------
-Ran the commands: :
+**Ran the commands:** ::
 	M<-read.table("input.txt",header=TRUE,row.names=1)
 	source("taxa.pooler.1.3.r")
 	all_taxa_pooled<-taxa.pooler(M)
 	
-Answered the questions:
+**Answered the questions:**
 
 	Number of samples? (e.g. 16)... 16
 	Number of taxonomic levels? (e.g. phylum+class+order+family+genus=5)... 5
 	Presence/absence tables as output? (y/n) y
 	Output as text files? (y/n)... y
 	
-The following files were created:
+**The following files were created:**
 :download:`Phylum.matrix.txt <../downloads/MultiCoLA/Phylum.matrix.txt>`
 :download:`Class.matrix.txt <../downloads/MultiCoLA/Class.matrix.txt>`	
 :download:`Order.matrix.txt <../downloads/MultiCoLA/Order.matrix.txt>`
@@ -76,56 +76,56 @@ The following files were created:
 :download:`OTUs_wholeDS.matrix.txt <../downloads/MultiCoLA/OTUs_wholeDS.matrix.txt>`
 
 
-Ran the commands: ::
+**Ran the commands:** ::
 
 	source("COtables.1.3.r")
 	truncated.DS.i<-COtables(all_taxa_pooled[[1]], Type="ADS",typem="dominant")
         	
-Answered the question:
+**Answered the question:**
 
         Details of the NMDS calculations? (y/n)...      n
 	
-Ran the commands: ::
+**Ran the commands:** ::
 
         source("cutoff.impact.1.3.r")
         corr.all<-cutoff.impact(all_taxa_pooled,Type="ADS",corcoef="spearman",typem="dominant")
 
-Answered the question:
+**Answered the question:**
 
         Details of the NMDS calculations? (y/n)...      n
         
-Ran the commands: ::
+**Ran the commands:** ::
 
         source("cutoff.impact.fig.1.3.r")
         output.all<-cutoff.impact.fig(corr.all)
 
-Answered the questions:
+**Answered the questions:**
 
         Output as text files? (y/n)...  y
         Plot the results? (y/n)...      y
 
-The files were created:
+**The files were created:**
 :download:`abundance.txt <../downloads/MultiCoLA/abundance.txt>`
 :download:`non-par.correlation.txt <../downloads/MultiCoLA/non-par.correlation.txt>`
 :download:`procrustes.txt <../downloads/MultiCoLA/procrustes.txt>`
 
-This graph was displayed:
+**This graph was displayed:**
 
 .. image:: ../images/MultiCoLA/graph.png
       :align: center
 
-Ran the commands: ::
+**Ran the commands:** ::
 
         ENV<-read.table("env.txt",header=TRUE,row.names=1)
         source("VP.COL.1.3.r")
         VP.1.taxa<-VP.COL(all_taxa_pooled,ENV,Type="ADS")
 
-Answered the question:
+**Answered the question:**
 
         Output as text files? (y/n)...  y
         Plot the results? (y/n)...      y
  
-The files were created:
+**The files were created:**
 :download:`Phylum.sum.adjRsq.txt <../downloads/MultiCoLA/Phylum.sum.adjRsq.txt>`
 :download:`Phylum.VarPart.txt <../downloads/MultiCoLA/Phylum.VarPart.txt>`
 :download:`Class.sum.adjRsq.txt <../downloads/MultiCoLA/Class.sum.adjRsq.txt>`
@@ -137,24 +137,24 @@ The files were created:
 :download:`Genus.sum.adjRsq.txt <../downloads/MultiCoLA/Genus.sum.adjRsq.txt>`
 :download:`Genus.VarPart.txt <../downloads/MultiCoLA/Genus.VarPart.txt>`
 
-This graph was displayed:
+**This graph was displayed:**
 
 .. image:: ../images/MultiCoLA/graph2.png
       :align: center
 
 
-Ran the command: ::
+**Ran the command:** ::
 
         VP.1.taxa<-VP.COL(all_taxa_pooled,ENV,Type="ADS")
 
-Answered the questions:
+**Answered the questions:**
 
         Output as text files? (y/n)...  y
         Plot the results? (y/n)...      y
  
-Ran the command: ::
+**Ran the command:** ::
 
-        source("corrcoeff.ENV.1.3.r")i
+        source("corrcoeff.ENV.1.3.r")
 
 corrcoeff.ENV.1.3.r was not included in the files given, trying to find out where it is.
 
@@ -182,6 +182,8 @@ Test 1
 
 
 **Command:** ::
+
+        The command
 
 **Results:**
 
