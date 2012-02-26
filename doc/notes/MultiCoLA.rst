@@ -66,7 +66,6 @@ Answered the questions:
 	Output as text files? (y/n)... y
 	
 The following files were created:
-
 :download:`Phylum.matrix.txt <../downloads/MultiCoLA/Phylum.matrix.txt>`
 :download:`Class.matrix.txt <../downloads/MultiCoLA/Class.matrix.txt>`	
 :download:`Order.matrix.txt <../downloads/MultiCoLA/Order.matrix.txt>`
@@ -80,15 +79,84 @@ The following files were created:
 Ran the commands: ::
 
 	source("COtables.1.3.r")
-	truncated.DS.i<-COtables(all_taxa_pooled[[i]], Type="ADS",typem="dominant")
-	
-Got Error in rbind(ODS, apply(ODS, 2, sum)) : object 'i' not found.
-Finding out what "i" should be.
+	truncated.DS.i<-COtables(all_taxa_pooled[[1]], Type="ADS",typem="dominant")
+        	
+Answered the question:
 
+        Details of the NMDS calculations? (y/n)...      n
 	
-	
+Ran the commands: ::
+
+        source("cutoff.impact.1.3.r")
+        corr.all<-cutoff.impact(all_taxa_pooled,Type="ADS",corcoef="spearman",typem="dominant")
+
+Answered the question:
+
+        Details of the NMDS calculations? (y/n)...      n
+        
+Ran the commands: ::
+
+        source("cutoff.impact.fig.1.3.r")
+        output.all<-cutoff.impact.fig(corr.all)
+
+Answered the questions:
+
+        Output as text files? (y/n)...  y
+        Plot the results? (y/n)...      y
+
+The files were created:
+:download:`Phylum.matrix.txt <../downloads/MultiCoLA/abundance.txt>`
+:download:`Phylum.matrix.txt <../downloads/MultiCoLA/non-par.correlation.txt>`
+:download:`Phylum.matrix.txt <../downloads/MultiCoLA/procrustes.txt>`
+
+This graph was displayed:
+
+.. image:: ../images/MultiCoLA/graph.png
+      :align: center
+
+Ran the commands: ::
+
+        ENV<-read.table("env.txt",header=TRUE,row.names=1)
+        source("VP.COL.1.3.r")
+        VP.1.taxa<-VP.COL(all_taxa_pooled,ENV,Type="ADS")
+
+Answered the question:
+
+        Output as text files? (y/n)...  y
+        Plot the results? (y/n)...      y
+ 
+The files were created:
+:download:`Phylum.sum.adjRsq.txt <../downloads/MultiCoLA/Phylum.sum.adjRsq.txt>`
+:download:`Phylum.VarPart.txt <../downloads/MultiCoLA/Phylum.VarPart.txt>`
+:download:`Class.sum.adjRsq.txt <../downloads/MultiCoLA/Class.sum.adjRsq.txt>`
+:download:`Class.VarPart.txt <../downloads/MultiCoLA/Class.VarPart.txt>`
+:download:`Order.sum.adjRsq.txt <../downloads/MultiCoLA/Order.sum.adjRsq.txt>`
+:download:`Order.VarPart.txt <../downloads/MultiCoLA/Order.VarPart.txt>`
+:download:`Family.sum.adjRsq.txt <../downloads/MultiCoLA/Family.sum.adjRsq.txt>`
+:download:`Family.VarPart.txt <../downloads/MultiCoLA/Family.VarPart.txt>`
+:download:`Genus.sum.adjRsq.txt <../downloads/MultiCoLA/Genus.sum.adjRsq.txt>`
+:download:`Genus.VarPart.txt <../downloads/MultiCoLA/Genus.VarPart.txt>`
+
+This graph was displayed:
+
+.. image:: ../images/MultiCoLA/graph2.png
+      :align: center
 
 
+Ran the command: ::
+
+        VP.1.taxa<-VP.COL(all_taxa_pooled,ENV,Type="ADS")
+
+Answered the questions:
+
+        Output as text files? (y/n)...  y
+        Plot the results? (y/n)...      y
+ 
+Ran the command: ::
+
+        source("corrcoeff.ENV.1.3.r")i
+
+corrcoeff.ENV.1.3.r was not included in the files given, trying to find out where it is.
 
 Input Files
 -----------
