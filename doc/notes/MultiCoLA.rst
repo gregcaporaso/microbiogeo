@@ -105,9 +105,9 @@ Answered the questions:
         Plot the results? (y/n)...      y
 
 The files were created:
-:download:`Phylum.matrix.txt <../downloads/MultiCoLA/abundance.txt>`
-:download:`Phylum.matrix.txt <../downloads/MultiCoLA/non-par.correlation.txt>`
-:download:`Phylum.matrix.txt <../downloads/MultiCoLA/procrustes.txt>`
+:download:`abundance.txt <../downloads/MultiCoLA/abundance.txt>`
+:download:`non-par.correlation.txt <../downloads/MultiCoLA/non-par.correlation.txt>`
+:download:`procrustes.txt <../downloads/MultiCoLA/procrustes.txt>`
 
 This graph was displayed:
 
