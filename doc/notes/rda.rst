@@ -162,56 +162,245 @@ information is found in the "Constrained" row of the results table).
 Testing Results
 ---------------
 This section will describe different tests that were run on the RDA script.
+These tests will use empirical data from one of the several datasets that the
+team has access to. These data files will not be included for download due to
+their (usually) large size. Unless otherwise noted, the data files that were
+used can be found under the datasets directory.
 
-:note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used.
+Whole Body
+^^^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
 
-For the Whole Body study, I used the `BODY_SITE` category as the constraining
-environmental variable: ::
+This test uses the `BODY_SITE` category as a positive control. We expect to see
+clustering in the resulting plot.
 
-    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE -o whole_body_output < r/rda.r
+**Command:** ::
 
-After running the command, there are two resulting files residing in the
-:file:`whole_body_output` directory. The PDF contains a plot of the RDA, showing
-clear clustering of fecal samples at the bottom right of the plot. Clustering of
-tongue samples can also be seen at the top right, and there is also noticable
-clustering of outer ear samples at the bottom left. The plot also contains
-overlayed vectors indicating which body sites explain the clustering (not sure
-how better to explain this):
+    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE < r/rda.r
 
-.. image:: ../images/rda_whole_body1.png
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         159.1762                
+    Real Total    165.4413     1.0000     
+    Constrained    46.0873     0.2786   19
+    Unconstrained 119.3540     0.7214  371
+    Imaginary      -6.2651             213
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+        CAP1     CAP2     CAP3     CAP4     CAP5     CAP6     CAP7     CAP8 
+    14.72239 10.95891  8.89776  3.26489  2.89957  1.41151  0.87627  0.69475 
+        CAP9    CAP10    CAP11    CAP12    CAP13    CAP14    CAP15    CAP16 
+     0.40960  0.35446  0.29999  0.24395  0.20137  0.18342  0.17567  0.15110 
+       CAP17    CAP18    CAP19 
+     0.13347  0.11498  0.09327 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    12.480  5.688  4.495  3.722  3.331  2.814  2.279  2.153 
+    (Showed only 8 of all 371 unconstrained eigenvalues)
+
+.. image:: ../images/rda/whole_body_test_1.png
    :align: center
 
-The second output file :file:`rda_results.txt` shows that the `BODY_SITE`
-constraining variable explained 27.86% of the variability in the samples. These
-results seem to match very closely with the 3D PCoA plot that came with this
-dataset (in terms of clustering found on the plot).
+The plot shows clear clustering of fecal samples at the bottom right of the
+plot. Clustering of tongue samples can also be seen at the top right, and there
+is also noticable clustering of outer ear samples at the bottom left. The plot
+also contains overlayed vectors indicating which body sites explain the
+clustering (not sure how better to explain this).
 
-Next, I ran the same command using the `SEX` category as the constraining
-variable: ::
+The output text shows that the `BODY_SITE` constraining variable explains
+27.86% of the variability in the samples. These results seem to fall in line
+with previous results seen in PCoA plots.
 
-    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX -o whole_body_output < r/rda.r
+Test 2
+~~~~~~
+**Description:**
 
-The resulting RDA results show that sex only explains 0.69% of the
-variation in the data. The resulting plot also does not show any clear
-clustering of samples, which matches the results seen in the 3D PCoA plot.
+This test uses the `SEX` category as a negative control. We don't expect to see
+clustering due to previous analysis done on the Whole Body dataset.
 
-I also tested DB-RDA on the Glen Canyon dataset, using the `CurrentlyWet`
-category as the constraining factor: ::
+**Command:** ::
 
-    R --slave --args -d datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o rda_output < r/rda.r
+    R --slave --args -d datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX < r/rda.r
 
-`CurrentlyWet`, when used as a constraining factor, explained 23.28% of the
-variation between samples. The resulting RDA plot shows a clear separation
-between wet and dry samples based on the CAP1 axis (which is our constrained
-axis):
+**Results:**
 
-.. image:: ../images/rda_glen_canyon1.png
+The following output file is created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                     Inertia Proportion Rank
+    Total         159.176211                
+    Real Total    165.441288   1.000000     
+    Constrained     1.146286   0.006929    1
+    Unconstrained 164.295002   0.993071  371
+    Imaginary      -6.265078             213
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+     CAP1 
+    1.146 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    22.935 16.207 12.165  6.875  4.970  4.167  2.915  2.809 
+    (Showed only 8 of all 371 unconstrained eigenvalues)
+
+.. image:: ../images/rda/whole_body_test_2.png
    :align: center
 
-Notice the blue arrow and the text `factorYes` overlayed on the plot. This
-indicates that samples with a `CurrentlyWet` factor of value `Yes` are clustered
-on the right side of the plot. These results confirm the clustering based on wet
-or dry that are found in the dataset's 3D PCoA plots.
+The plot doesn't really show clustering of samples based on sex. The output text
+shows that the `SEX` constraining variable explains only 0.6929% of the
+variability in the samples. These results are what we'd expect.
+
+88 Soils
+^^^^^^^^
+
+Test 1
+~~~~~~
+**Description:**
+
+This test uses the `PH` category as a positive control. We expect there to see
+clustering in the resulting plot.
+
+**Command:** ::
+
+    R --slave --args -d datasets/88_soils/unweighted_unifrac_dm.txt -m datasets/88_soils/map.txt -c PH < r/rda.r
+
+**Results:**
+
+The following output file is created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         15.42644    1.00000     
+    Constrained   14.15581    0.91763   55
+    Unconstrained  1.27063    0.08237    6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    2.72804 0.97553 0.73561 0.50872 0.44823 0.37648 0.36347 0.34511 0.32032 0.31457 
+      CAP11   CAP12   CAP13   CAP14   CAP15   CAP16   CAP17   CAP18   CAP19   CAP20 
+    0.29391 0.28868 0.27137 0.26067 0.24916 0.24569 0.23284 0.22594 0.22291 0.20880 
+      CAP21   CAP22   CAP23   CAP24   CAP25   CAP26   CAP27   CAP28   CAP29   CAP30 
+    0.20490 0.19567 0.19218 0.18870 0.18367 0.18130 0.17356 0.16801 0.16313 0.15343 
+      CAP31   CAP32   CAP33   CAP34   CAP35   CAP36   CAP37   CAP38   CAP39   CAP40 
+    0.15207 0.14691 0.14369 0.14033 0.13698 0.13341 0.12862 0.12829 0.12168 0.11857 
+      CAP41   CAP42   CAP43   CAP44   CAP45   CAP46   CAP47   CAP48   CAP49   CAP50 
+    0.11665 0.11529 0.11086 0.10414 0.10202 0.09817 0.09486 0.09310 0.09023 0.08977 
+      CAP51   CAP52   CAP53   CAP54   CAP55 
+    0.08588 0.07905 0.07693 0.07276 0.05491 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6 
+    0.3407 0.2367 0.1947 0.1780 0.1731 0.1475
+
+.. image:: ../images/rda/88_soils_test_1.png
+   :align: center
+
+The plot shows clear clustering of samples based on different levels of pH. The
+output text shows that the `PH` constraining variable explains 91.763% of the
+variability in the samples.
+
+Test 2
+~~~~~~
+**Description:**
+
+This test uses two shuffled distance matrices and the `PH` category to perform
+three negative control tests. The third shuffled distance matrix caused the RDA
+script to crash with the following error: ::
+
+    Error in La.svd(x, nu, nv) : error code 1 from Lapack routine 'dgesdd'
+    Calls: capscale -> rda.default -> svd -> La.svd -> .Call
+    Execution halted
+
+**Command:** ::
+
+    R --slave --args -d datasets/88_soils/unweighted_unifrac_dm_shuffled_2.txt -m datasets/88_soils/map.txt -c PH < r/rda.r
+    R --slave --args -d datasets/88_soils/unweighted_unifrac_dm_shuffled_3.txt -m datasets/88_soils/map.txt -c PH < r/rda.r
+
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                  Inertia Proportion Rank
+    Total         15.5318     1.0000     
+    Constrained   13.8340     0.8907   55
+    Unconstrained  1.6978     0.1093    6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    2.51944 0.90562 0.76658 0.42333 0.41377 0.39613 0.35349 0.33536 0.32082 0.30428 
+      CAP11   CAP12   CAP13   CAP14   CAP15   CAP16   CAP17   CAP18   CAP19   CAP20 
+    0.27799 0.27527 0.27088 0.26178 0.25177 0.24825 0.22719 0.22067 0.21614 0.21176 
+      CAP21   CAP22   CAP23   CAP24   CAP25   CAP26   CAP27   CAP28   CAP29   CAP30 
+    0.20489 0.20142 0.19762 0.18876 0.18586 0.17716 0.17273 0.16968 0.16835 0.16212 
+      CAP31   CAP32   CAP33   CAP34   CAP35   CAP36   CAP37   CAP38   CAP39   CAP40 
+    0.15371 0.15114 0.14823 0.14430 0.13899 0.13677 0.13585 0.13203 0.12819 0.12570 
+      CAP41   CAP42   CAP43   CAP44   CAP45   CAP46   CAP47   CAP48   CAP49   CAP50 
+    0.12395 0.11713 0.11206 0.10648 0.10455 0.10219 0.09807 0.09546 0.08853 0.08826 
+      CAP51   CAP52   CAP53   CAP54   CAP55 
+    0.08473 0.08135 0.07792 0.06777 0.06153 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6 
+    0.5641 0.2872 0.2545 0.2455 0.1905 0.1561 
+
+.. image:: ../images/rda/88_soils_test_2_2.png
+   :align: center
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                  Inertia Proportion Rank
+    Total         15.2642     1.0000     
+    Constrained   13.7485     0.9007   55
+    Unconstrained  1.5157     0.0993    6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    2.32556 0.90164 0.77043 0.49428 0.42976 0.38445 0.34943 0.33868 0.31178 0.30572 
+      CAP11   CAP12   CAP13   CAP14   CAP15   CAP16   CAP17   CAP18   CAP19   CAP20 
+    0.29791 0.27124 0.26327 0.25333 0.24509 0.24347 0.23646 0.22955 0.21749 0.21310 
+      CAP21   CAP22   CAP23   CAP24   CAP25   CAP26   CAP27   CAP28   CAP29   CAP30 
+    0.20773 0.20627 0.19551 0.18697 0.18379 0.17796 0.17413 0.17256 0.16620 0.15994 
+      CAP31   CAP32   CAP33   CAP34   CAP35   CAP36   CAP37   CAP38   CAP39   CAP40 
+    0.15672 0.15401 0.15000 0.14340 0.14214 0.13790 0.13450 0.13187 0.12688 0.12447 
+      CAP41   CAP42   CAP43   CAP44   CAP45   CAP46   CAP47   CAP48   CAP49   CAP50 
+    0.11889 0.11525 0.11462 0.11083 0.10931 0.10354 0.10266 0.10067 0.09389 0.08993 
+      CAP51   CAP52   CAP53   CAP54   CAP55 
+    0.08892 0.08453 0.07964 0.06649 0.05380 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6 
+    0.4632 0.2676 0.2384 0.2090 0.1892 0.1483 
+
+.. image:: ../images/rda/88_soils_test_2_3.png
+   :align: center
+
+The plots show random clustering. The output text shows that the `PH`
+constraining variable explains around 90% of the variability in the samples, and
+I'm not sure if this is a good result or not.
 
 References
 ----------
