@@ -98,9 +98,9 @@ Permutations - This is the number of replications used for hypothesis tests.
 Method - The specified manner in which pair wise distances are calculated
 Strata - This groups the permutations based on the specified strata
 
-From the command line type: 
+From the command line type: ::
 
-``R --slave --args -d distanceMatrix.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r``
+  R --slave --args -d distanceMatrix.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r
 
 REQUIRED script options:
 The following options must be provided under all circumstances.
@@ -172,13 +172,13 @@ The input being analyzed is specified by -d, -m.
   - c specifies what information of the input you are analyzing. In the case of the QIIME over view files the parameter passed in was the Treatment category. The columns in that file are half Control and the other half are Fast.
 
 
-**Command**
+**Command** ::
 
-R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r
+  R --slave --args -d overview_unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis < adonis.r
 
 **Results**
 
-.. image:: ../images/adonis/originalData/qiimeOverviewResults.png
+.. image:: ../images/adonis/wholebody/originalData/qiimeOverviewResults.png
   :align: center
 
 Body Site Analysis (Original Data - BODY_SITE)
@@ -189,20 +189,20 @@ This test uses the `BODY_SITE` category as a positive control.
 We expect there to be significant clustering due to previous analysis done on
 the Whole Body dataset.
 
-**Input:**
+**Input:** ::
 
-The files provided are:
+  The files provided are:
 
-Distance Matix:
-\QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
 
-Mapping File:
-\QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
 
 
-**Command:**
-
-``R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c BODY_SITE -o adonis < adonis.r``
+**Command:** ::
+ 
+  R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c BODY_SITE -o adonis < adonis.r
 
 **Results:**
 
@@ -213,19 +213,114 @@ Initial testing was performed using data provided by the QIIME tutorial. The fil
 
 Output is sent to the location specified by -o. The files name should be adonis_results.txt opening it should provide you with the information output:
 
-.. image:: ../images/adonis/originalData/wholebodyBodySiteRun.png
+.. image:: ../images/adonis/wholebody/originalData/bodysiteRun.png
   :align: center
 
 Again output should be located in the adonis/adonis_results.txt
 
-.. image:: ../images/adonis/originalData/wholebodyBodySiteChangeDir.png
+.. image:: ../images/adonis/wholebody/originalData/bodysiteChangeDir.png
   :align: center
 
 When you cat it, or open the file the output created was:
 
-.. image:: ../images/adonis/originalData/wholebodyBodySiteResults.png
+.. image:: ../images/adonis/wholebody/originalData/bodysiteResults.png
   :align: center
 
+
+TO DO:
+Perform Analysis
+
+Body Site Analysis (Shuffled Data 1 - BODY_SITE)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This test uses the `BODY_SITE` category as a negative control.
+
+We expect there to be no significant clustering due to previous analysis done on
+the Whole Body dataset.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm_shuffled_1.txt
+
+**Command:** ::
+
+  R --slave --args -d DataSets/ShuffledSet1/unweighted_unifrac_dm_shuffled_1.txt -m map.txt -c BODY_SITE -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/wholebody/shuffledData1/bodysiteResults.png
+  :align: center
+
+
+TO DO:
+Perform Analysis
+
+Body Site Analysis (Shuffled Data 2 - BODY_SITE)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This test uses the `BODY_SITE` category as a negative control.
+
+We expect there to be no significant clustering due to previous analysis done on
+the Whole Body dataset.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm_shuffled_2.txt
+
+
+**Command:** ::
+
+  R --slave --args -d DataSets/ShuffledSet2/unweighted_unifrac_dm_shuffled_2.txt -m map.txt -c BODY_SITE -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/wholebody/shuffledData2/bodysiteResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+Body Site Analysis (Shuffled Data 3 - BODY_SITE)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This test uses the `BODY_SITE` category as a negative control.
+
+We expect there to be no significant clustering due to previous analysis done on
+the Whole Body dataset.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm_shuffled_3.txt
+
+**Command:** ::
+
+  R --slave --args -d DataSets/ShuffledSet3/unweighted_unifrac_dm_shuffled_3.txt -m map.txt -c BODY_SITE -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/wholebody/shuffledData3/bodysiteResults.png
+  :align: center
 
 TO DO:
 Perform Analysis
@@ -239,41 +334,145 @@ This test uses the `SEX` category as a positive control.
 We expect there to be significant clustering due to previous analysis done on
 the Whole Body dataset.
 
-**Input:**
+**Input:** ::
 
-The files provided are:
+  The files provided are:
 
-Distance Matix:
-\QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
 
-Mapping File:
-\QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
 
+**Command:** ::
 
-**Command:**
-
-``R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c SEX -o adonis < adonis.r``
+  R --slave --args -d unweighted_unifrac_dm.txt -m map.txt -c SEX -o adonis < adonis.r
 
 **Results:**
 
-.. image:: ../images/adonis/originalData/wholebodySexResults.png
+.. image:: ../images/adonis/wholebody/originalData/sexResults.png
   :align: center
 
 TO DO:
 Perform Analysis
 
+Keyboard (Clustering)
+^^^^^^^^^^^^^^^^^^^^^
 
-Keyboard
-^^^^^^^^
+Keyboard Analysis (Original Data - Host_Subject_ID)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
 
-Test 1
-~~~~~~
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that cluster around the `Host_Subject_ID` information. This is being used as a positive correlation test.
 
-Test 2
-~~~~~~
+**Input:**
 
-Test 3
-~~~~~~
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\unweighted_unifrac_dm.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/originalData/unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o adonis < adonis.r
+  
+
+**Results:**
+
+.. image:: ../images/adonis/keyboard/originalData/hostSubjectIDResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+Keyboard Analysis (Shuffled Data 1 - Host_Subject_ID)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a positive correlation test.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\unweighted_unifrac_dm_shuffled_1.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/shuffledData1/unweighted_unifrac_dm_shuffled_1.txt -m map.txt -c HOST_SUBJECT_ID -o adonis < adonis.r
+  
+
+**Results:**
+
+.. image:: ../images/adonis/keyboard/shuffledData1/hostSubjectIDResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+Keyboard Analysis (Shuffled Data 2 - Host_Subject_ID)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a positive correlation test.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\unweighted_unifrac_dm_shuffled_2.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/shuffledData2/unweighted_unifrac_dm_shuffled_2.txt -m map.txt -c HOST_SUBJECT_ID -o adonis < adonis.r
+  
+
+**Results:**
+
+.. image:: ../images/adonis/keyboard/shuffledData2/hostSubjectIDResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+Keyboard Analysis (Shuffled Data 3 - Host_Subject_ID)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a positive correlation test.
+
+**Input:**
+
+The files provided are: ::
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\keyboard\unweighted_unifrac_dm_shuffled_3.txt
+
+**Command:** ::
+
+  R --slave --args -d datasets/shuffledData3/unweighted_unifrac_dm_shuffled_3.txt -m map.txt -c HOST_SUBJECT_ID -o adonis < adonis.r
+
+**Results:**
+
+.. image:: ../images/adonis/keyboard/shuffledData3/hostSubjectIDResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
 
 Glen Canyon
 ^^^^^^^^^^^
