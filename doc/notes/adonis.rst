@@ -200,12 +200,11 @@ the Whole Body dataset.
 
   The files provided are:
 
-  Distance Matix:
-  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
-
   Mapping File:
   \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
 
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm.txt
 
 **Command:** ::
  

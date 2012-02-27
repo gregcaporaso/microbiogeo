@@ -91,11 +91,131 @@ observed     expected     sd           p.value
 
 I'm not especially sure how accurate this is, but it's useful to see what was received.
 
-Testing With Whole Body Datasets
---------------------------------
+88 Soils (Correlation)
+^^^^^^^^^^^^^^^^^^^^^^^
 
-I can't get my testing information to be consistent, as such I need to continue working on it.
+pH Analysis (Original Data - PH)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
 
+This data intends to analyse the differences between ph in the samples from the 88 soils data set and then to identify their correlation based on their proximity to eachother. 
+
+This is a positive control test.
+
+**Input:** ::
+
+  The files provided are:
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\88_soils\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\88_soils\unweighted_unifrac_dm.txt
+
+**Command:** ::
+ 
+  R --slave --args -d datasets/originalData/unweighted_unifrac_dm.txt -m map.txt -c PH -o morans_i < morans_i.r
+
+**Results:**
+
+.. image:: ../images/morans_i/88_soils/originalData/phResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+pH Analysis (Shuffled Data 1 - PH)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This data intends to analyse the differences between ph in the samples from the 88 soils data set and then to identify their correlation based on their proximity to eachother. 
+
+This is a negative control test.
+
+
+**Input:** ::
+
+  The files provided are:
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\whole_body\unweighted_unifrac_dm_shuffled_1.txt
+
+**Command:** ::
+ 
+  R --slave --args -d datasets/shuffledData1/unweighted_unifrac_dm_shuffled_1.txt -m map.txt -c PH -o morans_i < morans_i.r
+  
+**Results:**
+
+
+.. image:: ../images/morans_i/88_soils/shuffledData1/phResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+pH Analysis (Shuffled Data 2 - PH)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This data intends to analyse the differences between ph in the samples from the 88 soils data set and then to identify their correlation based on their proximity to eachother. 
+
+This is a negative control test.
+
+**Input:** ::
+
+  The files provided are:
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\88_soils\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\88_soils\unweighted_unifrac_dm_shuffled_2.txt
+
+**Command:** ::
+ 
+  R --slave --args -d datasets/shuffledData2/unweighted_unifrac_dm_shuffled_2.txt -m map.txt -c PH -o morans_i < morans_i.r
+
+**Results:**
+
+.. image:: ../images/morans_i/88_soils/shuffledData2/phResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
+
+pH Analysis (Shuffled Data 3 - PH)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This data intends to analyse the differences between ph in the samples from the 88 soils data set and then to identify their correlation based on their proximity to eachother. 
+
+This is a negative control test.
+
+**Input:** ::
+
+  The files provided are:
+
+  Mapping File:
+  \QiimeUtilsRepository\microbiogeo\datasets\88_soils\map.txt
+
+  Distance Matix:
+  \QiimeUtilsRepository\microbiogeo\datasets\88_soils\unweighted_unifrac_dm_shuffled_3.txt
+
+**Command:** ::
+ 
+  R --slave --args -d datasets/shuffledData3/unweighted_unifrac_dm_shuffled_3.txt -m map.txt -c PH -o morans_i < morans_i.r
+
+**Results:**
+
+
+.. image:: ../images/morans_i/88_soils/shuffledData3/phResults.png
+  :align: center
+
+TO DO:
+Perform Analysis
 
 System Setup and Required Dependencies
 --------------------------------------
