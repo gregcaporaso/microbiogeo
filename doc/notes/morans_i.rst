@@ -93,6 +93,9 @@ I'm not especially sure how accurate this is, but it's useful to see what was re
 
 88 Soils (Correlation)
 ^^^^^^^^^^^^^^^^^^^^^^^
+The data files used for this testing can be found :download:`here <../downloads/88SoilsMoransIRtesting.zip>`
+
+In order to reproduce the results extract the files and folders, then navigate to the root directory of the extracted files and run the commands that are listed for each test.
 
 pH Analysis (Original Data - PH)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

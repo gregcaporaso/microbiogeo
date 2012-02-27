@@ -188,6 +188,10 @@ Output is sent to the location specified by -o. The files name should be adonis_
 Whole Body (Clustering)
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+The data files used for this testing can be found :download:`here <../downloads/WholeBodyAdonisRtesting.zip>`
+
+In order to reproduce the results extract the files and folders, then navigate to the root directory of the extracted files and run the commands that are listed for each test.
+
 Body Site Analysis (Original Data - BODY_SITE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -358,6 +362,10 @@ Perform Analysis
 Keyboard (Clustering)
 ^^^^^^^^^^^^^^^^^^^^^
 
+The data files used for this testing can be found :download:`here <../downloads/KeyboardAdonisRtesting.zip>`
+
+In order to reproduce the results extract the files and folders, then navigate to the root directory of the extracted files and run the commands that are listed for each test.
+
 Keyboard Analysis (Original Data - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -475,6 +483,10 @@ Perform Analysis
 
 Glen Canyon (Clustering)
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+The data files used for this testing can be found :download:`here <../downloads/GlenCanyonAdonisRtesting.zip>`
+
+In order to reproduce the results extract the files and folders, then navigate to the root directory of the extracted files and run the commands that are listed for each test.
 
 Glen Canyon Analysis (Original Data - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
