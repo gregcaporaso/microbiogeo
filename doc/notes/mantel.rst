@@ -66,147 +66,308 @@ used can be found under the datasets directory.
 
 88 Soils
 ^^^^^^^^^^
-Test 1
-~~~~~~
 
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 2
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 3
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Face Site
-^^^^^^^^^^
+These tests utilize the Python version of Mantel that was implemented in QIIME. The distance matrices used for these tests were derived from the 88 Soils dataset.
 
 Test 1
 ~~~~~~
 
 **Description:**
 
+This test compares the PH distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i PH_dm.txt,unweighted_unifrac_dm.txt -o test1.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	PH_dm.txt	unweighted_unifrac_dm.txt	77	0.000
+
+The p-value shows there is a very strong correlation between the two matrices.
+	
 Test 2
 ~~~~~~
 
 **Description:**
 
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_1.txt,unweighted_unifrac_dm.txt -o test2.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_shuffled_1.txt	unweighted_unifrac_dm.txt	77	0.656
+
+The p-value shows there is not a correlation between the two matrices.
+	
 Test 3
 ~~~~~~
 
 **Description:**
 
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_2.txt,unweighted_unifrac_dm.txt -o test3.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_shuffled_2.txt	unweighted_unifrac_dm.txt	77	0.194
+
+The p-value shows there is not a correlation between the two matrices.
+	
+Test 4
+~~~~~~
+
+**Description:**
+
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
+**Command:** ::
+
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_3.txt,unweighted_unifrac_dm.txt -o test4.txt -n 9999
+
+**Results:** 
+
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_shuffled_3.txt	unweighted_unifrac_dm.txt	77	0.168
+
+The p-value shows there is not a correlation between the two matrices.
+	
 Glen Canyon
 ^^^^^^^^^^^
 
+These tests utilize the Python version of Mantel that was implemented in QIIME. The distance matrices used for these tests were derived from the Glen Canyon dataset.
+
 Test 1
 ~~~~~~
 
 **Description:**
 
+This test compares the estimated years since submerged for plotting distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i estimated_years_since_submerged_for_plotting_dm.txt,unweighted_unifrac_dm.txt -o test1.txt -n 9999
 
-**Results:**
+**Results:** 
+
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	estimated_years_since_submerged_for_plotting_dm.txt	unweighted_unifrac_dm.txt	94	0.000
+	
+The p-value shows there is a very strong correlation between the two matrices.
 
 Test 2
 ~~~~~~
 
 **Description:**
 
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_1.txt,unweighted_unifrac_dm.txt -o test2.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_shuffled_1.txt	unweighted_unifrac_dm.txt	94	0.115
+
+The p-value shows there is not a correlation between the two matrices.
+	
 Test 3
 ~~~~~~
 
 **Description:**
 
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_2.txt,unweighted_unifrac_dm.txt -o test3.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_shuffled_2.txt	unweighted_unifrac_dm.txt	94	0.390
+
+The p-value shows there is not a correlation between the two matrices.
+	
+Test 4
+~~~~~~
+
+**Description:**
+
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
+**Command:** ::
+
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_3.txt,unweighted_unifrac_dm.txt -o test4.txt -n 9999
+
+**Results:** 
+
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_shuffled_3.txt	unweighted_unifrac_dm.txt	94	0.502
+
+The p-value shows there is not a correlation between the two matrices.
+	
 Keyboard
 ^^^^^^^^
 
+These tests utilize the Python version of Mantel that was implemented in QIIME. The distance matrices used for these tests were derived from the Keyboard dataset.
+
 Test 1
 ~~~~~~
 
 **Description:**
 
+This test compares the unweighted unifrac keyboard only 239 distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239.txt,unweighted_euclidean_dm.txt -o test1.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_keyboard_only_239.txt	unweighted_euclidean_dm.txt	74	0.197
+
+The p-value shows there is not a correlation between the two matrices.
+	
 Test 2
 ~~~~~~
 
 **Description:**
 
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239_shuffled_1.txt,unweighted_euclidean_dm.txt -o test2.txt -n 9999
 
-**Results:**
+**Results:** 
+
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_keyboard_only_239_shuffled_1.txt	unweighted_euclidean_dm.txt	74	0.363
+	
+The p-value shows there is not a correlation between the two matrices.
 
 Test 3
 ~~~~~~
 
 **Description:**
 
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
 **Command:** ::
 
-	Command here
+	compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239_shuffled_2.txt,unweighted_euclidean_dm.txt -o test3.txt -n 9999
 
-**Results:**
+**Results:** 
 
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_keyboard_only_239_shuffled_2.txt	unweighted_euclidean_dm.txt	74	0.426
+
+The p-value shows there is not a correlation between the two matrices.
+	
+Test 4
+~~~~~~
+
+**Description:**
+
+This test compares a shuffled unweighted unifrac distance matrix with the unweighted unifrac distance matrix using mantel.
+
+**Command:** ::
+
+	compare_distance_matrices.py -i unweighted_unifrac_dm_keyboard_only_239_shuffled_3.txt,unweighted_euclidean_dm.txt -o test4.txt -n 9999
+
+**Results:** 
+
+The following output file is created: ::
+
+	# Number of entries refers to the number of rows (or cols) 
+	# retained in each distance matrix after filtering the distance matrices 
+	# to include only those samples that were in both distance matrices. 
+	# p-value contains the correct number of significant digits.
+	DM1	DM2	Number of entries	Mantel p-value
+	unweighted_unifrac_dm_keyboard_only_239_shuffled_3.txt	unweighted_euclidean_dm.txt	74	0.683
+
+	
+The p-value shows there is not a correlation between the two matrices.
+	
 References
 ----------
 
