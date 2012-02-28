@@ -1,6 +1,6 @@
-========================================================
-Repeated Measures PERMANOVA Statistical Method Reference
-========================================================
+===========================
+Repeated Measures PERMANOVA
+===========================
 
 Introduction
 ------------

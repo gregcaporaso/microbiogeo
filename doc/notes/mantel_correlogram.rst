@@ -1,10 +1,33 @@
-===============================================
-Mantel Correlogram Statistical Method Reference
-===============================================
+==================
+Mantel Correlogram
+==================
 
 Introduction
 ------------
-TODO finish this section
+The Mantel correlogram method computes a Mantel statistic for each geographic
+distance class that can be derived from the input. It tests for significance of
+genetic/community distance versus geographic distance. The null hypothesis that
+is tested is that there is no association of geographic distance to community
+distance for each distance class.
+
+Sturge's rule [:ref:`5 <mantelcorref5>`] is used to determine how many distance
+classes to use based on the number of pairwise comparisons you have. These
+distance classes can be thought of as bins, as used in histograms. For each
+distance class, a Mantel test is performed and a Mantel statisic is computed. A
+corrected p-value (i.e.  Bonferroni, FDR, Holm, etc.) is also computed for each
+test. The results of this method are usually visualized in a correlogram, which
+is a graph with the geographic distance classes on the x-axis and the Mantel
+statistics on the y-axis [:ref:`6 <mantelcorref6>`].
+
+This method is very similar to the Mantel method, so the resulting Mantel
+statistics can be interpreted in the same way as you would for a traditional
+Mantel test (i.e. a positive value indicates positive spatial correlation).
+p-values are obtained in the same way as well (i.e. through permutations). For
+more information about Mantel, please refer to the Mantel documentation page.
+
+The original paper presenting this method can be found here
+[:ref:`3 <mantelcorref3>`]. An example of the application of this method to a
+microbial ecology study can be found here [:ref:`4 <mantelcorref4>`].
 
 Existing Implementations
 ------------------------
@@ -22,7 +45,7 @@ implementation seems to be the most promising and easiest to use since it is
 free, open source, and we are already using several vegan functions for testing
 other methods.
 
-I wrote a quick R script that loads in two QIIME distance matrices and calls the
+I wrote an R script that loads in two QIIME distance matrices and calls the
 vegan function `mantel.correlog`. The script has been checked into the
 Qiimeutils repository under :file:`microbiogeo/r/mantel_correlogram.r`. The
 following sections of the document will explain how to set up your system to run
@@ -50,8 +73,8 @@ download them from. Other than that, it is completely automated. On my system, I
 ended up with vegan version 2.0-2 and optparse version 0.9.4.
 
 Next, your system must have a version of QIIME installed (I used the latest
-version of QIIME in SVN). The RDA script uses some R utility functions in QIIME
-to load data.
+version of QIIME in SVN). The script uses some R utility functions in QIIME to
+load data.
 
 Next, you must define an environment variable to tell the script where to look
 for the R utility functions in QIIME. Run the following command, changing the
@@ -123,7 +146,14 @@ statistic:
 .. image:: ../images/mantel_correlogram_plot1.png
    :align: center
 
-TODO finish this section with some interpretation of the results
+The text output file shows the Mantel correlation statistic and p-value for the
+eight distance classes. All eight distance classes are significant due to their
+low p-values. The correlogram plot has these distance classes plotted versus
+their Mantel correlation statistics. The shaded points indicate significance
+(all are shaded in this example). Thus, this example seems to strongly indicate
+that positive spatial correlation exists for six of the eight distance classes.
+The two rightmost points on the graph indicate that negative spatial correlation
+exists.
 
 Testing Results
 ---------------
@@ -143,3 +173,19 @@ References
 .. _mantelcorref2:
 
 [2] http://folk.uio.no/ohammer/past/
+
+.. _mantelcorref3:
+
+[3] Legendre, P. and L. Legendre. 1998. Numerical ecology, 2nd English edition. Elsevier Science BV, Amsterdam
+
+.. _mantelcorref4:
+
+[4] http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0023742
+
+.. _mantelcorref5:
+
+[5] http://rchsbowman.wordpress.com/2010/08/22/statistics-notes-sturges-rule/
+
+.. _mantelcorref6:
+
+[6] vegan's documentation for function 'mantel.correlog'
