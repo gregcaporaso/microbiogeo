@@ -78,7 +78,7 @@ This test compares the PH distance matrix with the unweighted unifrac distance m
 
 **Command:** ::
 
-	compare_distance_matrices.py -i PH_dm.txt,unweighted_unifrac_dm.txt -o test1.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm.txt,PH_dm.txt -o test1.txt -n 9999
 
 **Results:** 
 
@@ -89,7 +89,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	PH_dm.txt	unweighted_unifrac_dm.txt	77	0.000
+	unweighted_unifrac_dm.txt	PH_dm.txt	77	0.000
 
 The p-value shows there is a very strong correlation between the two matrices.
 	
@@ -102,7 +102,7 @@ This test compares a shuffled unweighted unifrac distance matrix with the unweig
 
 **Command:** ::
 
-	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_1.txt,unweighted_unifrac_dm.txt -o test2.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_1.txt,PH_dm.txt -o test2.txt -n 9999
 
 **Results:** 
 
@@ -113,7 +113,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	unweighted_unifrac_dm_shuffled_1.txt	unweighted_unifrac_dm.txt	77	0.656
+	unweighted_unifrac_dm_shuffled_1.txt	PH_dm.txt	77	0.263
 
 The p-value shows there is not a correlation between the two matrices.
 	
@@ -126,7 +126,7 @@ This test compares a shuffled unweighted unifrac distance matrix with the unweig
 
 **Command:** ::
 
-	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_2.txt,unweighted_unifrac_dm.txt -o test3.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_2.txt,PH_dm.txt -o test3.txt -n 9999
 
 **Results:** 
 
@@ -137,7 +137,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	unweighted_unifrac_dm_shuffled_2.txt	unweighted_unifrac_dm.txt	77	0.194
+	unweighted_unifrac_dm_shuffled_2.txt	PH_dm.txt	77	0.241
 
 The p-value shows there is not a correlation between the two matrices.
 	
@@ -150,7 +150,7 @@ This test compares a shuffled unweighted unifrac distance matrix with the unweig
 
 **Command:** ::
 
-	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_3.txt,unweighted_unifrac_dm.txt -o test4.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_3.txt,PH_dm.txt -o test4.txt -n 9999
 
 **Results:** 
 
@@ -161,7 +161,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	unweighted_unifrac_dm_shuffled_3.txt	unweighted_unifrac_dm.txt	77	0.168
+	unweighted_unifrac_dm_shuffled_3.txt	PH_dm.txt	77	0.339
 
 The p-value shows there is not a correlation between the two matrices.
 	
@@ -179,7 +179,7 @@ This test compares the estimated years since submerged for plotting distance mat
 
 **Command:** ::
 
-	compare_distance_matrices.py -i estimated_years_since_submerged_for_plotting_dm.txt,unweighted_unifrac_dm.txt -o test1.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm.txt,estimated_years_since_submerged_for_plotting_dm.txt -o test1.txt -n 9999
 
 **Results:** 
 
@@ -190,7 +190,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	estimated_years_since_submerged_for_plotting_dm.txt	unweighted_unifrac_dm.txt	94	0.000
+	unweighted_unifrac_dm.txt	estimated_years_since_submerged_for_plotting_dm.txt	94	0.000
 	
 The p-value shows there is a very strong correlation between the two matrices.
 
@@ -203,7 +203,7 @@ This test compares a shuffled unweighted unifrac distance matrix with the unweig
 
 **Command:** ::
 
-	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_1.txt,unweighted_unifrac_dm.txt -o test2.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_1.txt,estimated_years_since_submerged_for_plotting_dm.txt -o test2.txt -n 9999
 
 **Results:** 
 
@@ -214,7 +214,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	unweighted_unifrac_dm_shuffled_1.txt	unweighted_unifrac_dm.txt	94	0.115
+	unweighted_unifrac_dm_shuffled_1.txt	estimated_years_since_submerged_for_plotting_dm.txt	94	0.442
 
 The p-value shows there is not a correlation between the two matrices.
 	
@@ -227,7 +227,7 @@ This test compares a shuffled unweighted unifrac distance matrix with the unweig
 
 **Command:** ::
 
-	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_2.txt,unweighted_unifrac_dm.txt -o test3.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_2.txt,estimated_years_since_submerged_for_plotting_dm.txt -o test3.txt -n 9999
 
 **Results:** 
 
@@ -238,7 +238,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	unweighted_unifrac_dm_shuffled_2.txt	unweighted_unifrac_dm.txt	94	0.390
+	unweighted_unifrac_dm_shuffled_2.txt	estimated_years_since_submerged_for_plotting_dm.txt	94	0.762
 
 The p-value shows there is not a correlation between the two matrices.
 	
@@ -251,7 +251,7 @@ This test compares a shuffled unweighted unifrac distance matrix with the unweig
 
 **Command:** ::
 
-	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_3.txt,unweighted_unifrac_dm.txt -o test4.txt -n 9999
+	compare_distance_matrices.py -i unweighted_unifrac_dm_shuffled_3.txt,estimated_years_since_submerged_for_plotting_dm.txt -o test4.txt -n 9999
 
 **Results:** 
 
@@ -262,7 +262,7 @@ The following output file is created: ::
 	# to include only those samples that were in both distance matrices. 
 	# p-value contains the correct number of significant digits.
 	DM1	DM2	Number of entries	Mantel p-value
-	unweighted_unifrac_dm_shuffled_3.txt	unweighted_unifrac_dm.txt	94	0.502
+	unweighted_unifrac_dm_shuffled_3.txt	estimated_years_since_submerged_for_plotting_dm.txt	94	0.539
 
 The p-value shows there is not a correlation between the two matrices.
 	
