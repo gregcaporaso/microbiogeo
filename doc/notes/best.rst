@@ -130,65 +130,152 @@ Testing Results
 The hope is to use the vegan implementation and compare against the Primer-e.
 So far, only the vegan has be run satisfactorily.
 
-Vegan BIOENV
-^^^^^^^^^^^^^
-
-To test the vegan implementation of the BIOENV algorithm I chose the 88 Soils data set.
+88 Soils
+^^^^^^^^^^^^^^^
+For these initial tests of the BIOENV algorithm I chose the 88 Soils data set.
 This particular dataset was chosen for its multi-variate data in the mapping file.
+Additionally, the BEST analysis seems suited for environmental data.
+
+Test 0 (Vegan BIOENV)
+~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+The version of BIOENV built-in to the Vegan package is tested here. Ideally 
+this will line up with BEST test case to follow. However, it seems skewed toward
+the vegan enironment datasets (i.e., varespec and varechem.)
 
 :note: The row count must match in order to perform the comparison. The 88 Soils data had additional sample rows in the mapping file which were not included in the unifrac distance matrix. These were removed and a new file generated *vars.txt*
 
 The variables table can only include numerical data, so any non-numerical columns were removed. 
 
-to run the the vegan a small script has been written to assist, simply run: ::
+:note: In order to compare the Primer-e and Vegan, we had to use "euclidean" as the dissimilarity index, since this was the only one common to both that allows negative values in the variables. The Primer-e software also states the this distance metric is well suited to environmental data.
+
+**Command:** ::
 
   R --slave --args -c unweighted_unifrac_dm.txt -e vars.txt < r/best.r > best_result.txt
 
-:note: Output is likely invalid, I've just discovered that the vegan version runs a vegdist() function on the input matrix, I expect this is not leaving the data in a usable state. Attempting to re-write the method.
+**Results:**
+:note: Output is likely invalid, I've just discovered that the vegan version runs a vegdist() function on the input matrix, I expect this is not leaving the data in a usable state. Attempting to re-write the method. However, this method won't be used further for now.
 
 And the output is: ::
-
-  2047 possible subsets (this may take time...)
-
-  Call:
-  bioenv(comm = cdm, env = edm) 
 
   Subset of environmental variables with best correlation to community data.
 
   Correlations:      spearman 
-  Dissimilarities:   bray 
+  Dissimilarities:   euclidean 
 
   Best model has 1 parameters (max. 11 allowed):
   PH
-  with correlation  0.7649623 
+  with correlation  0.7764964 
 
-                                                                                                                                                  size
-  PH                                                                                                                                                 1
-  SOIL_MOISTURE_DEFICIT PH                                                                                                                           2
-  SOIL_MOISTURE_DEFICIT ANNUAL_SEASON_PRECPT PH                                                                                                      3
-  SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_PRECPT PH                                                                                     4
-  SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH                                                                  5
-  SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_PRECPT PH LONGITUDE                                                                 6
-  SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH LONGITUDE                                              7
-  SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE                                    8
-  TOT_ORG_CARB SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE                       9
-  TOT_ORG_CARB SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE LATITUDE             10
-  TOT_ORG_CARB SILT_CLAY ELEVATION SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE LATITUDE   11
-                                                                                                                                                  correlation
-  PH                                                                                                                                                   0.7650
-  SOIL_MOISTURE_DEFICIT PH                                                                                                                             0.7166
-  SOIL_MOISTURE_DEFICIT ANNUAL_SEASON_PRECPT PH                                                                                                        0.6582
-  SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_PRECPT PH                                                                                       0.5944
-  SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH                                                                    0.5435
-  SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_PRECPT PH LONGITUDE                                                                   0.5072
-  SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH LONGITUDE                                                0.4773
-  SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE                                      0.4468
-  TOT_ORG_CARB SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE                         0.4135
-  TOT_ORG_CARB SILT_CLAY SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE LATITUDE                0.3796
-  TOT_ORG_CARB SILT_CLAY ELEVATION SOIL_MOISTURE_DEFICIT CARB_NITRO_RATIO ANNUAL_SEASON_TEMP ANNUAL_SEASON_PRECPT PH CMIN_RATE LONGITUDE LATITUDE      0.3479 
 
-Primer-e BIOENV
-^^^^^^^^^^^^^^^^
+Test 1 (Primer-e)
+^^^^^^^^^^^^^^^^^^
+**Description:**
+
+The Primer-e version has significantly more(seemingly) configuration options.
+This is a positive control, using the original, valid, distance matrix. And the
+variables: TOT_ORG_CARB, SILT_CLAY, ELEVATION, SOIL_MOISTURE_DEFICIT, CARB_NITRO_RATIO, ANNUAL_SEASON_TEMP, ANNUAL_SEASON_PRECPT, PH, CMIN_RATE, LONGITUDE, LATITUDE
+
+
+**Command:**
+
+There is no command, per-se, all of the methods in Primer-e are run in the
+Windows GUI which lays on top of the software. However, the following steps were 
+take:
+
+* Open the unweighted_unifrac_dm.txt
+
+  * Use the open file and choose the .txt file
+  * Select the "Resemblance matrix" option and click Next>
+  * Uncheck the "Title check box", Select "Distance" and click Next>
+  * Click "Finish"
+
+* Open the vars.txt file
+
+  * Choose "Sample data" and click Next>
+  * Uncheck the "Title" checkbox
+  * Click "Samples as rows" and click Next>
+  * Click "Finish"
+
+Now, with the vars.txt selected 
+
+* Choose Analyse > BEST...
+* Choose the BIOENV tab and set the value there to 15(11 is actually sufficient for this data)
+* Choose the "General" tab
+* Click "Resemblance..." and choose "Euclidean" then click "OK"
+* Reopen the BEST analysis window and click the BVSTEP radio button. Click "OK"
+
+
+**Results:**
+
+At the bottom of the analysis window you should have for the BIOENV: ::
+
+  Best results
+  No.Vars    Corr. Selections
+        1    0.738 8
+        9    0.419 1,2,4-6,8-11
+        8    0.419 1,2,4-6,9-11
+        8    0.419 1,2,4-6,8,10,11
+        7    0.419 1,2,4-6,10,11
+        8    0.419 1,2,4,6,8-11
+        7    0.419 1,2,4,6,9-11
+        7    0.419 1,2,4,6,8,10,11
+        6    0.419 1,2,4,6,10,11
+        8    0.418 1,2,4,5,8-11
+        7    0.418 1,2,4,5,9-11
+        7    0.418 1,2,4,5,8,10,11
+        6    0.418 1,2,4,5,10,11
+        7    0.418 1,2,4,8-11
+        6    0.418 1,2,4,9-11
+
+And for the BVSTEP: ::
+
+  Best results
+  Multiple   No.Vars    Corr.    Selections
+  1             1       0.738     8
+
+Where the variables are numbered as such: ::
+
+  1 TOT_ORG_CARB
+  2 SILT_CLAY
+  3 ELEVATION
+  4 SOIL_MOISTURE_DEFICIT
+  5 CARB_NITRO_RATIO
+  6 ANNUAL_SEASON_TEMP
+  7 ANNUAL_SEASON_PRECPT
+  8 PH
+  9 CMIN_RATE
+  10 LONGITUDE
+  11 LATITUDE
+
+I believe that the discrepancy between these results and the Vegan
+results are due to the fact that vegan forces vegdist() call on the input 
+distance matrix. 
+
+To my understanding a "high" correlation between the
+dissimilarity matrix and the variable indicates that there is a good variance, for instance when
+looking at the PH the statistic is high for the "dissimilarity."
+
+
+Test 2
+~~~~~~
+
+**Description:**
+
+In this test we wanted to use three shuffled distance matrices (each shuffled matrix is derived 
+from the original unweighted_unifrac_dm.txt"
+
+**Command:**
+
+The same procedures were followed as outlined in Test 1. Once for each shuffled matrix.
+(unweighted_unifrac_dm_shuffled_1, unweighted_unifrac_dm_shuffled_2, unweighted_unifrac_dm_shuffled_3)
+
+**Results:**
+
+The following result files were actually identical to Test1, I believe this is because the BEST analsis 
+actually matches sample names in the distance matrix to sample names in the "mapping"/variables data.
+I'm not exactly sure what would make a good negative control at this point.
 
 References
 ----------

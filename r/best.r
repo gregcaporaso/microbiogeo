@@ -55,7 +55,7 @@ edm <- load.qiime.mapping.file(opts$env_vars)
 #cdm2 = vegdist(cdm, method="bray")
 #print(ncol(cdm2))
 
-out <- bioenv(comm = cdm, env = edm)#qiime.data$map[[opts$category]])
+out <- bioenv(comm = cdm, env = edm, method="spearman", index="euclidean")#qiime.data$map[[opts$category]])
 print(out)
 summary(out)
 
