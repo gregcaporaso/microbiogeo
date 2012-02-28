@@ -1,7 +1,7 @@
 .. _primere_best:
 
 ======================================================
-Primer-e BEST (BIOENV and BVSTEP)
+BEST (BIOENV and BVSTEP, via Primer-E)
 ======================================================
 
 Introduction
@@ -273,7 +273,7 @@ The same procedures were followed as outlined in Test 1. Once for each shuffled 
 
 **Results:**
 
-The following result files were actually identical to Test1, I believe this is because the BEST analsis 
+The result files were actually identical to Test1, I believe this is because the BEST analsis 
 actually matches sample names in the distance matrix to sample names in the "mapping"/variables data.
 I'm not exactly sure what would make a good negative control at this point.
 

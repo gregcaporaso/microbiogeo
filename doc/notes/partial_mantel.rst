@@ -255,20 +255,6 @@ The following was output to stdout: ::
   0.0455 0.0595 0.0720 0.0880 
 
 
-88 Soils
-^^^^^^^^^^
-Test 1
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-
 References
 ----------
 .. _partial_mantelref1:
