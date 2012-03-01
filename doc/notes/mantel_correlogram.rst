@@ -158,11 +158,25 @@ exists.
 Testing Results
 ---------------
 This section will describe different tests that were run on the Mantel
-correlogram script.
+correlogram script. These tests will use empirical data from one of the several
+datasets that the team has access to. These data files will not be included for
+download due to their (usually) large size. Unless otherwise noted, the data
+files that were used can be found under the datasets directory.
 
-:note: Many of these tests will use empirical data from one of the several datasets that the team has access to. These data files will not be included for download due to their (usually) large size, but it should be clear what inputs were used.
+88 Soils
+^^^^^^^^
 
-TODO finish this section
+Test 1
+~~~~~~
+**Description:**
+
+This test uses a distance matrix containing difference in PH for the distances
+(derived from the `PH` category in the mapping file using
+:file:`distance_matrix_from_mapping.py`). This test is a positive control
+becasue we expect there to be positive correlation between the two matrices due
+to previous results obtained from this study.
+
+:note: The testing has not been completed for this script yet.
 
 References
 ----------
