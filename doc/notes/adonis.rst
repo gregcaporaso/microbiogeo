@@ -7,11 +7,11 @@ Adonis
 Introduction
 ------------
 
-Adonis is a statistical method that operates in the same manner that Permutational Multivariate Analysis of Variance(Permanova) does. Adonis is essentially the same thing, except it uses distance matrices. Because it is a variation of Permanova, the way which it handles the information passed in is similar.
+Adonis is a statistical method that operates in the same manner that Permutational Multivariate Analysis of Variance(Permanova) does. Adonis is essentially the same thing, except it uses distance matrices. Because it is a variation of Permanova, the way which it handles the information passed in is similar, except that it can process non-numeric data for analysis as well.
 
 This has been called a "nonparemetric manova". To elaborate on what is being said, this variation of the method does not make the same assumptions as MANOVA does. As such it may not determine the same information with the same accuracy.
 
-The primary input that this method is concerned with, is receiving a formula. From there the data that is passed in is used in conjunction with the formula to calculate the desired information.
+The primary input that this method is concerned with, is receiving a formula. From there the data that is passed in is used in conjunction with the formula to calculate the desired information. If desired, you can configure the R implementation to accept a formula that uses multiple variables from the mapping file passed in.
 
 Existing Implementations
 ------------------------
