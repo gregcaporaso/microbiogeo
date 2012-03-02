@@ -43,6 +43,13 @@ statistic is obtained by permutation. ANOSIM can be applied on 1-way data,
 2-way nested data, 2-way crossed data with replication and 2-way crossed data
 with no replication.
 
+ANOSIM tests whether there are differences between two or more groups of
+samples, but it may not always find differences in groups due to differences in
+means. Instead, ANOSIM may find differences in groups based on spread
+(differences in within-group distance). For example, it might find that two
+groups are significantly different because one group has greater within-group
+distances than the other.
+
 Existing Implementations
 ------------------------
 There are several existing implementations of ANOSIM in statistical packages

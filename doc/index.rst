@@ -9,8 +9,8 @@ The purpose of this documentation is to provide a reference to statistical
 methods that are being investigated and researched by the Spring 2012 NAU
 Capstone team.
 
-Method Index
-------------
+Methods
+-------
 There are currently notes on the following statistical methods:
 
 .. toctree::
@@ -31,10 +31,18 @@ There are currently notes on the following statistical methods:
    notes/rda
    notes/repeated_measures_permanova
 
-Tutorial Index
---------------
+Tutorials
+---------
 
 .. toctree::
    :maxdepth: 1
 
    notes/simulation_code_example
+
+Progress Reports
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   notes/progress_report_1
