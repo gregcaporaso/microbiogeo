@@ -21,8 +21,8 @@ BIOENV analysis allows for the comparison of distance/similarity matrices betwee
 two sets of data having either samples or variables in common. BIOENV uses all the 
 available environmental variables to find the combination that ‘best explains’ the 
 patterns in the biological data. Basically, BIOENV seems to take a distance matrix,
-i.e. unifrac distance matrix and then a colomnization of variables (pH, location, etc.)
-BIOENV 
+i.e. unifrac distance matrix and then a columnization of variables (pH, location, etc.)
+
 
 However, when large numbers (>15 or 16) of environmental variables are used the procedure 
 can become impractically slow, and computation time may be excessive. In such cases the BVSTEP 
@@ -259,7 +259,7 @@ looking at the PH the statistic is high for the "dissimilarity."
 
 
 Test 2
-~~~~~~
+~~~~~~~
 
 **Description:**
 

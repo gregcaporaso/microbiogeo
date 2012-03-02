@@ -197,18 +197,15 @@ In this test we use the vegan implementation of the partial Mantel test.
 
 The following was output to stdout: ::
 
-  Mantel statistic r: 0.05618 
-        Significance: 0.0588 
+  Mantel statistic r: 0.01063 
+        Significance: 0.3711 
 
   Empirical upper confidence limits of r:
      90%    95%  97.5%    99% 
-  0.0451 0.0593 0.0717 0.0869 
+  0.0455 0.0584 0.0696 0.0847 
 
-Its not clear why the r-statistic did no change appreciably as we would expect for this 
-negative control. We'll see that none of our shuffle matrices make any difference when 
-applied to this method.
 
-Test 3
+Test 4
 ~~~~~~
 **Description:**
 
@@ -224,14 +221,15 @@ In this test we use the vegan implementation of the partial Mantel test.
 
 The following was output to stdout: ::
 
-  Mantel statistic r: 0.05618 
-        Significance: 0.0594 
+  Mantel statistic r: -0.02556 
+        Significance: 0.768 
 
   Empirical upper confidence limits of r:
      90%    95%  97.5%    99% 
-  0.0453 0.0590 0.0706 0.0828 
+  0.0455 0.0596 0.0722 0.0861
 
-Test 4
+
+Test 5
 ~~~~~~~
 **Description:**
 
@@ -247,12 +245,12 @@ In this test we use the vegan implementation of the partial Mantel test.
 
 The following was output to stdout: ::
 
-  Mantel statistic r: 0.05618 
-        Significance: 0.059 
+  Mantel statistic r: -0.01656 
+        Significance: 0.6841 
 
   Empirical upper confidence limits of r:
      90%    95%  97.5%    99% 
-  0.0455 0.0595 0.0720 0.0880 
+  0.0449 0.0579 0.0708 0.0864 
 
 
 References
