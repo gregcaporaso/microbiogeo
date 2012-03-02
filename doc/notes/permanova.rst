@@ -76,7 +76,7 @@ the mapping file :download:`here <../../doc/downloads/Fasting_Map.txt>`.
 
 Next, run the following command to execute the Permanova script: ::
 
-    ./permanova.py -i ../../doc/downloads/overview_unweighted_unifrac_dm.txt -m ../../doc/downloads/Fasting_Map.txt -c Treatment -o permanova_results.txt
+	./permanova.py -i unweighted_unifrac_dm.txt -m map.txt -c BODY_SITE -o permanova_results.txt -p 999
 
 The -c option specifies which column in the mapping file will be used to group
 the samples. The `Treatment` column has two values: 'Control' and 'Fast'. Thus,
@@ -88,21 +88,13 @@ Output Files
 The command in the previous section creates a single output file named
 :file:`permanova_results.txt`. The resulting file should look like this: ::
 
-	Input_filepath				permanova_R_value	p_value
-	overview_unweighted_unifrac_dm.txt	2.29665065171		NA
-
+	Input_filepath						permanova_R_value	p_value
+	unweighted_unifrac_dm.txt                       	2.29665065171		0.009
+	
 The first field lists the distance matrix file that was used as input. The
-second field lists the R statistic that was computed (remember that this is the
-primary output of Permanova). The final field lists the p-value, which is NA
-because we did not specify the optional -p parameter (by default, the number of
-p-trials is 0).
-
-Investigate why not like Jai's: ::
-
-	The value of the R statistic can fall between -1 and +1, with a positive value
-	close to 1 indicating that the groups are highly dissimilar. Thus, in this
-	example, the control and fast groups are dissimilar. 
-
+second field lists the R statistic that was computed, that this is the
+primary output of Permanova. The final field lists the p-value, which is .009 
+signifying reasonable accuracy.
 
 Testing Results
 ---------------
@@ -129,6 +121,9 @@ The following output file is created: ::
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	13.2670596158		0.001
 	
+The R value of 13.2670596158 indicates that the body sites are significantly different (i.e. there is clustering) due to its 
+relatively “large” ratio. This is a result that we would expect. The p-value of .001 indicates that the 
+result is significant.
 
 Test 2
 ~~~~~~
@@ -148,7 +143,10 @@ The following output file is created: ::
 
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	21.0188242485		0.001
-
+	
+The R value of 21.0188242485 indicates that the sexes are significantly different (i.e. there is clustering) due to its 
+relatively “large” ratio. This is a result that we would not expect because it is supposed to be a negative control. The p-value of .001 indicates that the 
+result is significant.
 
 Test 3
 ~~~~~~
@@ -180,6 +178,10 @@ The following output files were created: ::
 		
 	Input_filepath							permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
+	
+The R values of 1.98060081904, 1.81015551855,and 1.73759470202 indicates that the body sites are not significantly different (i.e. there is no clustering) due to its 
+relatively “small” ratio. This is a result that we would expect because the matricies are pre-shuffled. The p-values of 0.031, 0.623, and 0.929 indicates that the 
+results are insignificant.
 
 Keyboard
 ^^^^^^^^
@@ -201,11 +203,10 @@ The following output file is created: ::
 
         Input_filepath                                          permanova_R_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm.txt       5.17880475397           0.001
-
-The R value of 0.794026410205 indicates that samples taken from different hosts
-are significantly different (i.e. there is clustering) due to its "large"
-positive value. This is a result that we would expect. The p-value of 0.001
-indicates that the result is significant.
+	
+The R value of 5.17880475397 indicates that the host id's are significantly different (i.e. there is clustering) due to its 
+relatively “large” ratio. This is a result that we would expect. The p-value of 0.001 indicates that the 
+result is significant.
 
 Test 2
 ~~~~~~
@@ -238,7 +239,10 @@ The following output files are created: ::
 
         Input_filepath                                                  permanova_R_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt    0.959082333436          0.648
-
+	
+The R values of 1.04303546137, 1.03699740907, and 0.959082333436 indicates that the shuffled host id's are not significantly different (i.e. there is no clustering) due to its 
+relatively “small” ratio. This is a result that we would expect. The p-value of 0.31, 0.317, 0.648 and indicates that the 
+result are insignificant.
 
 Glen Canyon
 ^^^^^^^^^^^
@@ -261,11 +265,10 @@ The following output file is created: ::
 
         Input_filepath                                          permanova_R_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm.txt    29.2130439798           0.001
-
-The R value of 0.9984007035 indicates that samples taken from wet and dry
-environments are significantly different (i.e. there is clustering) due to the
-really "large" positive value that is close to 1. This is a result that we would
-expect, as there is also clear clustering in the 3D PCoA plots.
+	
+The R value of 29.2130439798 indicates that there is significant clustering based on whether it is CurrentlyWet, we can tell due to its 
+relatively “large” ratio. This is a result that we would expect from previous experments. The p-value of 0.001 indicates that the 
+result is significant.
 
 Test 2
 ~~~~~~
@@ -298,8 +301,14 @@ The following output files are created: ::
 
         Input_filepath                                                  permanova_R_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt 1.68346774545           0.902
+	
+The R value of 2.03268471405, 1.91859583429, and 1.68346774545 indicates that the results when CurrentlyWet is shuffled are not significantly different (i.e. there is no clustering) due to its 
+relatively “small” ratio. This is a result that we would expect. The p-values of 0.332, 0.448, and 0.902 indicates that the 
+results are insignificant.
 
 References
 ----------
+.. _permanovaref1:
 
-Jai's permanova.rst
+[1] www.stat.auckland.ac.nz/~mja/prog/PERMANOVA_UserNotes.pdf
+
