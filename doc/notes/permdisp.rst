@@ -121,112 +121,6 @@ team has access to. These data files will not be included for download due to
 their (usually) large size. Unless otherwise noted, the data files that were
 used can be found under the datasets directory.
 
-88 Soils
-^^^^^^^^^^
-Test 1
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 2
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 3
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Face Site
-^^^^^^^^^^
-
-Test 1
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 2
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 3
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Glen Canyon
-^^^^^^^^^^^
-
-Test 1
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 2
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
-
-Test 3
-~~~~~~
-
-**Description:**
-
-**Command:** ::
-
-	Command here
-
-**Results:**
 
 Keyboard
 ^^^^^^^^
@@ -238,9 +132,31 @@ Test 1
 
 **Command:** ::
 
-	Command here
+	library(vegan)
+
+	mydata <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/unweighted_unifrac_dm.txt", header=TRUE, row.name=1, sep="\t")
+	dis <- vegdist(mydata)
+
+	map <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/map.txt", header=TRUE, row.name=1, sep="\t")
+	attach(map)
+
+	mod <- betadisper(dis, HOST_SUBJECT_ID)
+
+	anova(mod)
+
+	permutest(mod, pairwise = TRUE)
 
 **Results:**
+
+Result of all commands prior to permutest:
+
+	.. image:: ../images/permdisp/keyboard/keyboard_positive_1.png
+	  :align: center
+
+Result of permutest:
+  
+	.. image:: ../images/permdisp/keyboard/keyboard_positive_2.png
+	  :align: center
 
 Test 2
 ~~~~~~
@@ -249,9 +165,31 @@ Test 2
 
 **Command:** ::
 
-	Command here
+	library(vegan)
+
+	mydata <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/unweighted_unifrac_dm_shuffled_1.txt", header=TRUE, row.name=1, sep="\t")
+	dis <- vegdist(mydata)
+
+	map <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/map.txt", header=TRUE, row.name=1, sep="\t")
+	attach(map)
+
+	mod <- betadisper(dis, HOST_SUBJECT_ID)
+
+	anova(mod)
+
+	permutest(mod, pairwise = TRUE)
 
 **Results:**
+
+Result of all commands prior to permutest:
+
+	.. image:: ../images/permdisp/keyboard/keyboard_negative_1_1.png
+	  :align: center
+
+Result of permutest:
+	  
+	.. image:: ../images/permdisp/keyboard/keyboard_negative_1_2.png
+	  :align: center
 
 Test 3
 ~~~~~~
@@ -260,9 +198,64 @@ Test 3
 
 **Command:** ::
 
-	Command here
+	library(vegan)
+
+	mydata <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/unweighted_unifrac_dm_shuffled_2.txt", header=TRUE, row.name=1, sep="\t")
+	dis <- vegdist(mydata)
+
+	map <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/map.txt", header=TRUE, row.name=1, sep="\t")
+	attach(map)
+
+	mod <- betadisper(dis, HOST_SUBJECT_ID)
+
+	anova(mod)
+
+	permutest(mod, pairwise = TRUE)
 
 **Results:**
+
+Result of all commands prior to permutest:
+
+	.. image:: ../images/permdisp/keyboard/keyboard_negative_2_1.png
+	  :align: center
+
+Result of permutest:
+	  
+	.. image:: ../images/permdisp/keyboard/keyboard_negative_2_2.png
+	  :align: center
+
+Test 4
+~~~~~~
+
+**Description:**
+
+**Command:** ::
+
+	library(vegan)
+
+	mydata <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/unweighted_unifrac_dm_shuffled_3.txt", header=TRUE, row.name=1, sep="\t")
+	dis <- vegdist(mydata)
+
+	map <- read.table(file="/home/ubuntu/Documents/PERMDISP/Keyboard/map.txt", header=TRUE, row.name=1, sep="\t")
+	attach(map)
+
+	mod <- betadisper(dis, HOST_SUBJECT_ID)
+
+	anova(mod)
+
+	permutest(mod, pairwise = TRUE)
+
+**Results:**
+
+Result of all commands prior to permutest:
+
+	.. image:: ../images/permdisp/keyboard/keyboard_negative_3_1.png
+	  :align: center
+
+Result of permutest:
+	  
+	.. image:: ../images/permdisp/keyboard/keyboard_negative_3_2.png
+	  :align: center
 
 References
 ----------
