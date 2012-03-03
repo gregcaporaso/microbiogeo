@@ -99,6 +99,10 @@ signifying reasonable accuracy.
 Testing Results
 ---------------
 This section will describe different tests that were run on the PERMANOVA script.
+These tests will use empirical data from one of the several datasets that the team 
+has access to. These data files will not be included for download due to their
+(usually) large size. Unless otherwise noted, the data files that were used can be 
+found under the datasets directory.
 
 Whole Body
 ^^^^^^^^^^

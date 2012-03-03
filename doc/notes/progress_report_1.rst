@@ -7,9 +7,9 @@ Introduction
 The purpose of this document is to summarize the progress made on our
 statistical methods research and testing. We have successfully processed a
 majority of the statistical methods assigned, though there are still a few
-methods that have not been completely tested. Levi is currently trying to
-contact the author of MultiCoLA in order to obtain all of the necessary scripts,
-and Damien is finishing up PERMDISP after finding out that the original
+methods that have not been completely tested. Levi is currently in contact 
+with the author of MultiCoLA to obtain all of the necessary scripts and expects them in a week.
+Damien is finishing up PERMDISP after finding out the original
 implementation that he picked would not work for our tests. He is currently
 testing an implementation of PERMDISP in R. A few of the lower-priority methods
 were recently assigned and are currently being evaluated.

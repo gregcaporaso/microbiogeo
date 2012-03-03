@@ -51,8 +51,8 @@ Run script and store output in a variable: ::
 	results<-script(M)
 	
 	
-My progress understanding MultiCoLA
------------------------------------
+Our progress understanding MultiCoLA
+------------------------------------
 **Ran the commands:** ::
 	M<-read.table("input.txt",header=TRUE,row.names=1)
 	source("taxa.pooler.1.3.r")
@@ -156,7 +156,8 @@ My progress understanding MultiCoLA
 
         source("corrcoeff.ENV.1.3.r")
 
-corrcoeff.ENV.1.3.r was not included in the files given, trying to find out where it is.
+corrcoeff.ENV.1.3.r was not included in the files given. The author of the MultiCoLA paper and scripts
+will be able to help us in a week as of March 2, 2012
 
 Input Files
 -----------
@@ -168,7 +169,7 @@ Output Files
 
 Testing Results
 ---------------
-This section will describe different tests that were run on the ANOSIM script.
+This section will describe different tests that were run on the MultiCoLA script.
 These tests will use empirical data from one of the several datasets that the
 team has access to. These data files will not be included for download due to
 their (usually) large size. Unless otherwise noted, the data files that were
