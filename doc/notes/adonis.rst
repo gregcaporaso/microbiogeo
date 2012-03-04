@@ -230,9 +230,6 @@ When you cat it, or open the file the output created was:
 .. image:: ../images/adonis/wholebody/originalData/bodysiteResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 Body Site Analysis (Shuffled Data 1 - BODY_SITE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -260,10 +257,6 @@ The files provided are: ::
 
 .. image:: ../images/adonis/wholebody/shuffledData1/bodysiteResults.png
   :align: center
-
-
-TO DO:
-Perform Analysis
 
 Body Site Analysis (Shuffled Data 2 - BODY_SITE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -294,9 +287,6 @@ The files provided are: ::
 .. image:: ../images/adonis/wholebody/shuffledData2/bodysiteResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 Body Site Analysis (Shuffled Data 3 - BODY_SITE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -325,10 +315,6 @@ The files provided are: ::
 .. image:: ../images/adonis/wholebody/shuffledData3/bodysiteResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
-
 Body Site Analysis (Original Data - SEX)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -355,9 +341,6 @@ the Whole Body dataset.
 
 .. image:: ../images/adonis/wholebody/originalData/sexResults.png
   :align: center
-
-TO DO:
-Perform Analysis
 
 Keyboard (Clustering)
 ^^^^^^^^^^^^^^^^^^^^^
@@ -392,9 +375,6 @@ The files provided are: ::
 .. image:: ../images/adonis/keyboard/originalData/hostSubjectIDResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 Keyboard Analysis (Shuffled Data 1 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -420,9 +400,6 @@ The files provided are: ::
 
 .. image:: ../images/adonis/keyboard/shuffledData1/hostSubjectIDResults.png
   :align: center
-
-TO DO:
-Perform Analysis
 
 Keyboard Analysis (Shuffled Data 2 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -450,9 +427,6 @@ The files provided are: ::
 .. image:: ../images/adonis/keyboard/shuffledData2/hostSubjectIDResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 Keyboard Analysis (Shuffled Data 3 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -477,9 +451,6 @@ The files provided are: ::
 
 .. image:: ../images/adonis/keyboard/shuffledData3/hostSubjectIDResults.png
   :align: center
-
-TO DO:
-Perform Analysis
 
 Glen Canyon (Clustering)
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -513,9 +484,6 @@ The files provided are: ::
 .. image:: ../images/adonis/glencanyon/originalData/currentlyWetResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 Glen Canyon Analysis (Shuffled Data 1 - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -540,9 +508,6 @@ The files provided are: ::
 
 .. image:: ../images/adonis/glencanyon/shuffledData1/currentlyWetResults.png
   :align: center
-
-TO DO:
-Perform Analysis
 
 Glen Canyon Analysis (Shuffled Data 2 - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -569,10 +534,6 @@ The files provided are: ::
 .. image:: ../images/adonis/glencanyon/shuffledData2/currentlyWetResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
-
 Glen Canyon Analysis (Shuffled Data 3 - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -598,8 +559,9 @@ The files provided are: ::
 .. image:: ../images/adonis/glencanyon/shuffledData3/currentlyWetResults.png
   :align: center
 
-TO DO:
-Perform Analysis
+Results Analysis
+----------------
+Adonis accepts a variable that’s passed in along with the file that’s being analyzed. Using this variable it then performs permutations that randomize the the samples and creates F-Tests to analyze it. From there the P-value is calculated and the information returned to the user is: ``Df`` (I believe this represents the sample), the ``SumsOfSqs``, the ``MeanSqs``, the ``F.Model``, the ``R squared``, and the p value, as indicated by ``Pr(>F)``. From the initial testing positive correlations matched their expected output, and the negative correlation matched as well. The only discrepancy was the test concerning the whole body data set, specifically the first shuffle of the distance matrix (unweighted_unifrac_dm_shuffled_1.txt). This result indicated that there was a significance in the correlation for the inputs, however it wasn’t expected to do so. Upon checking the other two shuffled distance matrices with Adonis no other matches were found. Because of this it can be inferred that it was just a simple shuffle error that it wasn’t reliable enough. Lastly an interesting result is also in the RST. It shows the output for Adonis using the wholebody datasets. By comparing the ``SEX`` variable Adonis arrives at an output that indicates there is a significance associated with it. The p-value is 0.038. I was surprised by this and added it in because when I discussed this with Jai he stated he found similar results indicating the same conclusion. We are still not sure if these are correct though.
 
 
 References

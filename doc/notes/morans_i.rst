@@ -35,6 +35,53 @@ There is a matlab version of Morans I floating around. It is written by a Felix 
 
 Package sp has several functions, including moran.test, that are more specifically targeted to the analysis of spatial data. Package spatial has the function correlogram that computes and plots spatial correlograms.:ref:[`5 <moranref5>`]
 
+System Setup and Required Dependencies
+--------------------------------------
+Step 1:
+The first step is to install R. The following command downloads and installs R:
+
+    sudo apt-get install r-base
+
+Step 2:
+Identify the qiime location for where it is installed. In the case of the AWS, using AMI:QIIME 1.4.0 EBS East (ami-458d5b2c). 
+
+	QIIME location is: /software/qiime-1.4.0-release
+
+Step 3:
+You need to define an environment variable to tell the script where to look for the r utility functions in qiime. Run the following command, changing the path to point to the location of your qiime install:
+
+    export qiime_dir=/home/<username>/qiime/trunk
+
+If you dont want to have to perform this step each time you open a new terminal, run the following command to add it to your .bashrc:
+
+    echo "export qiime_dir=/home/<username>/qiime/trunk" >> ~/.bashrc
+    source ~/.bashrc
+
+OR
+
+Go into /etc/, and open the file /etc/environment. In this file youll want to put the line:
+
+	QIIME_DIR="/software/qiime-1.4.0-release" 
+
+The full information is:
+
+	Directory: /etc/
+	File: environment
+	Full file path: /etc/environment
+	String to add at bottom: QIIME_DIR="/software/qiime-1.4.0-release" 
+
+Make sure to include the quotes. Once you do that you need to save and  restart. 
+
+After all of this you can now type "echo $QIIME_DIR" in the terminal and it should print out the set path that was used above..
+
+Step 4:
+Youll need to install some R packages. If you can use the R console from the command line simply type R to get to it.
+
+To get the packages type:
+	install.packages(optparse)
+	install.packages(ape)
+
+If youre concerned about updating packages type "update.packages()" in the R console, excluding the quotes.
 
 Input
 -----
@@ -124,9 +171,6 @@ This is a positive control test.
 .. image:: ../images/morans_i/88_soils/originalData/phResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 pH Analysis (Shuffled Data 1 - PH)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -156,9 +200,6 @@ This is a negative control test.
 .. image:: ../images/morans_i/88_soils/shuffledData1/phResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
 pH Analysis (Shuffled Data 2 - PH)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
@@ -185,9 +226,6 @@ This is a negative control test.
 
 .. image:: ../images/morans_i/88_soils/shuffledData2/phResults.png
   :align: center
-
-TO DO:
-Perform Analysis
 
 pH Analysis (Shuffled Data 3 - PH)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,56 +255,9 @@ This is a negative control test.
 .. image:: ../images/morans_i/88_soils/shuffledData3/phResults.png
   :align: center
 
-TO DO:
-Perform Analysis
-
-System Setup and Required Dependencies
---------------------------------------
-Step 1:
-The first step is to install R. The following command downloads and installs R:
-
-    sudo apt-get install r-base
-
-Step 2:
-Identify the qiime location for where it is installed. In the case of the AWS, using AMI:QIIME 1.4.0 EBS East (ami-458d5b2c). 
-
-	QIIME location is: /software/qiime-1.4.0-release
-
-Step 3:
-You need to define an environment variable to tell the script where to look for the r utility functions in qiime. Run the following command, changing the path to point to the location of your qiime install:
-
-    export qiime_dir=/home/<username>/qiime/trunk
-
-If you dont want to have to perform this step each time you open a new terminal, run the following command to add it to your .bashrc:
-
-    echo "export qiime_dir=/home/<username>/qiime/trunk" >> ~/.bashrc
-    source ~/.bashrc
-
-OR
-
-Go into /etc/, and open the file /etc/environment. In this file youll want to put the line:
-
-	QIIME_DIR="/software/qiime-1.4.0-release" 
-
-The full information is:
-
-	Directory: /etc/
-	File: environment
-	Full file path: /etc/environment
-	String to add at bottom: QIIME_DIR="/software/qiime-1.4.0-release" 
-
-Make sure to include the quotes. Once you do that you need to save and  restart. 
-
-After all of this you can now type "echo $QIIME_DIR" in the terminal and it should print out the set path that was used above..
-
-Step 4:
-Youll need to install some R packages. If you can use the R console from the command line simply type R to get to it.
-
-To get the packages type:
-	install.packages(optparse)
-	install.packages(ape)
-
-If youre concerned about updating packages type "update.packages()" in the R console, excluding the quotes.
+Results Analysis
+----------------
+Moran’s I accepts as input the information being analysed and the variable being used to compare the samples. Its intention is to show the correlation between the samples and their location between each other. An important nuance is that the variables being used must be numerical values. The output from Moran’s I returns the observed and expected value, as well as the standard deviation and the p-value. The I value returned from Morans I should be between -1 and 1. This indicates the type of spatial geography that is being observed. The output received from testing Moran’s I against the 88 soils data sets matched the expected out, where the p-value for the original data showed significance, and the p-value for the shuffled data were all greater than .05. Overall this is a useful method that allows for the ability to infer the spatial relationship.
 
 References
 ----------
