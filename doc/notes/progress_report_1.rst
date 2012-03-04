@@ -31,7 +31,7 @@ datasets. The correlation methods accept either two or three distance matrices
 as input and compute the correlation between the first two matrices. Negative
 control tests were performed using three Unifrac distance matrices with shuffled
 labels. For the 88 soils study, we created a second distance matrix containing
-differences in PH and used this as a positive control. We used a distance matrix
+differences in pH and used this as a positive control. We used a distance matrix
 containing differences in latitude for an additional negative control test. For
 the keyboard study, we filtered the original Unifrac distance matrix to include
 only samples taken from keys, and then we created a second distance matrix of
@@ -66,13 +66,13 @@ conclusions are made regarding their usefulness.
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `Partial Mantel <partial_mantel.html>`_                               | Correlation               | Unsure             | Needs better positive control test*                                               |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `ANOSIM <anosim.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                       |
+| `ANOSIM <anosim.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Adonis <adonis.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                       |
+| `Adonis <adonis.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Low specificity**                                                                       |
+| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `MRPP <mrpp.html>`_                                                   | Clustering                | Unsure             | Low specificity**                                                                       |
+| `MRPP <mrpp.html>`_                                                   | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `BEST <best.html>`_                                                   | Clustering                | Unsure             | Shuffled matrices neg. control didn't work                                        |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
