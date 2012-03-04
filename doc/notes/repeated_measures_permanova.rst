@@ -58,7 +58,6 @@ The first step is to install R. The following command downloaded and installed R
     sudo apt-get install r-base
 
 Next, you must install the vegan package in R. Run the following commands: ::
-
     sudo R
     install.packages("vegan")
     q()

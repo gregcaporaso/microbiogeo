@@ -66,13 +66,13 @@ conclusions are made regarding their usefulness.
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `Partial Mantel <partial_mantel.html>`_                               | Correlation               | Unsure             | Needs better positive control test*                                               |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `ANOSIM <anosim.html>`_                                               | Clustering                | Unsure             | Sensitive**                                                                       |
+| `ANOSIM <anosim.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                       |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Adonis <adonis.html>`_                                               | Clustering                | Unsure             | Sensitive**                                                                       |
+| `Adonis <adonis.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                       |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Sensitive**                                                                       |
+| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Low specificity**                                                                       |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `MRPP <mrpp.html>`_                                                   | Clustering                | Unsure             | Sensitive**                                                                       |
+| `MRPP <mrpp.html>`_                                                   | Clustering                | Unsure             | Low specificity**                                                                       |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `BEST <best.html>`_                                                   | Clustering                | Unsure             | Shuffled matrices neg. control didn't work                                        |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
@@ -99,7 +99,7 @@ Mantel correlogram did for this test (the third distance matrix was not used for
 those tests, though).
 
 \** Several of the clustering methods (i.e. ANOSIM, Adonis, PERMANOVA, and MRPP)
-seem to be very sensitive to clustering. These methods were tested on the whole
+seem to have very sensitive to clustering. These methods were tested on the whole
 body dataset using the sex category to determine the grouping of samples. We
 thought this would be a good negative control to test as we did not expect to
 see significant clustering on sex. Much to our surprise, the methods returned
