@@ -554,8 +554,6 @@ This test uses a shuffled unweighted unifrac distance matrix and the HOST_SUBJEC
 
 **Command:** ::
 
-	library(vegan)
-
 	R --slave --args -d Keyboard/unweighted_unifrac_dm_shuffled_2.txt -m Keyboard/map.txt -c HOST_SUBJECT_ID -o betadisper_negative_2 < betadisper.r
 
 **Results:**
