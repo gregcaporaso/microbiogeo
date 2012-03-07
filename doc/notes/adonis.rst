@@ -561,7 +561,18 @@ The files provided are: ::
 
 Results Analysis
 ----------------
-Adonis accepts a variable that’s passed in along with the file that’s being analyzed. Using this variable it then performs permutations that randomize the the samples and creates F-Tests to analyze it. From there the P-value is calculated and the information returned to the user is: ``Df`` (I believe this represents the sample), the ``SumsOfSqs``, the ``MeanSqs``, the ``F.Model``, the ``R squared``, and the p value, as indicated by ``Pr(>F)``. From the initial testing positive correlations matched their expected output, and the negative correlation matched as well. The only discrepancy was the test concerning the whole body data set, specifically the first shuffle of the distance matrix (unweighted_unifrac_dm_shuffled_1.txt). This result indicated that there was a significance in the correlation for the inputs, however it wasn’t expected to do so. Upon checking the other two shuffled distance matrices with Adonis no other matches were found. Because of this it can be inferred that it was just a simple shuffle error that it wasn’t reliable enough. Lastly an interesting result is also in the RST. It shows the output for Adonis using the wholebody datasets. By comparing the ``SEX`` variable Adonis arrives at an output that indicates there is a significance associated with it. The p-value is 0.038. I was surprised by this and added it in because when I discussed this with Jai he stated he found similar results indicating the same conclusion. We are still not sure if these are correct though.
+Adonis accepts a variable passed in along with the file being analyzed. Using this variable it then performs permutations 
+that randomize the the samples and creates F-Tests to analyze it. From there the P-value is calculated and the information 
+returned to the user is: ``Df`` (I believe this represents the sample), the ``SumsOfSqs``, the ``MeanSqs``, 
+the ``F.Model``, the ``R squared``, and the p value, as indicated by ``Pr(>F)``. From the initial testing positive correlations 
+matched their expected output, and the negative correlation matched as well. The only discrepancy was the test concerning the 
+whole body data set, specifically the first shuffle of the distance matrix (unweighted_unifrac_dm_shuffled_1.txt). This result 
+indicated that there was a significance in the correlation for the inputs, however this was not expected. Upon checking the other 
+two shuffled distance matrices with Adonis no other matches were found. Because of this it can be inferred that it was just a 
+simple shuffle error that it was not reliable enough. Lastly an interesting result is also in the RST. It shows the output for 
+Adonis using the wholebody datasets. By comparing the ``SEX`` variable Adonis arrives at an output that indicates there is a 
+significance associated with it. The p-value is 0.038. I was surprised by this and added it in because when I discussed this 
+with Jai he stated he found similar results indicating the same conclusion. We are still not sure if these are correct though.
 
 
 References
