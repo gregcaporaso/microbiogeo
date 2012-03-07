@@ -56,35 +56,33 @@ conclusions are made regarding their usefulness.
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | Method Name                                                           | Method Type               | Meaningful Results | Notes                                                                             |
 +=======================================================================+===========================+====================+===================================================================================+
-| `LSA <lsa.html>`_                                                     | Correlation               | N/A                | Failed on data provided by developer                                              |
-+-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `Mantel <mantel.html>`_                                               | Correlation               | Yes                | Responds well to positive and negative controls                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `Mantel Correlogram <mantel_correlogram.html>`_                       | Correlation               | Yes                | Responds well to positive and negative controls                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `Moran's I <morans_i.html>`_                                          | Correlation               | Yes                |                                                                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-+-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `RDA <rda.html>`_                                                     | Clustering/Ordination     | Yes                | Responds well to positive and negative controls                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
+| `Partial Mantel <partial_mantel.html>`_                               | Correlation               | Unsure             | Needs better positive control test*                                               |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `ANOSIM <anosim.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `Adonis <adonis.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `BEST <best.html>`_                                                   | Clustering                | Unsure             | Shuffled matrices neg. control didn't work                                        |
+| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `MRPP <mrpp.html>`_                                                   | Clustering                | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `MultiCoLA <MultiCoLA.html>`_                                         | Clustering                | N/A                | Missing some scripts, in contact with author                                      |
+| `BEST <best.html>`_                                                   | Clustering                | Unsure             | Shuffled matrices neg. control didn't work                                        |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Partial Mantel <partial_mantel.html>`_                               | Correlation               | Unsure             | Needs better positive control test*                                               |
-+-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Low specificity**                                                                 |
+| `Repeated Measures PERMANOVA <repeated_measures_permanova.html>`_     | Clustering                | Unsure             | Time fields in Glen Canyon (or any used as proxy) do not yield meaningful results |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | `PERMDISP <permdisp.html>`_                                           | Clustering                | N/A                | Testing in progress                                                               |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Repeated Measures PERMANOVA <repeated_measures_permanova.html>`_     | Clustering                | Unsure             | Time fields in Glen Canyon (or any used as proxy) do not yield meaningful results |
+| `MultiCoLA <MultiCoLA.html>`_                                         | Clustering                | N/A                | Missing some scripts, in contact with author                                      |
++-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
+| `LSA <lsa.html>`_                                                     | Correlation               | N/A                | Failed on data provided by developer                                              |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 
 \* It is hard to judge whether Partial Mantel gives biologically meaningful
@@ -101,7 +99,7 @@ Mantel correlogram did for this test (the third distance matrix was not used for
 those tests, though).
 
 \** Several of the clustering methods (i.e. ANOSIM, Adonis, PERMANOVA, and MRPP)
-seem to be very sensitive to clustering. These methods were tested on the whole
+seem to have very sensitive to clustering. These methods were tested on the whole
 body dataset using the sex category to determine the grouping of samples. We
 thought this would be a good negative control to test as we did not expect to
 see significant clustering on sex. Much to our surprise, the methods returned
@@ -122,4 +120,3 @@ significantly different. We also came across warnings saying that MRPP can be
 sensitive to outliers. Thus, our strange results may be related to these issues.
 The next step is to test these methods on simulated data in order to help us
 decide whether these methods are worth implementing or not.
-
