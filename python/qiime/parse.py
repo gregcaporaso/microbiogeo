@@ -19,10 +19,11 @@ manipulation of the data.
 from biom.table import DenseTable
  
 class DistanceMatrix(DenseTable):
+    """This class represents a QIIME distance matrix."""
     _biom_type = "Distance matrix"
 
     def __init__(self, *args, **kwargs):
-        """Instantiate a new DistanceMatrix object.
+        """Instantiates a DistanceMatrix object.
 
         A distance matrix must be square and its sample IDs are exactly the
         same as its observation IDs (a biom table has sample IDs for column
@@ -67,4 +68,51 @@ class DistanceMatrix(DenseTable):
 
 
 class MetadataMap():
-    pass
+    """This class represents a QIIME metadata mapping file."""
+
+    def __init__(self, sample_metadata, comments):
+        """Instantiates a MetadataMap object.
+        
+        Arguments:
+            sample_metadata - the output of parse_mapping_file_to_dict(). It
+                expects a python dict of dicts, where the top-level key is
+                sample ID, and the inner dict maps category name to category
+                value. This can be an empty dict altogether or the inner dict
+                can be empty.
+            comments - the output of parse_mapping_file_to_dict(). It expects a
+                list of strings for the comments in the mapping file. Can be an
+                empty list.
+        """
+        self._metadata = sample_metadata
+        self._comments = comments
+
+    def getComments(self):
+        """Returns the comments associated with this metadata map.
+
+        The comments are returned as a list of strings, or an empty list if
+        there are no comments.
+        """
+        return self._comments
+
+    def getSampleMetadata(self, sampleId):
+        """Returns the metadata associated with a particular sample.
+
+        The metadata will be returned as a dict mapping category name to
+        category value.
+
+        Arguments:
+            sampleId - the sample ID (string) to retrieve metadata for.
+        """
+        return self._metadata[sampleId]
+
+    def getCategoryValue(self, sampleId, category):
+        """Returns the category value associated with a sample's category.
+
+        The returned category value will be a string.
+
+        Arguments:
+            sampleId - the sample ID (string) to retrieve category information
+                for.
+            category - the category name whose value will be returned.
+        """
+        return self._metadata[sampleId][category]
