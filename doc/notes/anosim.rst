@@ -13,11 +13,11 @@ significance is determined through permutations.
 
 Introduction
 ------------
-The Analysis of Similarities (ANOSIM) method tests for clusters by computing an
-R statistic, which is based on mean ranks of within group and between group
-dissimilarities, scaled into the range −1...+1. It is a non-parametric variant
-of Analysis of Variance (ANOVA). This method operates on a distance matrix using
-a given grouping of samples.
+The Analysis of Similarities (ANOSIM) method tests for significance of
+categories by computing an R statistic, which is based on mean ranks of within
+group and between group dissimilarities, scaled into the range −1...+1. It is a
+non-parametric variant of Analysis of Variance (ANOVA). This method operates on
+a distance matrix using a given grouping of samples.
 
 :note: ANOSIM only works with a categorical variable that is used to do the grouping. Mantel is recommended for continuous variables.
 
@@ -157,8 +157,8 @@ Test 1
 **Description:**
 
 This test uses the `BODY_SITE` category as a positive control. We expect there
-to be significant clustering due to previous analysis done on the Whole Body
-dataset.
+to be significant differences between categories due to previous analysis done
+on the Whole Body dataset.
 
 **Command:** ::
 
@@ -172,16 +172,17 @@ The following output file is created: ::
     datasets/whole_body/unweighted_unifrac_dm.txt	0.469648075442	0.001
 
 The R value of 0.469648075442 indicates that body sites are significantly
-different (i.e. there is clustering) due to its relatively "large" positive
-value. This is a result that we would expect. The p-value of 0.001 indicates
-that the result is significant.
+different (i.e. there are differences between categories) due to its relatively
+"large" positive value. This is a result that we would expect. The p-value of
+0.001 indicates that the result is significant.
 
 Test 2
 ~~~~~~
 **Description:**
 
 This test uses the `SEX` category as a negative control. We don't expect to see
-significant clustering due to previous analysis done on the Whole Body dataset.
+significant differences between categories due to previous analysis done on the
+Whole Body dataset.
 
 **Command:** ::
 
@@ -194,7 +195,7 @@ The following output file is created: ::
     Input_filepath	ANOSIM_R_value	p_value
     datasets/whole_body/unweighted_unifrac_dm.txt	0.0354433583741	0.002
 
-The R value of 0.0354433583741 indicates that there isn't significant clustering
+The R value of 0.0354433583741 indicates that there isn't significant difference
 due to sex of the subjects because it is close to zero. This result is what we
 would expect. The only confusing thing is the p-value of 0.002. This is a really
 small p-value, so it **is** indicating that there are significant differences
@@ -206,7 +207,8 @@ Test 3
 
 This test uses three shuffled distance matrices and the `BODY_SITE` category to
 perform three negative control tests. Since the labels of the distance matrices
-are shuffled, we don't expect to see clustering any more on this category.
+are shuffled, we don't expect to see significant differences any more on this
+category.
 
 **Command:** ::
 
@@ -243,8 +245,8 @@ Test 1
 **Description:**
 
 This test uses the `HOST_SUBJECT_ID` category as a positive control. We expect
-there to be significant clustering on host subjects due to previous analysis
-done on the keyboard study dataset.
+there to be significant differences between host subjects due to previous
+analysis done on the keyboard study dataset.
 
 **Command:** ::
 
@@ -258,9 +260,9 @@ The following output file is created: ::
     datasets/keyboard/unweighted_unifrac_dm.txt	0.794026410205	0.001
 
 The R value of 0.794026410205 indicates that samples taken from different hosts
-are significantly different (i.e. there is clustering) due to its "large"
-positive value. This is a result that we would expect. The p-value of 0.001
-indicates that the result is significant.
+are significantly different due to its "large" positive value. This is a result
+that we would expect. The p-value of 0.001 indicates that the result is
+significant.
 
 Test 2
 ~~~~~~
@@ -268,8 +270,8 @@ Test 2
 
 This test uses three shuffled distance matrices and the `HOST_SUBJECT_ID`
 category to perform three negative control tests. Since the labels of the
-distance matrices are shuffled, we don't expect to see clustering any more on
-this category.
+distance matrices are shuffled, we don't expect to see significant differences
+between host subjects any more.
 
 **Command:** ::
 
@@ -307,7 +309,7 @@ Test 1
 **Description:**
 
 This test uses the `CurrentlyWet` category as a positive control. We expect
-there to be significant clustering on this category due to previous analysis
+there to be significant differences on this category due to previous analysis
 done on the Glen Canyon dataset.
 
 **Command:** ::
@@ -322,9 +324,9 @@ The following output file is created: ::
     datasets/glen_canyon/unweighted_unifrac_dm.txt	0.9984007035	0.001
 
 The R value of 0.9984007035 indicates that samples taken from wet and dry
-environments are significantly different (i.e. there is clustering) due to the
-really "large" positive value that is close to 1. This is a result that we would
-expect, as there is also clear clustering in the 3D PCoA plots.
+environments are significantly different due to the really "large" positive
+value that is close to 1. This is a result that we would expect, as there is
+also clear clustering in the 3D PCoA plots.
 
 Test 2
 ~~~~~~
@@ -332,7 +334,7 @@ Test 2
 
 This test uses three shuffled distance matrices and the `CurrentlyWet`
 category to perform three negative control tests. Since the labels of the
-distance matrices are shuffled, we don't expect to see clustering any more on
+distance matrices are shuffled, we don't expect to see differences any more on
 this category.
 
 **Command:** ::

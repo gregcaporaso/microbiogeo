@@ -110,9 +110,9 @@ Test 1
 ~~~~~~
 **Description:**
 
-This test uses the `BODY_SITE` category as a positive control.
-We expect there to be significant clustering due to previous analysis done on
-the Whole Body dataset.
+This test uses the `BODY_SITE` category as a positive control. We expect there
+to be significant differences between body sites due to previous analysis done
+on the Whole Body dataset.
 
 **Command:** ::
 
@@ -125,7 +125,7 @@ The following output file is created: ::
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	13.2670596158		0.001
 	
-The R value of 13.2670596158 indicates that the body sites are significantly different (i.e. there is clustering) due to its 
+The R value of 13.2670596158 indicates that the body sites are significantly different due to its 
 relatively “large” ratio. This is a result that we would expect. The p-value of .001 indicates that the 
 result is significant.
 
@@ -134,8 +134,8 @@ Test 2
 **Description:**
 
 This test uses the `SEX` category as a negative control.
-We expect there to be less clustering due to previous analysis done on
-the Whole Body dataset.
+We don't expect there to be significant differences based on sex due to previous
+analysis done on the Whole Body dataset.
 
 **Command:** ::
 
@@ -148,7 +148,7 @@ The following output file is created: ::
 	Input_filepath						permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	21.0188242485		0.001
 	
-The R value of 21.0188242485 indicates that the sexes are significantly different (i.e. there is clustering) due to its 
+The R value of 21.0188242485 indicates that the sexes are significantly different due to its 
 relatively “large” ratio. This is a result that we would not expect because it is supposed to be a negative control. The p-value of .001 indicates that the 
 result is significant.
 
@@ -157,7 +157,7 @@ Test 3
 **Description:**
 
 This test uses three shuffled distance matrices and the BODY_SITE category to perform three negative control 
-tests. Since the labels of the distance matrices are shuffled, we don’t expect to see clustering any more on 
+tests. Since the labels of the distance matrices are shuffled, we don’t expect to see significant differences any more on 
 this category.
 
 **Commands:** ::
@@ -183,7 +183,7 @@ The following output files were created: ::
 	Input_filepath							permanova_R_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
 	
-The R values of 1.98060081904, 1.81015551855,and 1.73759470202 indicates that the body sites are not significantly different (i.e. there is no clustering) due to its 
+The R values of 1.98060081904, 1.81015551855,and 1.73759470202 indicates that the body sites are not significantly different due to its 
 relatively “small” ratio. This is a result that we would expect because the matricies are pre-shuffled. The p-values of 0.031, 0.623, and 0.929 indicates that the 
 results are insignificant.
 
@@ -194,7 +194,7 @@ Test 1
 **Description:**
 
 This test uses the `HOST_SUBJECT_ID` category as a positive control. We expect
-there to be significant clustering on host subjects due to previous analysis
+there to be significant differences based on host subjects due to previous analysis
 done on the keyboard study dataset.
 
 **Command:** ::
@@ -208,7 +208,7 @@ The following output file is created: ::
         Input_filepath                                          permanova_R_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm.txt       5.17880475397           0.001
 	
-The R value of 5.17880475397 indicates that the host id's are significantly different (i.e. there is clustering) due to its 
+The R value of 5.17880475397 indicates that the host id's are significantly different due to its 
 relatively “large” ratio. This is a result that we would expect. The p-value of 0.001 indicates that the 
 result is significant.
 
@@ -218,7 +218,7 @@ Test 2
 
 This test uses three shuffled distance matrices and the `HOST_SUBJECT_ID`
 category to perform three negative control tests. Since the labels of the
-distance matrices are shuffled, we don't expect to see clustering any more on
+distance matrices are shuffled, we don't expect to see significant differences any more on
 this category.
 
 **Command:** ::
@@ -244,7 +244,7 @@ The following output files are created: ::
         Input_filepath                                                  permanova_R_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt    0.959082333436          0.648
 	
-The R values of 1.04303546137, 1.03699740907, and 0.959082333436 indicates that the shuffled host id's are not significantly different (i.e. there is no clustering) due to its 
+The R values of 1.04303546137, 1.03699740907, and 0.959082333436 indicates that the shuffled host id's are not significantly different due to its 
 relatively “small” ratio. This is a result that we would expect. The p-value of 0.31, 0.317, 0.648 and indicates that the 
 result are insignificant.
 
@@ -256,7 +256,7 @@ Test 1
 **Description:**
 
 This test uses the `CurrentlyWet` category as a positive control. We expect
-there to be significant clustering on this category due to previous analysis
+there to be significant differences on this category due to previous analysis
 done on the Glen Canyon dataset.
 
 **Command:** ::
@@ -270,7 +270,7 @@ The following output file is created: ::
         Input_filepath                                          permanova_R_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm.txt    29.2130439798           0.001
 	
-The R value of 29.2130439798 indicates that there is significant clustering based on whether it is CurrentlyWet, we can tell due to its 
+The R value of 29.2130439798 indicates that there is significant differences between groups of samples based on whether they are currently wet, we can tell due to its 
 relatively “large” ratio. This is a result that we would expect from previous experments. The p-value of 0.001 indicates that the 
 result is significant.
 
@@ -280,7 +280,7 @@ Test 2
 
 This test uses three shuffled distance matrices and the `CurrentlyWet`
 category to perform three negative control tests. Since the labels of the
-distance matrices are shuffled, we don't expect to see clustering any more on
+distance matrices are shuffled, we don't expect to see significant differences any more on
 this category.
 
 **Command:** ::
@@ -306,7 +306,7 @@ The following output files are created: ::
         Input_filepath                                                  permanova_R_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt 1.68346774545           0.902
 	
-The R value of 2.03268471405, 1.91859583429, and 1.68346774545 indicates that the results when CurrentlyWet is shuffled are not significantly different (i.e. there is no clustering) due to its 
+The R value of 2.03268471405, 1.91859583429, and 1.68346774545 indicates that the results when CurrentlyWet is shuffled are not significantly different due to its 
 relatively “small” ratio. This is a result that we would expect. The p-values of 0.332, 0.448, and 0.902 indicates that the 
 results are insignificant.
 

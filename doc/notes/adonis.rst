@@ -185,8 +185,8 @@ Output is sent to the location specified by -o. The files name should be adonis_
 .. image:: ../images/adonis/wholebody/originalData/qiimeOverviewResults.png
   :align: center
 
-Whole Body (Clustering)
-^^^^^^^^^^^^^^^^^^^^^^^
+Whole Body
+^^^^^^^^^^
 
 The data files used for this testing can be found :download:`here <../downloads/WholeBodyAdonisRtesting.zip>`
 
@@ -197,8 +197,8 @@ Body Site Analysis (Original Data - BODY_SITE)
 **Description:**
 
 This test uses the `BODY_SITE` category as a positive control.
-We expect there to be significant clustering due to previous analysis done on
-the Whole Body dataset.
+We expect there to be significant differences between samples at different body
+sites due to previous analysis done on the Whole Body dataset.
 
 **Input:** ::
 
@@ -236,8 +236,8 @@ Body Site Analysis (Shuffled Data 1 - BODY_SITE)
 
 This test uses the `BODY_SITE` category as a negative control.
 
-We expect there to be no significant clustering due to previous analysis done on
-the Whole Body dataset.
+We expect there to be no significant differences between body sites due to our
+shuffled data.
 
 **Input:**
 
@@ -264,8 +264,7 @@ Body Site Analysis (Shuffled Data 2 - BODY_SITE)
 
 This test uses the `BODY_SITE` category as a negative control.
 
-We expect there to be no significant clustering due to previous analysis done on
-the Whole Body dataset.
+We expect there to be no significant differences due to our shuffled data.
 
 **Input:**
 
@@ -293,8 +292,7 @@ Body Site Analysis (Shuffled Data 3 - BODY_SITE)
 
 This test uses the `BODY_SITE` category as a negative control.
 
-We expect there to be no significant clustering due to previous analysis done on
-the Whole Body dataset.
+We expect there to be no significant differences due to our shuffled data.
 
 **Input:**
 
@@ -320,8 +318,8 @@ Body Site Analysis (Original Data - SEX)
 **Description:**
 
 This test uses the `SEX` category as a positive control.
-We expect there to be significant clustering due to previous analysis done on
-the Whole Body dataset.
+We do not expect there to be significant differences due to previous analysis
+done on the Whole Body dataset.
 
 **Input:** ::
 
@@ -342,8 +340,8 @@ the Whole Body dataset.
 .. image:: ../images/adonis/wholebody/originalData/sexResults.png
   :align: center
 
-Keyboard (Clustering)
-^^^^^^^^^^^^^^^^^^^^^
+Keyboard
+^^^^^^^^
 
 The data files used for this testing can be found :download:`here <../downloads/KeyboardAdonisRtesting.zip>`
 
@@ -353,7 +351,7 @@ Keyboard Analysis (Original Data - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that cluster around the `Host_Subject_ID` information. This is being used as a positive correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see significant differences based on `Host_Subject_ID` information. This is being used as a positive control test.
 
 **Input:**
 
@@ -379,7 +377,7 @@ Keyboard Analysis (Shuffled Data 1 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a negative correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to NOT see significant differences based on `Host_Subject_ID` information. This is being used as a negative control test.
 
 **Input:**
 
@@ -405,7 +403,7 @@ Keyboard Analysis (Shuffled Data 2 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a negative correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to NOT see significant differences based on `Host_Subject_ID` information. This is being used as a negative control test.
 
 **Input:**
 
@@ -431,7 +429,7 @@ Keyboard Analysis (Shuffled Data 3 - Host_Subject_ID)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to see results that are NOT clustering arounding the `Host_Subject_ID` information. This is being used as a negative correlation test.
+These are the tests performed on the keyboard data set. It focuses on using the `Host_Subject_ID`. The expected result is to NOT see significant differences based on `Host_Subject_ID` information. This is being used as a negative control test.
 
 **Input:**
 
@@ -452,8 +450,8 @@ The files provided are: ::
 .. image:: ../images/adonis/keyboard/shuffledData3/hostSubjectIDResults.png
   :align: center
 
-Glen Canyon (Clustering)
-^^^^^^^^^^^^^^^^^^^^^^^^
+Glen Canyon
+^^^^^^^^^^^
 
 The data files used for this testing can be found :download:`here <../downloads/GlenCanyonAdonisRtesting.zip>`
 
@@ -463,7 +461,7 @@ Glen Canyon Analysis (Original Data - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output clustering around areas if it was wet, or not. This is being used as a positive correlation test.
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see significant differences based on if the samples were wet or not. This is being used as a positive control test.
 
 **Input:**
 
@@ -488,7 +486,7 @@ Glen Canyon Analysis (Shuffled Data 1 - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output NOT clustering around areas if it was wet, or not wet. This is being used as a negative correlation test.
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to NOT see significant differences based on whether the samples were wet or not. This is being used as a negative control test.
 
 **Input:**
 
@@ -513,7 +511,7 @@ Glen Canyon Analysis (Shuffled Data 2 - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output NOT clustering around areas if it was wet, or not wet. This is being used as a negative correlation test.
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to NOT see significant differences based on whether the samples were wet or not. This is being used as a negative control test.
 
 **Input:**
 
@@ -538,7 +536,7 @@ Glen Canyon Analysis (Shuffled Data 3 - CurrentlyWet)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Description:**
 
-These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to see the output NOT clustering around areas if it was wet, or not wet. This is being used as a negative correlation test.
+These are the tests performed on the glen canyon data set. It focuses on using the `CurrentlyWet` information. The expected result is to NOT see significant differences based on whether the samples were wet or not. This is being used as a negative control test.
 
 **Input:**
 

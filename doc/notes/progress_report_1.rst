@@ -16,15 +16,16 @@ were recently assigned and are currently being evaluated.
 
 Testing Strategy
 ----------------
-The statistical methods can be categorized into two groups: clustering and
-correlation. We tested the clustering methods with the keyboard, Glen Canyon,
-and whole body datasets. Each of the clustering methods were tested with three
-Unifrac distance matrices with shuffled labels, which served as negative control
-tests. For the keyboard study, we tested clustering on individuals as a
-positive control. For the whole body study, we used body site as a
-positive control and sex as a negative control (in addition to the shuffled
-distance matrices negative control test described above). For the Glen Canyon
-study, we used the “currently wet” category as a positive control.
+The statistical methods can be categorized into two groups: those that test
+categories and those that test correlation betweeen two or more distance
+matrices. We tested the category methods with the keyboard, Glen Canyon, and
+whole body datasets. Each of the category methods were tested with three Unifrac
+distance matrices with shuffled labels, which served as negative control tests.
+For the keyboard study, we tested groupings based on individuals as a positive
+control. For the whole body study, we used body site as a positive control and
+sex as a negative control (in addition to the shuffled distance matrices
+negative control test described above). For the Glen Canyon study, we used the
+“currently wet” category as a positive control.
 
 We tested the correlation methods with the 88 soils, keyboard, and Glen Canyon
 datasets. The correlation methods accept either two or three distance matrices
@@ -56,33 +57,33 @@ conclusions are made regarding their usefulness.
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 | Method Name                                                           | Method Type               | Meaningful Results | Notes                                                                             |
 +=======================================================================+===========================+====================+===================================================================================+
-| `Mantel <mantel.html>`_                                               | Correlation               | Yes                | Responds well to positive and negative controls                                   |
+| `Mantel <mantel.html>`_                                               | Matrix Correlation        | Yes                | Responds well to positive and negative controls                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Mantel Correlogram <mantel_correlogram.html>`_                       | Correlation               | Yes                | Responds well to positive and negative controls                                   |
+| `Mantel Correlogram <mantel_correlogram.html>`_                       | Matrix Correlation        | Yes                | Responds well to positive and negative controls                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Moran's I <morans_i.html>`_                                          | Correlation               | Yes                |                                                                                   |
+| `Moran's I <morans_i.html>`_                                          | Autocorrelation           | Yes                |                                                                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `RDA <rda.html>`_                                                     | Clustering/Ordination     | Yes                | Responds well to positive and negative controls                                   |
+| `RDA <rda.html>`_                                                     | Ordination                | Yes                | Responds well to positive and negative controls                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Partial Mantel <partial_mantel.html>`_                               | Correlation               | Unsure             | Needs better positive control test*                                               |
+| `Partial Mantel <partial_mantel.html>`_                               | Matrix Correlation        | Unsure             | Needs better positive control test*                                               |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `ANOSIM <anosim.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                 |
+| `ANOSIM <anosim.html>`_                                               | Category Testing          | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Adonis <adonis.html>`_                                               | Clustering                | Unsure             | Low specificity**                                                                 |
+| `Adonis <adonis.html>`_                                               | Category Testing          | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `PERMANOVA <permanova.html>`_                                         | Clustering                | Unsure             | Low specificity**                                                                 |
+| `PERMANOVA <permanova.html>`_                                         | Category Testing          | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `MRPP <mrpp.html>`_                                                   | Clustering                | Unsure             | Low specificity**                                                                 |
+| `MRPP <mrpp.html>`_                                                   | Category Testing          | Unsure             | Low specificity**                                                                 |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `BEST <best.html>`_                                                   | Clustering                | Unsure             | Shuffled matrices neg. control didn't work                                        |
+| `BEST <best.html>`_                                                   | Category Testing          | Unsure             | Shuffled matrices neg. control didn't work                                        |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `Repeated Measures PERMANOVA <repeated_measures_permanova.html>`_     | Clustering                | Unsure             | Time fields in Glen Canyon (or any used as proxy) do not yield meaningful results |
+| `Repeated Measures PERMANOVA <repeated_measures_permanova.html>`_     | Category Testing          | Unsure             | Need appropriate dataset to test this method on                                   |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `PERMDISP <permdisp.html>`_                                           | Clustering                | N/A                | Testing in progress                                                               |
+| `PERMDISP <permdisp.html>`_                                           | Category Testing          | N/A                | Testing in progress                                                               |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `MultiCoLA <MultiCoLA.html>`_                                         | Clustering                | N/A                | Missing some scripts, in contact with author                                      |
+| `MultiCoLA <MultiCoLA.html>`_                                         | Category Testing          | N/A                | Missing some scripts, in contact with author                                      |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
-| `LSA <lsa.html>`_                                                     | Correlation               | N/A                | Failed on data provided by developer                                              |
+| `LSA <lsa.html>`_                                                     | Matrix Correlation        | N/A                | Failed on data provided by developer                                              |
 +-----------------------------------------------------------------------+---------------------------+--------------------+-----------------------------------------------------------------------------------+
 
 \* It is hard to judge whether Partial Mantel gives biologically meaningful
@@ -98,21 +99,21 @@ meaningful results. It does, however, give the same results that Mantel and
 Mantel correlogram did for this test (the third distance matrix was not used for
 those tests, though).
 
-\** Several of the clustering methods (i.e. ANOSIM, Adonis, PERMANOVA, and MRPP)
-seem to have very sensitive to clustering. These methods were tested on the whole
-body dataset using the sex category to determine the grouping of samples. We
-thought this would be a good negative control to test as we did not expect to
-see significant clustering on sex. Much to our surprise, the methods returned
-very small p-values (around 0.001 with 999 permutations). We also tested the
-methods on other categories that shouldn't indicate clustering (e.g. DOB for the
-overview tutorial, Hour or Day for Glen Canyon) and still received significant
-p-values. Greg suggested that we shuffle the individual's sexes in the whole
-body mapping file and try the tests again. Adonis, PERMANOVA, and MRPP still
-gave p-values of 0.001, but ANOSIM gave a large p-value (0.201). Thus, ANOSIM
-might be detecting very weak clustering on sex, but it is hard to say what the
-others are detecting. When we tested these methods using the three shuffled
-distance matrices as negative controls, they computed large p-values, which is
-what we expected to see.
+\** Several of the category methods (i.e. ANOSIM, Adonis, PERMANOVA, and MRPP)
+seem to be very sensitive. These methods were tested on the whole body dataset
+using the sex category to determine the grouping of samples. We thought this
+would be a good negative control to test as we did not expect to see significant
+differences between groups of samples based on sex. Much to our surprise, the
+methods returned very small p-values (around 0.001 with 999 permutations). We
+also tested the methods on other categories that shouldn't indicate significant
+differences (e.g. DOB for the overview tutorial, Hour or Day for Glen Canyon)
+and still received significant p-values. Greg suggested that we shuffle the
+individual's sexes in the whole body mapping file and try the tests again.
+Adonis, PERMANOVA, and MRPP still gave p-values of 0.001, but ANOSIM gave a
+large p-value (0.201). Thus, ANOSIM might be detecting very weak differences
+based on sex, but it is hard to say what the others are detecting. When we
+tested these methods using the three shuffled distance matrices as negative
+controls, they computed large p-values, which is what we expected to see.
 
 Some sources say that ANOSIM, MRPP, and \*ANOVA sometimes detect differences in
 spread (i.e. variability) within groups and report that the groups are

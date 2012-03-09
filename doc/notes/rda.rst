@@ -162,8 +162,8 @@ The command in the previous section creates two output files named
 :file:`rda_plot.pdf` and :file:`rda_results.txt`. The first file contains a 2D
 plot of each of the samples. It seems very similar to the clustering shown by a
 PCoA plot. The factor "Fast" overlayed on the plot is accompanied with a vector
-showing what constraining factor clustered the fasting samples together. The
-other output file contains information about the DB-RDA results. Notice that the
+showing what constraining factor grouped the fasting samples together. The other
+output file contains information about the DB-RDA results. Notice that the
 "Treatment" category accounts for 24.7% of the variability in the samples (this
 information is found in the "Constrained" row of the results table).
 
@@ -182,7 +182,7 @@ Test 1
 **Description:**
 
 This test uses the `BODY_SITE` category as a positive control. We expect to see
-clustering in the resulting plot.
+grouping of samples based on body site in the resulting plot.
 
 **Command:** ::
 
@@ -219,11 +219,11 @@ The following output files are created: ::
 .. image:: ../images/rda/whole_body_test_1.png
    :align: center
 
-The plot shows clear clustering of fecal samples at the bottom right of the
-plot. Clustering of tongue samples can also be seen at the top right, and there
-is also noticable clustering of outer ear samples at the bottom left. The plot
+The plot shows clear grouping of fecal samples at the bottom right of the
+plot. Grouping of tongue samples can also be seen at the top right, and there
+is also noticable grouping of outer ear samples at the bottom left. The plot
 also contains overlayed vectors indicating which body sites explain the
-clustering (not sure how better to explain this).
+grouping (not sure how better to explain this).
 
 The output text shows that the `BODY_SITE` constraining variable explains
 27.86% of the variability in the samples. These results seem to fall in line
@@ -234,7 +234,7 @@ Test 2
 **Description:**
 
 This test uses the `SEX` category as a negative control. We don't expect to see
-clustering due to previous analysis done on the Whole Body dataset.
+grouping of samples due to previous analysis done on the Whole Body dataset.
 
 **Command:** ::
 
@@ -267,7 +267,7 @@ The following output file is created: ::
 .. image:: ../images/rda/whole_body_test_2.png
    :align: center
 
-The plot doesn't really show clustering of samples based on sex. The output text
+The plot doesn't really show grouping of samples based on sex. The output text
 shows that the `SEX` constraining variable explains only 0.6929% of the
 variability in the samples. These results are what we'd expect.
 

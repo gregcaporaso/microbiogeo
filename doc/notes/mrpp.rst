@@ -35,9 +35,9 @@ MRPP also calculates an A statistic, which is:
 A = 1 - (observed delta / expected delta)
 
 Thus, an observed A value that is close to zero seems to indicate that there
-isn't evidence of clustering because the observed value of our delta statistic
-was very close to the expected delta value (which is obtained from
-permutations).
+isn't evidence of differences between groups because the observed value of our
+delta statistic was very close to the expected delta value (which is obtained
+from permutations).
 
 MRPP tests whether there are differences between two or more groups of samples,
 but it may not always find differences in groups due to differences in means.
@@ -172,8 +172,8 @@ Test 1
 **Description:**
 
 This test uses the `BODY_SITE` category as a positive control. We expect there
-to be significant clustering due to previous analysis done on the Whole Body
-dataset.
+to be significant differences between groups due to previous analysis done on
+the Whole Body dataset.
 
 **Command:** ::
 
@@ -219,15 +219,16 @@ The following output file is created: ::
     Significance of delta: 0.001 
     Based on  999  permutations
 
-The p-value of 0.001 indicates that body sites are significantly different (i.e.
-there is clustering). This is a result that we would expect.
+The p-value of 0.001 indicates that body sites are significantly different. This
+is a result that we would expect.
 
 Test 2
 ~~~~~~
 **Description:**
 
 This test uses the `SEX` category as a negative control. We don't expect to see
-significant clustering due to previous analysis done on the Whole Body dataset.
+significant differences between sexes due to previous analysis done on the Whole
+Body dataset.
 
 **Command:** ::
 
@@ -255,10 +256,10 @@ The following output file is created: ::
     Significance of delta: 0.001 
     Based on  999  permutations
 
-The p-value of 0.001 indicates that there is significant clustering based on sex
-of the subjects. This result isn't something that we'd expect to see. The A
-statistic (chance corrected within-group agreement) is pretty close to zero,
-though, so this indicates that there might not be clustering (the p-value
+The p-value of 0.001 indicates that there is significant differences based on
+the sex of the subjects. This result isn't something that we'd expect to see.
+The A statistic (chance corrected within-group agreement) is pretty close to
+zero, though, so this indicates that there might not be differences (the p-value
 doesn't back up this claim, though). This seems to be an issue with ANOSIM as
 well, where the p-value claims significance but the test statistic says
 otherwise.
@@ -269,7 +270,8 @@ Test 3
 
 This test uses three shuffled distance matrices and the `BODY_SITE` category to
 perform three negative control tests. Since the labels of the distance matrices
-are shuffled, we don't expect to see clustering any more on this category.
+are shuffled, we don't expect to see significant differences anymore on this
+category.
 
 **Command:** ::
 
@@ -393,11 +395,11 @@ The following output files are created: ::
     Significance of delta: 0.915 
     Based on  999  permutations
 
-The p-values from the last two tests are very large, indicating that there isn't
-significant clustering (this is what we would expect for our shuffled data). The
-first test has a smallish p-value of 0.015, but this may be able to be thrown
-out due to a bad shuffling of the data (this is why we are doing three shuffled
-tests).
+The p-values from the last two tests are very large, indicating that there
+aren't significant differences (this is what we would expect from our shuffled
+data). The first test has a smallish p-value of 0.015, but this may be able to
+be thrown out due to a bad shuffling of the data (this is why we are doing three
+shuffled tests).
 
 Keyboard
 ^^^^^^^^
@@ -407,8 +409,8 @@ Test 1
 **Description:**
 
 This test uses the `HOST_SUBJECT_ID` category as a positive control. We expect
-there to be significant clustering on host subjects due to previous analysis
-done on the keyboard study dataset.
+there to be significant differences based on host subject due to previous
+analysis done on the keyboard study dataset.
 
 **Command:** ::
 
@@ -437,9 +439,9 @@ The following output file is created: ::
     Based on  999  permutations
 
 The p-value of 0.001 indicates that samples taken from different hosts
-are significantly different (i.e. there is clustering). The observed value of
-the A statistic also confirms this because it is not sitting around zero. This
-is a result that we would expect.
+are significantly different. The observed value of the A statistic also confirms
+this because it is not sitting around zero. This is a result that we would
+expect.
 
 Test 2
 ~~~~~~
@@ -447,8 +449,8 @@ Test 2
 
 This test uses three shuffled distance matrices and the `HOST_SUBJECT_ID`
 category to perform three negative control tests. Since the labels of the
-distance matrices are shuffled, we don't expect to see clustering any more on
-this category.
+distance matrices are shuffled, we don't expect to see significant differences
+anymore on this category.
 
 **Command:** ::
 
@@ -518,10 +520,10 @@ The following output files are created: ::
   Significance of delta: 0.631 
   Based on  999  permutations
 
-The p-values from the three tests are all very large, indicating that there is
-not significant clustering, which is what we would expect from using shuffled
+The p-values from the three tests are all very large, indicating that there are
+not significant differences, which is what we would expect from using shuffled
 distance matrices. The three A statistics are sitting around zero as well, which
-also confirms the lack of clustering.
+also confirms our results.
 
 Glen Canyon
 ^^^^^^^^^^^
@@ -531,7 +533,7 @@ Test 1
 **Description:**
 
 This test uses the `CurrentlyWet` category as a positive control. We expect
-there to be significant clustering on this category due to previous analysis
+there to be significant differences on this category due to previous analysis
 done on the Glen Canyon dataset.
 
 **Command:** ::
@@ -561,9 +563,8 @@ The following output file is created: ::
     Based on  999  permutations
 
 The p-value of 0.001 indicates that samples taken from wet and dry environments
-are significantly different (i.e. there is clustering), which is what we'd
-expect. The A statistic also confirms this result because it isn't very close to
-zero.
+are significantly different, which is what we'd expect. The A statistic also
+confirms this result because it isn't very close to zero.
 
 Test 2
 ~~~~~~
@@ -571,8 +572,8 @@ Test 2
 
 This test uses three shuffled distance matrices and the `CurrentlyWet`
 category to perform three negative control tests. Since the labels of the
-distance matrices are shuffled, we don't expect to see clustering any more on
-this category.
+distance matrices are shuffled, we don't expect to see significant differences
+anymore on this category.
 
 **Command:** ::
 
@@ -644,8 +645,7 @@ The following output files are created: ::
 
 The three p-values are very large, indicating that samples taken from wet vs.
 dry environments are not significantly different, which is what we would expect.
-The A statistics are all near zero, which also indicates that we didn't see
-clustering.
+The A statistics are all near zero, which confirms our results.
 
 References
 ----------
