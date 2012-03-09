@@ -2,6 +2,14 @@
 Redundancy Analysis (RDA)
 =========================
 
+Synopsis
+--------
+DB-RDA is an ordination method that shows grouping/clustering of samples based
+on a category in the metadata mapping file and a distance matrix. This category
+is used to explain the variability between samples. Thus, RDA is similar to PCoA
+except that it is constrained, while PCoA is unconstrained (you must specify
+which category should be used to explain the variability in your data).
+
 Introduction
 ------------
 Redundancy Analysis (RDA) is an ordination method similar to Canonical

@@ -2,6 +2,15 @@
 Multiple Response Permutation Procedure (MRPP)
 ==============================================
 
+Synopsis
+--------
+MRPP is a method that tests whether two or more categories are significantly
+different. You can specify a category in the metadata mapping file to separate
+samples into groups and then test whether there are significant differences
+between those groups. For example, you might test whether `Control` samples are
+significantly different from `Fast` samples. Since MRPP is non-parametric,
+significance is determined through permutations.
+
 Introduction
 ------------
 The Multiple Response Permutation Procedure (MRPP) tests whether there is a

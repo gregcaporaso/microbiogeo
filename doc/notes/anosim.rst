@@ -2,6 +2,15 @@
 Analysis of Similarities (ANOSIM)
 =================================
 
+Synopsis
+--------
+ANOSIM is a method that tests whether two or more categories are significantly
+different. You can specify a category in the metadata mapping file to separate
+samples into groups and then test whether there are significant differences
+between those groups. For example, you might test whether `Control` samples are
+significantly different from `Fast` samples. Since ANOSIM is non-parametric,
+significance is determined through permutations.
+
 Introduction
 ------------
 The Analysis of Similarities (ANOSIM) method tests for clusters by computing an

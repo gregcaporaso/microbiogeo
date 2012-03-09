@@ -2,6 +2,19 @@
 Mantel Correlogram
 ==================
 
+Synopsis
+--------
+Mantel Correlogram is a method that tests whether there is correlation between
+two distance matrices by examining the correlation between matrices for each
+distance class. Mantel Correlogram performs a Mantel test on each distance class
+and generates a correlogram with distance classes on the x-axis and their
+corresponding Mantel test statistic on the y-axis. Thus, Mantel Correlogram
+allows you to see where the correlation exists between the two matrices by
+providing a higher-resolution view than a traditional Mantel test. For example,
+you might want to see if there is correlation between a Unifrac distance matrix
+and a spatial distance matrix. Mantel Correlogram will let you see what the
+correlation is at different ranges of spatial distances (distance classes).
+
 Introduction
 ------------
 The Mantel correlogram method computes a Mantel statistic for each geographic
