@@ -17,10 +17,26 @@ manipulation of the data.
 """
 
 from biom.table import DenseTable
- 
+from qiime.parse import parse_distmat, parse_mapping_file_to_dict
+
 class DistanceMatrix(DenseTable):
     """This class represents a QIIME distance matrix."""
     _biom_type = "Distance matrix"
+
+    @staticmethod
+    def parseDistanceMatrix(lines):
+        """Parses a QIIME distance matrix file into a DistanceMatrix object.
+        
+        This static method is basically a factory that reads in the given
+        distance matrix file contents and returns a DistanceMatrix instance.
+        This method is provided for convenience.
+
+        Arguments:
+            lines - a list of strings representing the file contents of a QIIME
+                distance matrix.
+        """
+        sample_ids, matrix_data = parse_distmat(lines)
+        return DistanceMatrix(matrix_data, sample_ids, sample_ids)
 
     def __init__(self, *args, **kwargs):
         """Instantiates a DistanceMatrix object.
@@ -70,6 +86,20 @@ class DistanceMatrix(DenseTable):
 class MetadataMap():
     """This class represents a QIIME metadata mapping file."""
 
+    @staticmethod
+    def parseMetadataMap(lines):
+        """Parses a QIIME metadata mapping file into a MetadataMap object.
+        
+        This static method is basically a factory that reads in the given
+        metadata mapping file contents and returns a MetadataMap instance. This
+        method is provided for convenience.
+
+        Arguments:
+            lines - a list of strings representing the file contents of a QIIME
+                metadata mapping file.
+        """
+        return MetadataMap(*parse_mapping_file_to_dict(lines))
+
     def __init__(self, sample_metadata, comments):
         """Instantiates a MetadataMap object.
         
@@ -85,6 +115,27 @@ class MetadataMap():
         """
         self._metadata = sample_metadata
         self._comments = comments
+
+    def __eq__(self, other):
+        """Test this instance for equality with another.
+
+        Note: This code was taken from http://stackoverflow.com/questions/
+            390250/elegant-ways-to-support-equivalence-equality-in-python-
+            classes.
+        """
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def __ne__(self, other):
+        """Test this instance for inequality with another.
+
+        Note: This code was taken from http://stackoverflow.com/questions/
+            390250/elegant-ways-to-support-equivalence-equality-in-python-
+            classes.
+        """
+        return not self.__eq__(other)
 
     def getComments(self):
         """Returns the comments associated with this metadata map.
