@@ -79,20 +79,22 @@ Our progress understanding MultiCoLA
 **Ran the commands:** ::
 
 	source("COtables.1.3.r")
-	truncated.DS.i<-COtables(all_taxa_pooled[[1]], Type="ADS",typem="dominant")
-        	
-**Answered the question:**
-
-        Details of the NMDS calculations? (y/n)...      n
-	
-**Ran the commands:** ::
-
+        truncated.DS.phylum<-COtables(all_taxa_pooled[[1]], Type="ADS",typem="dominant")
+        truncated.DS.class<-COtables(all_taxa_pooled[[2]], Type="ADS",typem="dominant")
+        truncated.DS.order<-COtables(all_taxa_pooled[[3]], Type="ADS",typem="dominant")
+        truncated.DS.family<-COtables(all_taxa_pooled[[4]], Type="ADS",typem="dominant")
+        truncated.DS.genus<-COtables(all_taxa_pooled[[5]], Type="ADS",typem="dominant")
+        truncated.DS.OTUwholeDS<-COtables(all_taxa_pooled[[6]], Type="ADS",typem="dominant")
         source("cutoff.impact.1.3.r")
         corr.all<-cutoff.impact(all_taxa_pooled,Type="ADS",corcoef="spearman",typem="dominant")
 
 **Answered the question:**
 
         Details of the NMDS calculations? (y/n)...      n
+
+**Was warned:** ::
+
+        There were 50 or more warnings (use warnings() to see the first 50)
         
 **Ran the commands:** ::
 
@@ -102,6 +104,7 @@ Our progress understanding MultiCoLA
 **Answered the questions:**
 
         Output as text files? (y/n)...  y
+
         Plot the results? (y/n)...      y
 
 **The files were created:**
@@ -152,12 +155,20 @@ Our progress understanding MultiCoLA
         Output as text files? (y/n)...  y
         Plot the results? (y/n)...      y
  
-**Ran the command:** ::
-
+**Ran the commands:** ::
+        
         source("corrcoeff.ENV.1.3.r")
+        corrcoeff.table.ADS<-matrix(NA,21,5)
+        row.names(corrcoeff.table.ADS)<-c(paste("CO_",c(0.01,seq(0.05,0.95,by=0.05),0.99),sep=""))
+        colnames(corrcoeff.table.ADS)<-c("Sum",paste("RDA1.",colnames(ENV),sep=""))
+        OTU.ADS<-VP.1.taxa[[c(7,3)]]
 
-corrcoeff.ENV.1.3.r was not included in the files given. The author of the MultiCoLA paper and scripts
-will be able to help us in a week as of March 2, 2012
+**Found problem with:** ::
+
+        > SPE<-OTU.ADS[[1]];corrcoeff.table.ADS[1,]<-corrcoeff(SPE,ENV);rm(SPE)
+        Error in if (nrow(SPE) < nrow(SPE)) { : argument is of length zero
+        ...Researching
+
 
 Input Files
 -----------
