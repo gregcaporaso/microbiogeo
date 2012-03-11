@@ -3,6 +3,39 @@
 ======
 Adonis
 ======
+Synopsis
+--------
+The Premise
+^^^^^^^^^^^
+
+Adonis is a statistical method that is generally used to assist in analysis of ecological community data, usually in the form of a samples by species matrices. 
+
+Adonis creates a set by first identifying the relevant centroids of the data and then calculates the squared deviations from these points.  
+
+After that significane tests are performed using F-tests based on sequential sums of squares from permutations of the raw data.
+
+Finally after all that the output is returned. It provides information that helps describe the data, as well as information like the p-value associated with analysis of the data.
+
+The output
+^^^^^^^^^^
+
+The output returned is: 
+
+  ``aov.tab`` - This is an analysis of variance(AOV) table showing sources of variation(the sample), degrees of freedom, sequential sums of squares, mean squares, F statistics, partial R-squared and P values, based on the N permutations. 
+  
+  (not sure about this, not sure where this output is at, not seeing it in mine?)
+  ``coefficients`` - matrix of coefficients of the linear model, with rows representing sources of variation and columns representing species.
+
+  (not sure about this, not sure where this output is at, not seeing it in mine?)
+  ``f.perms`` - an N by m matrix of the null F statistics for each source of variation based on N permutations of the data. 
+
+
+
+Plain English
+^^^^^^^^^^^^^
+
+Basically, adonis takes a set of data. It then identifies important points in the data and performs F-tests on the initial data, and random permutations of the shuffled category data provided. It's commonly stated to partition (or seperate the data) for this analysis. 
+
 
 Introduction
 ------------
