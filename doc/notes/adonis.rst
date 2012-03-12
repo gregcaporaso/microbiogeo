@@ -16,7 +16,7 @@ After that significane tests are performed using F-tests based on sequential sum
 
 Finally after all that the output is returned. It provides information that helps describe the data, as well as information like the p-value associated with analysis of the data.
 
-The output
+The Output
 ^^^^^^^^^^
 
 The output returned is: 
@@ -612,17 +612,17 @@ References
 
 [1]Permutational Multivariate Analysis of Variance Using Distance Matrices
 
-http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html
+``http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/adonis.html``
 
 .. _adonisref2:
 
 [2]Vegdist Documentation
 
-http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/vegdist.html
+``http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/vegdist.html``
 
 .. _adonisref3:
 
 [3]Alternate Adonis Documentation
 
-http://www.oga-lab.net/RGM2/func.php?rd_id=vegan:adonis
+``http://www.oga-lab.net/RGM2/func.php?rd_id=vegan:adonis``
 

@@ -1,6 +1,39 @@
 ========
 Morans I
 ========
+Synopsis
+--------
+The Premise
+^^^^^^^^^^^
+
+Moran's I is a statistical method that takes input data that has to be numerical, and analyzes the spatial relationship between all of the samples provided in that data.
+
+Below is an image that helps demonstrate the type of information that Morans I looks for.
+
+.. image:: ../images/morans_i/MoransIVisualExample.gif
+  :align: center
+
+:ref:`Source<moranref6>`
+
+The Output
+^^^^^^^^^^
+
+The output represents the spatial relationship of the samples provided. Some data should be able to fit this method in order to see if there is a relationship between the where the information was sampled. An example would be the face sites data that was obtained. If we use the top of the head as the heighest point and the chin as the lowest, we could create a way to infer the relationship of the samples based on the faces orientation in a standing position, facing forward.
+
+It's important for the face site data that you would be explicit in defining the orientation of the data, so that you understand if you're testing from head to chin, or from tip of the nose to the nape of the neck. You would have to make sure to explicitly state which was higher or lower for the notes of testing (i.e. for the nose to the nape of the neck the nose would be highest point, and the neck would be the lowest point. The orientation of the head would be that of a person laying on their back on a flat surface with the head facing forward). This is done so that there is less of a potential to cause issues with the output.
+
+The returned output will be between the range of -1 and 1.
+
+If the data provided is dispersed then the observed value returned should be closer to -1.
+
+If the data provided is clustered then the observed value returned should be closer 1. 
+
+If the data provided returns a value near 0, then there doesn't seem to be any specific ordering to the samples provided.
+
+Plain English
+^^^^^^^^^^^^^
+See above
+
 Introduction
 ------------
 Morans I is also known as Morans autocorrelation coefficient. It is an extension of Pearsons product moment correlation coefficient (Pearsons r), which measures the strength of linear dependence between two variables. Morans I returns a value, sometimes referred to as the I value, that shows the relationship between samples in different areas.
@@ -265,29 +298,34 @@ References
 
 [1]R Documentation for Morans I
 
-http://svitsrv25.epfl.ch/R-doc/library/ape/html/MoranI.html
+``http://svitsrv25.epfl.ch/R-doc/library/ape/html/MoranI.html``
 
 .. _moranref2:
 
 [2]How to Work with Morans I in R
 
-http://www.ats.ucla.edu/stat/r/faq/morans_i.htm
+``http://www.ats.ucla.edu/stat/r/faq/morans_i.htm``
 
 .. _moranref3:
 
 [3]Gittleman and Kot paper
 
-http://www.jstor.org/pss/2992183
+``http://www.jstor.org/pss/2992183``
 
 .. _moranref4:
 
 [4]Hebeler Morans I version
 
-http://www.mathworks.com/matlabcentral/fileexchange/13663-morans-i/content/morans_I.m
+``http://www.mathworks.com/matlabcentral/fileexchange/13663-morans-i/content/morans_I.m``
 
 .. _moranref5:
 
 [5]Morans I Paper by Emmanuel Paradis
 
-http://cran.r-project.org/web/packages/ape/vignettes/MoranI.pdf
+``http://cran.r-project.org/web/packages/ape/vignettes/MoranI.pdf``
 
+.. _moranref6:
+
+[6] Clustering and Dispersed Graphic Source
+
+``http://edndoc.esri.com/arcobjects/9.2/net/shared/geoprocessing/spatial_statistics_tools/spatial_autocorrelation_morans_i_spatial_statistics_.htm``
