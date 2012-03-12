@@ -6,6 +6,10 @@ Local Similarity Analysis
 
 Introduction
 -------------
+the Local Similarity Analysis (LSA) technique is used to capture time-dependent associations between microbes and between microbial and environmental factors. 
+
+Introduction
+-------------
 LSA [:ref:`1 <lsaref1>`] a python package for local similarity alignment of 
 sequence data and constructing time-shifted interaction map
 
@@ -26,7 +30,8 @@ package.
 
 Existing Implementations
 ------------------------
-The only implementation that I am aware of is that found on the LSA repo[:ref:`2 <lsaref2>`]
+The only implementation that I am aware of is that found on the LSA repo[:ref:`2 <lsaref2>`].
+It is based on an earlier algorithm in R
 
 System Setup and Required Dependencies
 --------------------------------------

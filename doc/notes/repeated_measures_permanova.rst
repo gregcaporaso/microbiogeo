@@ -2,12 +2,14 @@
 Repeated Measures PERMANOVA
 ===========================
 
-Introduction
+Synopsis
 ------------
 Repeated measures PERMANOVA is an application of traditional PERMANOVA to
 time series data. It is useful if communities have been sampled multiple times
 in a person or a plot over time.
 
+Introduction
+------------
 This statistical method is very elusive and hard to track down. There doesn't
 really seem to be a consensus regarding how time should be treated in these
 types of data. Many people simply use traditional PERMANOVA, but this ignores

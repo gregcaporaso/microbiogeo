@@ -4,6 +4,13 @@
 Partial Mantel Test
 ======================================================
 
+Synopsis
+------------
+The partial Mantel statistic is used to estimate the correlation between two matrices, 
+A and B, while controlling for the effect of C. For instance, you could compare the
+weighted and unweighted unifrac for soil, while controling for a third variable matrix,
+such as pH or some measure of euclidian distance.
+
 Introduction
 ------------
 The partial Mantel test is a first-order correlation analysis that utilizes 
@@ -253,9 +260,73 @@ The following was output to stdout: ::
   0.0449 0.0579 0.0708 0.0864 
 
 
+88 Soils
+^^^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
+
+This test compares the weighted and unwighted unifrac distances matrices for the 88 Soils
+dataset. It uses a pH difference matrix as a third control matrix.
+
+**Command:** ::
+
+  R --slave --args -a unweighted_unifrac_dm.txt -b weighted_unifrac_dm.txt -c PH_dm.txt < pmantel.r  
+
+**Results:**
+
+The following output file is created: ::
+
+  Mantel statistic r: 0.6818 
+        Significance: 1e-04 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0449 0.0591 0.0710 0.0858 
+
+Test 1
+~~~~~~
+**Description:**
+
+In this test we compare the same PH_dm and weighted unifrac against three
+unweighted unifrac matrices whose labels have been shuffled
+
+**Command:** ::
+
+  R --slave --args -a unweighted_unifrac_dm_shuffled_1.txt -b weighted_unifrac_dm.txt -c PH_dm.txt < pmantel.r  
+  R --slave --args -a unweighted_unifrac_dm_shuffled_2.txt -b weighted_unifrac_dm.txt -c PH_dm.txt < pmantel.r  
+  R --slave --args -a unweighted_unifrac_dm_shuffled_3.txt -b weighted_unifrac_dm.txt -c PH_dm.txt < pmantel.r  
+
+**Results:**
+
+The following was output, respective of the calls just above: ::
+
+  Mantel statistic r: 0.02612 
+        Significance: 0.2247 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0452 0.0588 0.0709 0.0836 
+
+  Mantel statistic r: 0.06232 
+        Significance: 0.0415 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0455 0.0590 0.0712 0.0844 
+
+  Mantel statistic r: -0.009716 
+        Significance: 0.5971 
+
+  Empirical upper confidence limits of r:
+     90%    95%  97.5%    99% 
+  0.0443 0.0576 0.0686 0.0833 
+
+We can see, in all three cases the the significance has changed dramatically, 100 fold in the least 
+severe case (shuffled_2). This is in line with the expectation for the shuffled matrices.
+
 References
-----------
-.. _partial_mantelref1:
+---------- .. _partial_mantelref1:
 
 [1] http://www.jstor.org/stable/2413122
 

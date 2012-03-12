@@ -6,7 +6,14 @@ BEST (BIOENV and BVSTEP, via Primer-E)
 
 Introduction
 ------------
+the BIOENV and BVSTEP algorithms look at the numerical environmental variables relating samples 
+in a distance matrix. For instance, the unifrac distance matrix and pH and latitude (or any other 
+number of variables) in soil samples, and ranks them in order of which best explain patterns in 
+the communities.
 
+
+Introduction
+------------
 BEST [:ref:`1 <primere_bestref1>`] Selects environmental variables, or species  
 "best explaining" community pattern, by maximising a rank correlation between 
 their respective resemblance matrices. Two algorithms are available. In the 
