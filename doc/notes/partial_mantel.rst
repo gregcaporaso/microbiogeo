@@ -326,7 +326,8 @@ We can see, in all three cases the the significance has changed dramatically, 10
 severe case (shuffled_2). This is in line with the expectation for the shuffled matrices.
 
 References
----------- .. _partial_mantelref1:
+-----------
+.. _partial_mantelref1:
 
 [1] http://www.jstor.org/stable/2413122
 
