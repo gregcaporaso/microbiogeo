@@ -50,12 +50,13 @@ class GradientStats:
 
 class DistanceMatrixStats(GradientStats):
     """
+    Author: Logan Knecht
+
     This class serves as a base class for the stats classes "CorrelationStats" and "CategoryStats". Those classes are extended from this class in order to provided consistent method use for similar classes. More specifically to provide the same runAnalysis method through out.
 
     Arguements:
     _distmat - this is an array used to store the distance matrix information being used with the methods that extend this bas class
     """
-
     _distmat = []
 
     def __init__(self):
@@ -63,6 +64,14 @@ class DistanceMatrixStats(GradientStats):
         Default constructor
         """
         super()
+
+    def __init__(self, defaultDistMat):
+      """
+      Default constructor, accepts distance matrics to be set as the default
+      for the _distmat
+      """
+      super()
+      _distmat = defaultDistMat
 
     def runAnalysis(self):
         """ 
@@ -75,8 +84,6 @@ class CorrelationStats(DistanceMatrixStats):
   Author: Logan Knecht
 
   This is the CorrelationStats class. It's used in order to provide a base template for the correlation methods like BEST, Partial Mantel, Mantel, etc.
-
-  _distmat - this is inherited from DistanceMatrixStats
   """
   def __init__(self):
     """
@@ -88,7 +95,7 @@ class CorrelationStats(DistanceMatrixStats):
     """
     Returns the _distmat variable
     """
-    raise NotImplementedError( "Should have implemented this" )
+    return self._distmat
 
   def setDistanceMatrices(self, matrices):
     """
@@ -96,10 +103,11 @@ class CorrelationStats(DistanceMatrixStats):
 
     matrices - the new distance matrix being assigned to _distmat array
     """
+    #test case from michael used to verify type error
     if not isinstance(new_distmat, self.__class__):
         raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
 
-    _distmat = matrices
+    self._distmat = matrices
   
   def runAnalysis(self):
     """ 

@@ -20,7 +20,6 @@ from python.qiime.stats import GradientStats, DistanceMatrixStats, \
                                CorrelationStats, CategoryStats
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
-
 class GradientStatsTests(TestCase):
   """ Tests for the CategoryStats class """
 
@@ -103,7 +102,14 @@ class CategoryStatsTests(TestCase):
     """ runAnalysis not implemented in abstract base CateogoryStats """ 
     raise NotImplementedError("Method no implemented by abstract base.")
 
+class CorrelationStatsTests(TestCase):
+  """ Tests for the CategoryStats class """
+  #TO DO: Implement 
+  pass
 
+class DistanceMatrixStatsTests(TestCase):
+  #TO DO: Implement 
+  pass
 
 
 if __name__ == "__main__":
