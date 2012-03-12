@@ -4,7 +4,7 @@
 BEST (BIOENV and BVSTEP, via Primer-E)
 ======================================================
 
-Introduction
+Synopsis
 ------------
 the BIOENV and BVSTEP algorithms look at the numerical environmental variables relating samples 
 in a distance matrix. For instance, the unifrac distance matrix and pH and latitude (or any other 

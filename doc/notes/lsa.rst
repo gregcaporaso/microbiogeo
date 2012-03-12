@@ -4,7 +4,7 @@
 Local Similarity Analysis
 ======================================================
 
-Introduction
+Synopsis
 -------------
 the Local Similarity Analysis (LSA) technique is used to capture time-dependent associations between microbes and between microbial and environmental factors. 
 
