@@ -5,6 +5,11 @@ Adonis
 ======
 Synopsis
 --------
+The Problem Being Answered
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If a set of sample data is provided, based on the information can you determine how related the categorical data is between the other samples. IE is there a relationship between the gender of the samples that were taken, or possibly the pH value of the samples that were taken.
+
 The Premise
 ^^^^^^^^^^^
 
@@ -21,12 +26,22 @@ The Output
 
 The output returned is: 
 
-  ``aov.tab`` - This is an analysis of variance(AOV) table showing sources of variation(the sample), degrees of freedom, sequential sums of squares, mean squares, F statistics, partial R-squared and P values, based on the N permutations. 
+  ``aov.tab`` - This is an analysis of variance(AOV) table showing sources of variation(the category sampled), degrees of freedom, sequential sums of squares, mean squares, F statistics, partial R-squared and P values, based on the N permutations. 
+
+  The df column returned is called the degrees of freedom, from my understanding it indicates how much of the sample needs to be known before we can be sure this is right.
+
+  The sequential sum of squares represents the values based off the centroid.
+
+  The mean squares represents the mean of the squares calculated.
+
+  The p-value is how significant the result is.
   
-  (not sure about this, not sure where this output is at, not seeing it in mine?)
+  (not sure about this, not sure where this output is at, not seeing it in mine? I'm pretty sure this is just because the code is printing the aov.tab and ignoring this)
+
   ``coefficients`` - matrix of coefficients of the linear model, with rows representing sources of variation and columns representing species.
 
-  (not sure about this, not sure where this output is at, not seeing it in mine?)
+  (not sure about this, not sure where this output is at, not seeing it in mine? I'm pretty sure this is just because the code is printing the aov.tab and ignoring this)
+
   ``f.perms`` - an N by m matrix of the null F statistics for each source of variation based on N permutations of the data. 
 
 
@@ -34,7 +49,7 @@ The output returned is:
 Plain English
 ^^^^^^^^^^^^^
 
-Basically, adonis takes a set of data. It then identifies important points in the data and performs F-tests on the initial data, and random permutations of the shuffled category data provided. It's commonly stated to partition (or seperate the data) for this analysis. 
+Basically, adonis takes a set of data. It then identifies important points in the data and performs F-tests on the initial data, and random permutations of the shuffled category data provided. Then, finally it returns the information that was identified in the samples. It's commonly stated to partition (or seperate the data) for this analysis in order to find their relationship. (I think this is similar to creating just a bunch of equivilance classes by analysing the data and shoving each corresponding sample into each one of the categories.)
 
 
 Introduction

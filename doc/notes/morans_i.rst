@@ -3,6 +3,11 @@ Morans I
 ========
 Synopsis
 --------
+The Problem Being Answered
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Based on their geographical, or spatial relationship what type configuration do the samples share between each other. Are they dispersed, clustered, or of no distinctly noticeable configuration when compared to each other?
+
 The Premise
 ^^^^^^^^^^^
 
