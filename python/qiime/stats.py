@@ -54,7 +54,41 @@ class DistanceMatrixStats(GradientStats):
 
 
 class CorrelationStats(DistanceMatrixStats):
-  pass
+  class CorrelationStats(DistanceMatrixStats):
+  """
+  This is the CorrelationStats class. It's used in order to provide a base template for the correlation methods like BEST, Partial Mantel, Mantel, etc.
+
+  _distmat - this is inherited from DistanceMatrixStats
+  """
+  def __init__(self):
+    """
+    Default constructor
+    """
+    super()
+
+  def getDistanceMatrices(self):
+    """
+    Returns the _distmat variable
+    """
+    raise NotImplementedError( "Should have implemented this" )
+
+  def setDistanceMatrices(self, matrices):
+    """
+    Sets the _distmat object to be the new array matrices
+
+    matrices - the new distance matrix being assigned to _distmat array
+    """
+    if not isinstance(new_distmat, self.__class__):
+        raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
+
+    _distmat = matrices
+  
+  def runAnalysis(self):
+    """ 
+    This is the method that's extended to its children so that that there is a common point of entry for running each statistical method.
+    """
+    #TO DO: I guess there's supposed to be some sort of call to the parent to run this analysis
+    raise NotImplementedError( "Should have implemented this" )
 
 class CategoryStats(DistanceMatrixStats):
   """ Classes/Methods for categorical statistical analyses """
