@@ -49,13 +49,31 @@ class GradientStats:
 
 
 class DistanceMatrixStats(GradientStats):
-  _distmat = None
-  pass
+    """
+    This class serves as a base class for the stats classes "CorrelationStats" and "CategoryStats". Those classes are extended from this class in order to provided consistent method use for similar classes. More specifically to provide the same runAnalysis method through out.
 
+    Arguements:
+    _distmat - this is an array used to store the distance matrix information being used with the methods that extend this bas class
+    """
+
+    _distmat = []
+
+    def __init__(self):
+        """
+        Default constructor
+        """
+        super()
+
+    def runAnalysis(self):
+        """ 
+        This is the method that's extended to its children so that that there is a common point of entry for running each statistical method.
+        """
+        raise NotImplementedError( "Should have implemented this" )
 
 class CorrelationStats(DistanceMatrixStats):
-  class CorrelationStats(DistanceMatrixStats):
   """
+  Author: Logan Knecht
+
   This is the CorrelationStats class. It's used in order to provide a base template for the correlation methods like BEST, Partial Mantel, Mantel, etc.
 
   _distmat - this is inherited from DistanceMatrixStats
