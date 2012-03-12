@@ -2,10 +2,15 @@
 Mantel Test
 ===========
 
+Synopsis
+--------
+
+Mantel tests the correlation between two matrices. For example, one matrix might contain estimates of the genetic distances (i.e., the amount of difference between two different genomes) between all possible pairs of species in the study, obtained by the methods of molecular systematics; while the other might contain estimates of the geographical distance between the ranges of each species and every other species.
+
 Introduction
 ------------
 
-This statistical method will test the correlation between two matrices. The data often represents the "distance" between objects. For example, one matrix might contain estimates of the genetic distances (i.e., the amount of difference between two different genomes) between all possible pairs of species in the study, obtained by the methods of molecular systematics; while the other might contain estimates of the geographical distance between the ranges of each species and every other species.
+This statistical method will test the correlation between two matrices. The data often represents the "distance" between objects.
 
 Existing Implementations
 ------------------------

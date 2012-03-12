@@ -2,6 +2,11 @@
 Permutational Analysis of Multivariate Dispersions (PERMDISP)
 =============================================================
 
+Synopsis
+--------
+
+PERMDISP is a procedure for the analysis of multivariate homogeneity of group dispersions (variances). Permutations can be utilized to measure the dissimilatities between groups.
+
 Introduction
 ------------
 
