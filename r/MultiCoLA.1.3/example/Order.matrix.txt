@@ -1,0 +1,17 @@
+Acidimicrobiales Acidobacteriales Actinomycetales Aeromonadales Alteromonadales Anaerolineales Anaeroplasmatales Aquificales Bacillales Bacteroidales Bdellovibrionales Bifidobacteriales Burkholderiales Caldilineales Campylobacterales Caulobacterales Chromatiales Clostridiales Deferribacterales Desulfovibrionales Desulfuromonadales Enterobacteriales Flavobacteriales Fusobacteriales Hydrogenophilales Kordiimonadales Lactobacillales Legionellales Lentisphaerales Methylococcales Methylophilales Mycoplasmatales Myxococcales Nitrospirales Oceanospirillales Opitutales Oscillatoriales Planctomycetales Pseudomonadales Rhizobiales Rhodobacterales Rhodocyclales Rhodospirillales Rickettsiales Sphingobacteriales Spirochaetales Thermoanaerobacteriales Thiotrichales Verrucomicrobiales Xanthomonadales
+HS122 1 0 1 0 1 1 0 0 1 0 0 0 1 1 1 1 1 0 1 0 0 0 1 0 1 0 1 1 0 0 1 0 1 1 1 0 0 1 0 1 1 1 0 0 1 0 0 0 0 0
+HS123 0 1 1 0 1 1 0 0 1 1 0 0 1 1 1 0 1 0 1 1 0 0 1 0 0 0 1 1 0 0 0 1 1 1 1 0 0 1 0 1 1 0 0 0 1 1 0 0 0 0
+HS124 1 0 1 0 1 1 0 0 0 0 1 0 0 1 1 0 1 1 1 0 0 0 1 0 0 1 0 1 0 0 1 0 1 1 0 0 0 0 0 1 1 1 0 0 1 0 0 1 0 1
+HS125 0 0 0 0 1 0 0 0 0 0 0 0 1 1 1 0 1 0 0 0 0 0 1 0 0 0 1 1 0 1 0 0 1 0 0 0 0 1 0 1 1 1 0 0 1 0 0 0 0 0
+HS126 1 0 1 0 1 1 0 0 1 1 1 1 1 1 1 0 1 0 1 0 0 1 1 0 0 1 0 1 0 0 1 1 1 1 1 0 0 0 0 1 1 1 0 0 1 1 0 1 0 0
+HS127 0 0 1 0 1 1 1 0 1 1 1 0 0 1 1 0 1 1 1 0 1 0 1 0 0 1 0 1 1 0 1 1 1 1 0 0 0 1 1 1 1 1 0 0 1 1 0 1 0 1
+HS129 1 0 1 0 1 1 0 0 1 0 0 0 1 1 1 0 1 0 1 0 0 0 1 0 0 0 1 1 0 0 0 1 1 1 0 0 0 1 0 1 1 1 0 0 1 0 0 0 0 0
+HS130 0 1 0 0 1 1 0 0 1 0 1 0 1 1 1 1 1 1 1 0 0 0 1 0 0 0 1 0 1 0 1 1 1 1 0 0 1 1 0 1 1 1 0 0 1 1 0 1 0 0
+HS132 1 0 0 0 1 1 0 0 1 0 0 1 1 1 1 0 1 1 1 0 1 0 1 0 0 0 1 1 0 0 0 1 1 1 0 0 0 1 0 1 1 1 0 0 1 1 0 1 0 0
+HS133 1 1 1 0 1 1 1 0 1 0 1 1 1 1 1 0 1 1 1 0 0 0 1 0 0 1 1 1 0 0 0 1 1 1 1 0 0 1 0 1 1 1 0 0 1 1 0 1 1 1
+HS134 0 0 0 0 1 1 0 0 0 0 0 0 0 1 1 0 1 0 1 0 0 0 1 1 0 0 1 1 0 0 0 1 1 1 1 0 0 1 0 1 1 0 0 0 1 1 0 0 0 1
+HS135 0 0 1 0 1 1 1 0 1 0 1 1 1 1 1 1 1 1 1 0 1 0 1 0 0 1 1 1 0 0 0 1 1 1 1 1 0 1 0 1 1 1 1 0 0 1 0 1 0 1
+HS136 0 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 1 0 0 1 0 1 1 0 1 1 1 1 0 0 0 1 0 1 1 1 0 0 1 0 1 1 0 0
+HS137 0 0 0 1 1 1 0 0 0 1 1 0 0 1 1 0 1 0 1 0 1 0 1 0 0 0 1 1 0 0 1 1 1 1 0 0 0 1 1 1 1 1 0 0 1 1 0 0 0 0
+HS138 1 0 1 0 1 1 1 0 1 0 1 0 1 1 1 1 1 1 1 0 0 0 1 0 0 1 0 1 0 0 1 1 1 1 1 0 0 1 0 1 1 1 0 1 1 1 0 0 0 0
+HS139 1 0 1 0 1 1 1 1 1 0 1 0 1 1 1 0 1 1 1 0 0 1 1 0 0 1 0 1 1 0 1 1 1 1 1 0 0 1 0 1 1 1 0 1 1 1 0 1 1 1
