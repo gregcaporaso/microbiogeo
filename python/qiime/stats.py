@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan"]
+__credits__ = ["Michael Dwan, Logan Knecht"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
