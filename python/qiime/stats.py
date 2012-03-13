@@ -54,7 +54,7 @@ class DistanceMatrixStats(GradientStats):
 
     This class serves as a base class for the stats classes "CorrelationStats" and "CategoryStats". Those classes are extended from this class in order to provided consistent method use for similar classes. More specifically to provide the same runAnalysis method through out.
 
-    Arguements:
+    Arguments:
     _distmat - this is an array used to store the distance matrix information being used with the methods that extend this bas class
     """
     _distmat = []
@@ -63,58 +63,55 @@ class DistanceMatrixStats(GradientStats):
         """
         Default constructor
         """
-        super()
-
-    def __init__(self, defaultDistMat):
-      """
-      Default constructor, accepts distance matrics to be set as the default
-      for the _distmat
-      """
-      super()
-      _distmat = defaultDistMat
+        #03/13/2012
+	      #I can't get the super calls to work so just ignore them for now I guess
+    	  #super(GradientStats, self).__init__()
+	      pass
 
     def runAnalysis(self):
         """ 
         This is the method that's extended to its children so that that there is a common point of entry for running each statistical method.
         """
-        raise NotImplementedError( "Should have implemented this" )
+        raise NotImplementedError("Should have implemented this")
 
 class CorrelationStats(DistanceMatrixStats):
-  """
-  Author: Logan Knecht
-
-  This is the CorrelationStats class. It's used in order to provide a base template for the correlation methods like BEST, Partial Mantel, Mantel, etc.
-  """
-  def __init__(self):
     """
-    Default constructor
-    """
-    super()
-
-  def getDistanceMatrices(self):
-    """
-    Returns the _distmat variable
-    """
-    return self._distmat
-
-  def setDistanceMatrices(self, matrices):
-    """
-    Sets the _distmat object to be the new array matrices
-
-    matrices - the new distance matrix being assigned to _distmat array
-    """
-    #test case from michael used to verify type error
-    if not isinstance(new_distmat, self.__class__):
-        raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
-
-    self._distmat = matrices
+    Author: Logan Knecht
   
-  def runAnalysis(self):
-    """ 
-    This is the method that's extended to its children so that that there is a common point of entry for running each statistical method.
+    This is the CorrelationStats class. It's used in order to provide a base template for the correlation methods like Partial Mantel, Mantel, etc.
     """
-    #TO DO: I guess there's supposed to be some sort of call to the parent to run this analysis
-    raise NotImplementedError( "Should have implemented this" )
+    def __init__(self):
+        """
+        Default constructor
+        """
+        #03/13/2012
+        #I can't get the super calls to work so just ignore them for now I guess
+        super(DistanceMatrixStats, self).__init__()
+
+    def getDistanceMatrices(self):
+        """
+        Returns the _distmat variable
+        """
+        return self._distmat
+  
+    def setDistanceMatrices(self, matrices):
+        """
+        Sets the _distmat object to be the new array matrices
+  
+        matrices - the new distance matrix being assigned to _distmat array
+        """
+        #test case from michael used to verify type error
+        if not isinstance(new_distmat, self.__class__):
+            raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
+
+        self._distmat = matrices
+  
+    def runAnalysis(self):
+        """ 
+        This is the method that's extended to its children so that that there is a common point of entry for running each statistical method.
+        """
+        #TO DO: I guess there's supposed to be some sort of call to the parent to run this analysis
+        raise NotImplementedError( "Method not implemented by abstract base" )
 
 class CategoryStats(DistanceMatrixStats):
   """ Classes/Methods for categorical statistical analyses """

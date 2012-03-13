@@ -103,14 +103,30 @@ class CategoryStatsTests(TestCase):
     raise NotImplementedError("Method no implemented by abstract base.")
 
 class CorrelationStatsTests(TestCase):
-  """ Tests for the CategoryStats class """
-  #TO DO: Implement 
-  pass
+    """ Tests for the CategoryStats class """
+    def setUp(self):
+        self.test_inst = CorrelationStats()
 
 class DistanceMatrixStatsTests(TestCase):
-  #TO DO: Implement 
-  pass
+    """ Tests for the DistanceMatrixStats class"""
+    def setUp(self):
+        """ Area to create varaibles and objects """
+        self.test_inst = DistanceMatrixStats()
+    
+    def test_defaultVariableDeclarations(self):
+        """ Basic check to make sure that the constructor is declaring the right variables with the right values """
+	      #tested and verified - LK 03/13/2012
+        self.assertEqual([], self.test_inst._distmat, "The _distmat default is not an empty array")
 
+    def test_runAnalysis(self):
+        """ runAnalysis not implemented in abstract base DistanceMatrixStats""" 
+        #Uh... I guess just pass for this unless you want to try and see if it 
+        #throws an error in the right code sections, which it does. To test
+	      #just uncomment the line below and it should fail with notImplemented
+        #raised
+	      #self.test_inst.runAnalysis()
+        #raise NotImplementedError("Method no implemented by abstract base.")
+        pass
 
 if __name__ == "__main__":
     main()
