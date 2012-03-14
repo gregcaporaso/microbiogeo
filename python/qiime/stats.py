@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # File created on 11 Mar 2012
 from __future__ import division
+import types
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"

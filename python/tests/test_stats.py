@@ -117,10 +117,10 @@ class CorrelationStatsTests(TestCase):
         """ Operates on the assumption that the object was just created, tests if the getter returns the right value, an empty list """  
         #tested and verified - LK 03/13/2012
         self.test_inst = CorrelationStats()
-	      self.assertEqual([], self.test_inst.getDistanceMatrices(), "The default _distmat returned from getDistanceMatrices() is not an empty list")
+        self.assertEqual([], self.test_inst.getDistanceMatrices(), "The default _distmat returned from getDistanceMatrices() is not an empty list")
 
         self.test_inst.setDistanceMatrices([1, 2, 3, 4])
-	      self.assertEqual([1, 2, 3, 4], self.test_inst.getDistanceMatrices(), "The setDistanceMatrices list did not set the list correctly, and the returned value is different than anticipated")
+        self.assertEqual([1, 2, 3, 4], self.test_inst.getDistanceMatrices(), "The setDistanceMatrices list did not set the list correctly, and the returned value is different than anticipated")
 
     def test_runAnalysis(self):
         """ runAnalysis not implemented in base CorrelationStats"""
