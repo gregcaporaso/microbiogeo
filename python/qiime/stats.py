@@ -21,31 +21,31 @@ results.
 """
 
 class GradientStats:
-  """ Top-level, abstract class; extensible for future, non-matrix based analyses """
+    """ Top-level, abstract class; extensible for future, non-matrix based analyses """
 
-  def setMetadataMap(self, new_map):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def setMetadataMap(self, new_map):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def getMetadataMap(self):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def getMetadataMap(self):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def setDistanceMatrix(self, new_distmat):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def setDistanceMatrix(self, new_distmat):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def getDistanceMatrix(self):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def getDistanceMatrix(self):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def setCategories(self, new_categories):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def setCategories(self, new_categories):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def getCategories(self):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def getCategories(self):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def runAnalysis(self):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def runAnalysis(self):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
-  def runAnalysis(self):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def runAnalysis(self):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
 
 class DistanceMatrixStats(GradientStats):
@@ -64,9 +64,8 @@ class DistanceMatrixStats(GradientStats):
         Default constructor
         """
         #03/13/2012
-	      #I can't get the super calls to work so just ignore them for now I guess
-    	  #super(GradientStats, self).__init__()
-	      pass
+        #I can't get the super calls to work so just ignore them for now I guess
+        #super(GradientStats, self).__init__()
 
     def runAnalysis(self):
         """ 
@@ -86,7 +85,7 @@ class CorrelationStats(DistanceMatrixStats):
         """
         #03/13/2012
         #I can't get the super calls to work so just ignore them for now I guess
-        super(DistanceMatrixStats, self).__init__()
+        #super(DistanceMatrixStats, self).__init__()
 
     def getDistanceMatrices(self):
         """
@@ -98,11 +97,11 @@ class CorrelationStats(DistanceMatrixStats):
         """
         Sets the _distmat object to be the new array matrices
   
-        matrices - the new distance matrix being assigned to _distmat array
+        matrices - the new distance matrix being assigned to _distmat list 
         """
         #test case from michael used to verify type error
-        if not isinstance(new_distmat, self.__class__):
-            raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
+        if not isinstance(matrices, types.ListType):
+            raise TypeError('Invalid type: the item passed in as the new list was not a list data type')
 
         self._distmat = matrices
   
@@ -114,73 +113,73 @@ class CorrelationStats(DistanceMatrixStats):
         raise NotImplementedError( "Method not implemented by abstract base" )
 
 class CategoryStats(DistanceMatrixStats):
-  """ Classes/Methods for categorical statistical analyses """
+    """ Classes/Methods for categorical statistical analyses """
 
-  _categories = []
-  _metadata_map = None
+    _categories = []
+    _metadata_map = None
   
-  def __init__(self, mdmap, dm, cats):
-    """ Called by a statistical method initializer when instanstiated. """ 
-    self._distmat = dm
-    self._metadata_map = mdmap
-    self._categories = cats
+    def __init__(self, mdmap, dm, cats):
+        """ Called by a statistical method initializer when instanstiated. """ 
+        self._distmat = dm
+        self._metadata_map = mdmap
+        self._categories = cats
     
-  def setMetadataMap(self, new_map):
-    """ Sets the instance's _metadata_map field to a new MetadataMap instance 
+    def setMetadataMap(self, new_map):
+        """ Sets the instance's _metadata_map field to a new MetadataMap instance 
+      
+        Arguments:
+          new_map - A MetadataMap object instance.
+        """
+
+        if not isinstance(new_map, self.__class__):
+            raise TypeError('Invalid type: %s; not MetadataMap' % new_map.__class__.__name__)
+
+        self._metadata_map = new_map
+
+    def getMetadataMap(self):
+        """ Gets the instance's _metadata_map field to a new, valid MetadataMap 
     
-    Arguments:
-      new_map - A MetadataMap object instance.
-    """
+        The _metadata_map is returned as a MetadataMap class instance
+        """
+        return self._metadata_map
 
-    if not isinstance(new_map, self.__class__):
-      raise TypeError('Invalid type: %s; not MetadataMap' % new_map.__class__.__name__)
-
-    self._metadata_map = new_map
-
-  def getMetadataMap(self):
-    """ Gets the instance's _metadata_map field to a new, valid MetadataMap 
+    def setDistanceMatrix(self, new_distmat):
+        """ Sets the instance's _distmat field to a new DistanceMatrix instance 
     
-    The _metadata_map is returned as a MetadataMap class instance
-    """
-    return self._metadata_map
+        Arguments:
+        new_distmat - A DistanceMatrix object instance.
+        """
 
-  def setDistanceMatrix(self, new_distmat):
-    """ Sets the instance's _distmat field to a new DistanceMatrix instance 
+        if not isinstance(new_distmat, self.__class__):
+            raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
+
+        self._distmat = new_distmat
+
+    def getDistanceMatrix(self):
+        """ Gets the instance's _distmat field to a new, valid DistanceMatrix 
     
-    Arguments:
-      new_distmat - A DistanceMatrix object instance.
-    """
+        The _distmat is returned as a DistanceMatrix class instance
+        """
+        return self._distmat
 
-    if not isinstance(new_distmat, self.__class__):
-      raise TypeError('Invalid type: %s; not DistanceMatrix' % new_distmat.__class__.__name__)
-
-    self._distmat = new_distmat
-
-  def getDistanceMatrix(self):
-    """ Gets the instance's _distmat field to a new, valid DistanceMatrix 
-    
-    The _distmat is returned as a DistanceMatrix class instance
-    """
-    return self._distmat
-
-  def setCategories(self, new_categories):
-    """ Sets the instance's _categories field to a new list of strings representing
+    def setCategories(self, new_categories):
+        """ Sets the instance's _categories field to a new list of strings representing
         categories in a QIIME mapping file.
     
-    Arguments:
-      new_categories - A list of category name strings.
-    """
+        Arguments:
+        new_categories - A list of category name strings.
+        """
     
-    for el in new_categories:
-      if not isinstance(el, self.__class__):
-        raise TypeError('Invalid category: not of type "string"')
+        for el in new_categories:
+          if not isinstance(el, self.__class__):
+            raise TypeError('Invalid category: not of type "string"')
 
-    self._categories = new_categories
+        self._categories = new_categories
 
-  def getCategories(self):
-    """ Gets the instance's _categories field, a list of mapping file, category name strings """
-    return self._categories
+    def getCategories(self):
+        """ Gets the instance's _categories field, a list of mapping file, category name strings """
+        return self._categories
 
-  def runAnalysis(self):
-    raise NotImplementedError("Method no implemented by abstract base.")
+    def runAnalysis(self):
+        raise NotImplementedError("Method no implemented by abstract base.")
 
