@@ -69,14 +69,14 @@ def main():
     distance_matrix_header = ""
     full_distance_matrix = {}
     map = ""
-    map_header = "#" + samples_label + delimiter + map_category
+    map_header = "#" + samples_label + delimiter + map_category + delimiter + "Description"
     count = 0
     sub_count = 0
     diff = 0
     for sample in groups:
         distance_matrix_header = distance_matrix_header + delimiter + samples_label + "%s" % count
         distance_matrix = distance_matrix + "\n" + samples_label + "%s" % count
-        map = map + "\n" + samples_label + "%s" % count + delimiter + map_labels[sample]
+        map = map + "\n" + samples_label + "%s" % count + delimiter + map_labels[sample] + delimiter + samples_label + "%s" % count + map_labels[sample]
         distance_matrix_row = {} 
         while diff < count:
             distance_matrix = distance_matrix + delimiter + "%s" % full_distance_matrix[diff][count]
