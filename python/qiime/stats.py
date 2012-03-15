@@ -21,8 +21,11 @@ easily apply any number of statistical analyses and easily retrieve the
 results.
 """
 
-class GradientStats:
+# python.... AHHHHHHH!
+class GradientStats(object):
     """ Top-level, abstract class; extensible for future, non-matrix based analyses """
+    def __init__(self):
+        pass
 
     def setMetadataMap(self, new_map):
         raise NotImplementedError("Method no implemented by abstract base.")
@@ -64,9 +67,7 @@ class DistanceMatrixStats(GradientStats):
         """
         Default constructor
         """
-        #03/13/2012
-        #I can't get the super calls to work so just ignore them for now I guess
-        #super(GradientStats, self).__init__()
+        super(DistanceMatrixStats, self).__init__()
 
     def runAnalysis(self):
         """ 
@@ -84,9 +85,7 @@ class CorrelationStats(DistanceMatrixStats):
         """
         Default constructor
         """
-        #03/13/2012
-        #I can't get the super calls to work so just ignore them for now I guess
-        #super(DistanceMatrixStats, self).__init__()
+        super(CorrelationStats, self).__init__()
 
     def getDistanceMatrices(self):
         """
