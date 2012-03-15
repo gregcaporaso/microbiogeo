@@ -14,12 +14,14 @@ __status__ = "Release"
  
 from stats import CorrelationStats
 from qiime.util import make_option
-from cogent.maths.stats.test import mantel
 from qiime.parse import parse_distmat, fields_to_dict
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
                         make_compatible_distance_matrices)
+
+from numpy import array, asarray, ravel, sqrt
+from numpy.random import permutation
 
 options_lookup = get_options_lookup()
 
@@ -44,7 +46,7 @@ comment = """# Number of entries refers to the number of rows (or cols)
 # to include only those samples that were in both distance matrices. 
 # p-value contains the correct number of significant digits.
 """
-#TODO: Ask group if I shouldn't just shove the optparse stuff into Mantel's class and have them explicitly declared as global
+
 class Mantel(CorrelationStats):
     def runAnalysis(self):
         option_parser, opts, args =\
@@ -71,10 +73,60 @@ class Mantel(CorrelationStats):
                 if len(dm1_labels) < 2:
                     output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
                     continue
-                p = mantel(dm1,dm2,n=num_iterations)
+                # Start mantel edit here this is where the mantel method would be called, because of this you can consider this the portion of code that represents mantels runtime
+                #p = mantel(dm1,dm2,n=num_iterations)
+
+                m1, m2 = asarray(dm1), asarray(dm2)
+                m1_flat = ravel(m1)
+                size = len(m1)
+                orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
+                better = 0
+                for i in range(num_iterations):
+                    #p2 = m2[permutation(size)][:, permutation(size)]
+                    p2 = self.permute_2d(m2, permutation(size))
+                    r = abs(self.pearson(m1_flat, ravel(p2)))
+                    if r >= orig_stat:
+                        better += 1
+                
+                p = better
+
+                # End mantel edit here
+
                 p_str = format_p_value_for_num_iters(p,num_iterations)
                 output_f.write('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
         output_f.close()
+
+    def pearson(self, x_items, y_items):
+        """Returns Pearson correlation coefficient between x and y."""
+        x_items, y_items = array(x_items), array(y_items)
+        sum_x = sum(x_items)
+        sum_y = sum(y_items)
+        sum_x_sq = sum(x_items*x_items)
+        sum_y_sq = sum(y_items*y_items)
+        sum_xy = sum(x_items*y_items)
+        n = len(x_items)
+        try:
+            r = 1.0 * ((n * sum_xy) - (sum_x * sum_y)) / \
+               (sqrt((n * sum_x_sq)-(sum_x*sum_x))*sqrt((n*sum_y_sq)-(sum_y*sum_y)))
+        except (ZeroDivisionError, ValueError, FloatingPointError): #no variation
+            r = 0.0
+        #check we didn't get a naughty value for r due to rounding error
+        if r > 1.0:
+            r = 1.0
+        elif r < -1.0:
+            r = -1.0
+        return r
+      
+    def permute_2d(self, m, p):
+        """Performs 2D permutation of matrix m according to p."""
+        return m[p][:, p]
+        #unused below
+        #m_t = transpose(m)
+        #r_t = take(m_t, p, axis=0)
+        #return take(transpose(r_t), p, axis=0)
+
+
+
 
 def main():
     testMantel = Mantel()
