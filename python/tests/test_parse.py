@@ -30,7 +30,11 @@ class DistanceMatrixTests(TestCase):
         self.dm = DistanceMatrix(array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]),
             ['s1', 's2', 's3'], ['s1', 's2', 's3'])
 
-        # The distance matrix from the overview tutorial's file contents.
+        # A distance matrix similar to the overview tutorial's unifrac dm. I
+        # found this in some other tests in QIIME, but these values don't match
+        # the values found in the overview tutorial's unweighted or weighted
+        # unifrac distance matrices, so I'm not quite sure where this data came
+        # from. That's okay, though, as we can still use it for the unit tests.
         self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
                                  \tPC.607\tPC.634\tPC.635\tPC.636",
                                  "PC.354\t0.0\t0.625\t0.623\t0.61\t0.577\
