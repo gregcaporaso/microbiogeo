@@ -49,7 +49,7 @@ class DistanceMatrixStats(GradientStats):
           distmats - a list of DistanceMatrix objects
         """
         super(DistanceMatrixStats, self).__init__()
-        self._distmats = distmats
+        self.setDistanceMatrices(distmats)
 
     def getDistanceMatrices(self):
         """Returns the list of distance matrices."""
@@ -70,7 +70,10 @@ class DistanceMatrixStats(GradientStats):
 class CorrelationStats(DistanceMatrixStats):
     """Base class for distance matrix correlation statistical methods.
     
-    It is subclassed by correlation methods like Partial Mantel, Mantel, etc..
+    It is subclassed by correlation methods like Partial Mantel and Mantel that
+    compare two or more distance matrices. A valid instance of CorrelationStats
+    must have at least one distance matrix, and all distance matrices must have
+    matching dimensions and sample IDs (i.e. matching row/column labels).
     """
 
     def __init__(self, distmats):
@@ -80,6 +83,21 @@ class CorrelationStats(DistanceMatrixStats):
           distmats - a list of DistanceMatrix objects
         """
         super(CorrelationStats, self).__init__(distmats)
+
+    def setDistanceMatrices(self, matrices):
+        if len(matrices) < 1:
+            raise ValueError("Must provide at least one distance matrix.")
+
+        size = matrices[0].getSize()
+        sample_ids = matrices[0].SampleIds
+        for dm in matrices:
+            if dm.getSize() != size:
+                raise ValueError("All distance matrices must have the same "
+                                 "number of rows and columns.")
+            if dm.SampleIds != sample_ids:
+                raise ValueError("All distance matrices must have matching "
+                                 "sample IDs.")
+        super(CorrelationStats, self).setDistanceMatrices(matrices)
 
 
 class CategoryStats(DistanceMatrixStats):
@@ -162,11 +180,10 @@ class MantelCorrelogram(CorrelationStats):
             raise ValueError("The number of permutations cannot be negative.")
 
     def setDistanceMatrices(self, matrices):
-        if len(matrices) == 2:
-            super(MantelCorrelogram, self).setDistanceMatrices(matrices)
-        else:
+        if len(matrices) != 2:
             raise ValueError("Can only set exactly two distance matrices for "
                              "a Mantel correlogram analysis.")
+        super(MantelCorrelogram, self).setDistanceMatrices(matrices)
 
     def runAnalysis(self):
         pass

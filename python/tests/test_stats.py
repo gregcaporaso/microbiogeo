@@ -107,28 +107,71 @@ class CategoryStatsTests(TestCase):
 
 class CorrelationStatsTests(TestCase):
     """ Tests for the CategoryStats class """
-    #Author - LK
+
     def setUp(self):
-        self.test_inst = CorrelationStats()
+        """Set up some dms and correlation stats instances for use in tests."""
+        # The distance matrix from the overview tutorial.
+        self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
+                                 \tPC.607\tPC.634\tPC.635\tPC.636",
+                                 "PC.354\t0.0\t0.625\t0.623\t0.61\t0.577\
+                                 \t0.729\t0.8\t0.721\t0.765",
+                                 "PC.355\t0.625\t0.0\t0.615\t0.642\t0.673\
+                                 \t0.776\t0.744\t0.749\t0.677",
+                                 "PC.356\t0.623\t0.615\t0.0\t0.682\t0.737\
+                                 \t0.734\t0.777\t0.733\t0.724",
+                                 "PC.481\t0.61\t0.642\t0.682\t0.0\t0.704\
+                                 \t0.696\t0.675\t0.654\t0.696",
+                                 "PC.593\t0.577\t0.673\t0.737\t0.704\t0.0\
+                                 \t0.731\t0.758\t0.738\t0.737",
+                                 "PC.607\t0.729\t0.776\t0.734\t0.696\t0.731\
+                                 \t0.0\t0.718\t0.666\t0.727",
+                                 "PC.634\t0.8\t0.744\t0.777\t0.675\t0.758\
+                                 \t0.718\t0.0\t0.6\t0.578",
+                                 "PC.635\t0.721\t0.749\t0.733\t0.654\t0.738\
+                                 \t0.666\t0.6\t0.0\t0.623",
+                                 "PC.636\t0.765\t0.677\t0.724\t0.696\t0.737\
+                                 \t0.727\t0.578\t0.623\t0.0"]
+        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
+            self.overview_dm_str)
+        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
+        self.cs = CorrelationStats([self.overview_dm, self.overview_dm])
 
-    def test_defaultVariableDeclarations(self):
-        """ Basic check to make sure that the constructor is declaring the right variables with the right values """
-	      #tested and verified - LK 03/13/2012
-        self.assertEqual([], self.test_inst._distmat, "The _distmat default is not an empty list")
+    def test_setDistanceMatrices(self):
+        """Test setting valid distance matrices."""
+        dms = [self.overview_dm, self.overview_dm]
+        self.cs.setDistanceMatrices(dms)
+        self.assertEqual(self.cs.getDistanceMatrices(), dms)
 
-    def test_distmatGetAndSet(self):
-        """ Operates on the assumption that the object was just created, tests if the getter returns the right value, an empty list """  
-        #tested and verified - LK 03/13/2012
-        self.test_inst = CorrelationStats()
-        self.assertEqual([], self.test_inst.getDistanceMatrices(), "The default _distmat returned from getDistanceMatrices() is not an empty list")
+        dms = [self.overview_dm, self.overview_dm, self.overview_dm]
+        self.cs.setDistanceMatrices(dms)
+        self.assertEqual(self.cs.getDistanceMatrices(), dms)
 
-        self.test_inst.setDistanceMatrices([1, 2, 3, 4])
-        self.assertEqual([1, 2, 3, 4], self.test_inst.getDistanceMatrices(), "The setDistanceMatrices list did not set the list correctly, and the returned value is different than anticipated")
+    def test_setDistanceMatrices_too_few(self):
+        """Test setting dms with not enough of them."""
+        self.assertRaises(ValueError, self.cs.setDistanceMatrices, [])
+        # Also test that constructor raises this error.
+        self.assertRaises(ValueError, CorrelationStats, [])
+
+    def test_setDistanceMatrices_wrong_dims(self):
+        """Test setting dms with mismatching dimensions."""
+        self.assertRaises(ValueError, self.cs.setDistanceMatrices,
+            [self.overview_dm, self.single_ele_dm])
+        # Also test that constructor raises this error.
+        self.assertRaises(ValueError, CorrelationStats, [self.overview_dm,
+                          self.single_ele_dm])
+
+    def test_setDistanceMatrices_mismatched_labels(self):
+        """Test setting dms with mismatching sample ID labels."""
+        mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
+        self.assertRaises(ValueError, self.cs.setDistanceMatrices,
+            [self.single_ele_dm, mismatch])
+        # Also test that constructor raises this error.
+        self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
+                          mismatch])
 
     def test_runAnalysis(self):
-        """ runAnalysis not implemented in base CorrelationStats"""
-	      #tested and verified - LK 03/13/2012
-        self.assertRaises(NotImplementedError, self.test_inst.runAnalysis)
+        """Test runAnalysis() is not implemented in CorrelationStats"""
+        self.assertRaises(NotImplementedError, self.cs.runAnalysis)
 
 
 class DistanceMatrixStatsTests(TestCase):
@@ -175,6 +218,7 @@ class MantelCorrelogramTests(TestCase):
         self.overview_dm = DistanceMatrix.parseDistanceMatrix(
             self.overview_dm_str)
         self.mc = MantelCorrelogram(self.overview_dm, self.overview_dm, 999)
+        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
     
     def test_getNumPermutations(self):
         """Test retrieving the number of permutations."""
@@ -191,10 +235,11 @@ class MantelCorrelogramTests(TestCase):
 
     def test_setDistanceMatrices(self):
         """Test setting a valid number of distance matrices."""
-        self.mc.setDistanceMatrices([self.overview_dm, self.overview_dm])
-        self.assertEqual(len(self.mc.getDistanceMatrices()), 2)
+        dms = [self.overview_dm, self.overview_dm]
+        self.mc.setDistanceMatrices(dms)
+        self.assertEqual(self.mc.getDistanceMatrices(), dms)
 
-    def test_setDistanceMatrices_invalid(self):
+    def test_setDistanceMatrices_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.mc.setDistanceMatrices,
             [self.overview_dm])
@@ -204,6 +249,7 @@ class MantelCorrelogramTests(TestCase):
     def test_runAnalysis(self):
         """Test running a Mantel correlogram analysis on valid input."""
         pass
+
 
 if __name__ == "__main__":
     main()
