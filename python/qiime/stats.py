@@ -37,9 +37,9 @@ class GradientStats(object):
 class DistanceMatrixStats(GradientStats):
     """Base class for distance matrix-based statistical methods.
     
-    It is the parent class of CorrelationStats and CategoryStats. Those classes
-    extend from this class in order to provided consistent method use for
-    similar classes. More specifically to provide the same runAnalysis method
+    It is the parent class of CorrelationStats and CategoryStats. They extend
+    from this class in order to provided consistent method use for similar
+    classes. More specifically to provide the same runAnalysis method
     throughout.
     """
 
@@ -63,8 +63,8 @@ class DistanceMatrixStats(GradientStats):
           matrices - the new list of distance matrices being assigned
         """
         if not isinstance(matrices, ListType):
-            raise TypeError("Invalid type: the item passed in as the new list "
-                            "was not a list data type")
+            raise TypeError("The item passed in as the new list was not a "
+                            "list data type.")
         self._distmats = matrices
 
 
@@ -201,7 +201,7 @@ class MantelCorrelogram(CorrelationStats):
         num_dists = size * (size - 1) / 2
 
         # Use Sturge's rule to determine the number of distance classes.
-        num_classes = ceil(1 + log(num_dists, 2))
+        num_classes = int(ceil(1 + log(num_dists, 2)))
 
         # Compute the breakpoints based on the number of distance classes.
         flattened_lower = geo_dm.flatten()
