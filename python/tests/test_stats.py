@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan, Logan Knecht"]
+__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
@@ -17,7 +17,8 @@ from numpy import array
 
 from cogent.util.unit_test import TestCase, main
 from python.qiime.stats import GradientStats, DistanceMatrixStats, \
-                               CorrelationStats, CategoryStats
+                               CorrelationStats, CategoryStats, \
+                               MantelCorrelogram
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class GradientStatsTests(TestCase):
@@ -54,6 +55,7 @@ class GradientStatsTests(TestCase):
         """ GradientStats is non-instantiable. Cannot call runAnalysis method """
         self.assertRaises(NotImplementedError, self.test_inst.runAnalysis)
   
+
 class CategoryStatsTests(TestCase):
     """ Tests for the CategoryStats class """
 
@@ -102,6 +104,7 @@ class CategoryStatsTests(TestCase):
         """ runAnalysis not implemented in abstract base CateogoryStats """ 
         raise NotImplementedError("Method no implemented by abstract base.")
 
+
 class CorrelationStatsTests(TestCase):
     """ Tests for the CategoryStats class """
     #Author - LK
@@ -127,6 +130,7 @@ class CorrelationStatsTests(TestCase):
 	      #tested and verified - LK 03/13/2012
         self.assertRaises(NotImplementedError, self.test_inst.runAnalysis)
 
+
 class DistanceMatrixStatsTests(TestCase):
     """ Tests for the DistanceMatrixStats class"""
     #Author - LK
@@ -141,6 +145,65 @@ class DistanceMatrixStatsTests(TestCase):
     def test_runAnalysis(self):
         """ runAnalysis not implemented in abstract base DistanceMatrixStats""" 
         self.assertRaises(NotImplementedError, self.test_inst.runAnalysis)
+
+
+class MantelCorrelogramTests(TestCase):
+    """Tests for the MantelCorrelogram class."""
+
+    def setUp(self):
+        # The distance matrix from the overview tutorial.
+        self.overview_dm_str = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
+                                 \tPC.607\tPC.634\tPC.635\tPC.636",
+                                 "PC.354\t0.0\t0.625\t0.623\t0.61\t0.577\
+                                 \t0.729\t0.8\t0.721\t0.765",
+                                 "PC.355\t0.625\t0.0\t0.615\t0.642\t0.673\
+                                 \t0.776\t0.744\t0.749\t0.677",
+                                 "PC.356\t0.623\t0.615\t0.0\t0.682\t0.737\
+                                 \t0.734\t0.777\t0.733\t0.724",
+                                 "PC.481\t0.61\t0.642\t0.682\t0.0\t0.704\
+                                 \t0.696\t0.675\t0.654\t0.696",
+                                 "PC.593\t0.577\t0.673\t0.737\t0.704\t0.0\
+                                 \t0.731\t0.758\t0.738\t0.737",
+                                 "PC.607\t0.729\t0.776\t0.734\t0.696\t0.731\
+                                 \t0.0\t0.718\t0.666\t0.727",
+                                 "PC.634\t0.8\t0.744\t0.777\t0.675\t0.758\
+                                 \t0.718\t0.0\t0.6\t0.578",
+                                 "PC.635\t0.721\t0.749\t0.733\t0.654\t0.738\
+                                 \t0.666\t0.6\t0.0\t0.623",
+                                 "PC.636\t0.765\t0.677\t0.724\t0.696\t0.737\
+                                 \t0.727\t0.578\t0.623\t0.0"]
+        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
+            self.overview_dm_str)
+        self.mc = MantelCorrelogram(self.overview_dm, self.overview_dm, 999)
+    
+    def test_getNumPermutations(self):
+        """Test retrieving the number of permutations."""
+        self.assertEqual(self.mc.getNumPermutations(), 999)
+
+    def test_setNumPermutations(self):
+        """Test setting the number of permutations."""
+        self.mc.setNumPermutations(5)
+        self.assertEqual(self.mc.getNumPermutations(), 5)
+
+    def test_setNumPermutations_invalid(self):
+        """Test setting the number of permutations with a negative number."""
+        self.assertRaises(ValueError, self.mc.setNumPermutations, -5)
+
+    def test_setDistanceMatrices(self):
+        """Test setting a valid number of distance matrices."""
+        self.mc.setDistanceMatrices([self.overview_dm, self.overview_dm])
+        self.assertEqual(len(self.mc.getDistanceMatrices()), 2)
+
+    def test_setDistanceMatrices_invalid(self):
+        """Test setting an invalid number of distance matrices."""
+        self.assertRaises(ValueError, self.mc.setDistanceMatrices,
+            [self.overview_dm])
+        self.assertRaises(ValueError, self.mc.setDistanceMatrices,
+            [self.overview_dm, self.overview_dm, self.overview_dm])
+
+    def test_runAnalysis(self):
+        """Test running a Mantel correlogram analysis on valid input."""
+        pass
 
 if __name__ == "__main__":
     main()

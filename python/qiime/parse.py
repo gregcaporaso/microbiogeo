@@ -2,7 +2,7 @@
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Ram Rideout, Logan Knecht"]
+__credits__ = ["Jai Ram Rideout", "Logan Knecht"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jai Ram Rideout"

@@ -4,7 +4,7 @@ import types
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan, Logan Knecht"]
+__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
@@ -145,3 +145,28 @@ class CategoryStats(DistanceMatrixStats):
         Returns a list of mapping file category name strings.
         """
         return self._categories
+
+
+class MantelCorrelogram(CorrelationStats):
+    def __init__(self, dm1, dm2, num_perms):
+        super(MantelCorrelogram, self).__init__([dm1, dm2])
+        self.setNumPermutations(num_perms)
+
+    def getNumPermutations(self):
+        return self._num_perms
+
+    def setNumPermutations(self, num_perms):
+        if num_perms >= 0:
+            self._num_perms = num_perms
+        else:
+            raise ValueError("The number of permutations cannot be negative.")
+
+    def setDistanceMatrices(self, matrices):
+        if len(matrices) == 2:
+            super(MantelCorrelogram, self).setDistanceMatrices(matrices)
+        else:
+            raise ValueError("Can only set exactly two distance matrices for "
+                             "a Mantel correlogram analysis.")
+
+    def runAnalysis(self):
+        pass
