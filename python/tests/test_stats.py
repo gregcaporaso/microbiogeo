@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Rideout"]
+__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
@@ -248,7 +248,7 @@ class MantelCorrelogramTests(TestCase):
 
     def test_runAnalysis(self):
         """Test running a Mantel correlogram analysis on valid input."""
-        pass
+        self.mc.runAnalysis()
 
 
 if __name__ == "__main__":

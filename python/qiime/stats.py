@@ -1,16 +1,14 @@
 #!/usr/bin/env python
-from __future__ import division
-import types
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Rideout"]
+__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
 __email__ = "mgd25@nau.edu"
 __status__ = "Development"
- 
+
 """
 This module provides functionality for the application of various statistical 
 methods to QIIME formatted data sets.
@@ -19,6 +17,9 @@ The module provides classes, methods and functions that enable the user to
 easily apply any number of statistical analyses and easily retrieve the 
 results.
 """
+
+from math import ceil, log
+from types import ListType
 
 class GradientStats(object):
     """Top-level, abstract base class for gradient statistical analyses.
@@ -61,7 +62,7 @@ class DistanceMatrixStats(GradientStats):
         Arguments:
           matrices - the new list of distance matrices being assigned
         """
-        if not isinstance(matrices, types.ListType):
+        if not isinstance(matrices, ListType):
             raise TypeError("Invalid type: the item passed in as the new list "
                             "was not a list data type")
         self._distmats = matrices
@@ -186,4 +187,32 @@ class MantelCorrelogram(CorrelationStats):
         super(MantelCorrelogram, self).setDistanceMatrices(matrices)
 
     def runAnalysis(self):
-        pass
+        """Run a Mantel correlogram test over the current distance matrices.
+        
+        Note: This code is heavily based on the implementation of
+        mantel.correlog in R's vegan package.
+        """
+        eco_dm = self.getDistanceMatrices()[0]
+        geo_dm = self.getDistanceMatrices()[1]
+        size = eco_dm.getSize()
+
+        # Find the number of lower/upper triangular elements (discounting the
+        # diagonal).
+        num_dists = size * (size - 1) / 2
+
+        # Use Sturge's rule to determine the number of distance classes.
+        num_classes = ceil(1 + log(num_dists, 2))
+
+        # Compute the breakpoints based on the number of distance classes.
+        flattened_lower = geo_dm.flatten()
+        start_point = min(flattened_lower)
+        end_point = max(flattened_lower)
+        width = (end_point - start_point) / num_classes
+        break_points = []
+        for class_num in range(num_classes):
+            break_points.append(start_point + width * class_num)
+        break_points.append(end_point)
+
+        half_classes = num_classes / 2
+
+        # TODO finish me

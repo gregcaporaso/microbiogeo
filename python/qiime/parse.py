@@ -82,6 +82,26 @@ class DistanceMatrix(DenseTable):
         """
         return self._size
 
+    def flatten(self, lower=True):
+        """Returns a list containing the flattened distance matrix.
+
+        The returned list will contain the elements in column-major order
+        (i.e. from leftmost to rightmost column, starting from the first row).
+        Only the lower triangular elements will be included if lower is True
+        (the diagonal will not be included). If lower is False, all elements
+        (including the diagonal) will be included.
+        """
+        flattened = []
+        for col_num in range(self.getSize()):
+            for row_num in range(self.getSize()):
+                if lower:
+                    if col_num < row_num:
+                        flattened.append(self[row_num][col_num])
+                else:
+                    flattened.append(self[row_num][col_num])
+        return flattened
+        
+
 class MetadataMap():
     """This class represents a QIIME metadata mapping file."""
 
