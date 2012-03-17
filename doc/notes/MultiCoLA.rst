@@ -105,7 +105,7 @@ Our progress understanding MultiCoLA
 
         Details of the NMDS calculations? (y/n)...      n
 
-**Was warned:** ::
+**Was warned:**
 
         There were 50 or more warnings (use warnings() to see the first 50)
         
