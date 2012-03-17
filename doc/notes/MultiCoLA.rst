@@ -4,7 +4,7 @@ Multivariate Cutoff Level Analysis (MultiCoLA)
 
 Introduction
 ------------
-Many microbiological studies have a problem with `rare` sequences in the raw data. The problem is: how do you define rare? Are the rare sequences organic, or simply an artifact of the sequencer?  Do the rare sequences have an effect on your community? MultiCoLA is a proposed solution to this problem.  The idea is that you take your dataset with no rarity cutoff, then you apply increasingly rigorous rarity cutoffs.  You can then study the results to see where significat changes took place, and where the data becomes unpredictable. When preforming the rarity cutoffs the rare sequences are discarded. MultiCoLA allows the definition of OTU to be changed, you can say that if a sequence is off by one base it is in a new OTU, or they can be the same OTU if they are in the same phylum, genus, ect.
+Many microbiological studies have a problem with `rare` sequences in the raw data. The problem is: how do you define rare? Are the rare sequences organic, or simply an artifact of the sequencer?  Do the rare sequences have an effect on your community? MultiCoLA is a proposed solution to this problem.  The idea is that you take your dataset with no rarity cutoff, then you apply increasingly rigorous rarity cutoffs.  You can then study the results to see where significat changes took place, and where the data becomes unpredictable. When preforming the rarity cutoffs the rare sequences are discarded. MultiCoLA allows the definition of OTU to be changed, you can say that if a sequence is off by one base it is in a new OTU, or they can be the same OTU if they are in the same phylum, class, ect.
 
 Existing Implementations
 ------------------------
@@ -16,7 +16,9 @@ System Setup and Required Dependencies
 
 :note: The following instructions have been tested on 64-bit Fedora (essentially Redhat) using Python 2.7.2. However, they `should` work across different linux distros and on Macs. The instructions assume you use bash as your shell.
 
-First, your system must have R installed, you can get R by running the command: ::
+:download:`These <../downloads/MultiCoLA/MultiCoLA.1.3.zip>` are the MultiCoLA files I used, you may be able to get the .zip file off of the author's website ``www.ecology-research.com``, but when I did several of the files were outdated and had to be aquired via email.
+
+Your system must have R installed, you can get R by running the command: ::
 
 	yum install R
 	
@@ -33,12 +35,11 @@ Now install vegan and mass with the commands, this will take a long time: ::
 
 :note: vegan 2.0-3 was used, other versions may break functionality.
 	
-Change working directory to where the input files and scripts are: ::
-	
-	setwd("/home/aragorn/MultiCoLA.1.3")
-	
 Useful commands
 ---------------
+Change working directory to where the input files and scripts are: ::
+
+        setwd("/home/aragorn/MultiCoLA.1.3")
 	
 Read and store input file in a variable: ::
 
