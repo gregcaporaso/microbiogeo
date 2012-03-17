@@ -5,7 +5,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso, Logan Knecht"]
 __license__ = "GPL"
 __version__ = "1.4.0"
 __maintainer__ = "Greg Caporaso"
@@ -39,8 +39,6 @@ class Mantel(CorrelationStats):
                 if len(dm1_labels) < 2:
                     output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
                     continue
-                # Start mantel edit here this is where the mantel method would be called, because of this you can consider this the portion of code that represents mantels runtime
-                #p = mantel(dm1,dm2,n=num_iterations)
 
                 m1, m2 = asarray(dm1), asarray(dm2)
                 m1_flat = ravel(m1)
@@ -48,7 +46,6 @@ class Mantel(CorrelationStats):
                 orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
                 better = 0
                 for i in range(self.num_iterations):
-                    #p2 = m2[permutation(size)][:, permutation(size)]
                     p2 = self.permute_2d(m2, permutation(size))
                     r = abs(self.pearson(m1_flat, ravel(p2)))
                     if r >= orig_stat:
@@ -56,11 +53,8 @@ class Mantel(CorrelationStats):
                 
                 p = better
 
-                # End mantel edit here
-
                 p_str = format_p_value_for_num_iters(p,self.num_iterations)
 
-                #output_f.write('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
                 resultsList.append('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
         return resultsList
 
@@ -94,7 +88,3 @@ class Mantel(CorrelationStats):
     def permute_2d(self, m, p):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]
-        #unused below
-        #m_t = transpose(m)
-        #r_t = take(m_t, p, axis=0)
-        #return take(transpose(r_t), p, axis=0)

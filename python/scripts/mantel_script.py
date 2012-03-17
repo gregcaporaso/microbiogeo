@@ -12,7 +12,7 @@ from mantel import Mantel
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso, Logan Knecht"]
 __license__ = "GPL"
 __version__ = "1.4.0"
 __maintainer__ = "Greg Caporaso"
@@ -63,6 +63,7 @@ def main():
 
     m = Mantel(sample_id_map, input_dm_fps, num_iterations)
 
+    #m.runAnalysis returns a list of results
     for line in m.runAnalysis():
         output_f.write(line)
     output_f.close()
