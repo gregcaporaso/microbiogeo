@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -18,8 +19,13 @@ easily apply any number of statistical analyses and easily retrieve the
 results.
 """
 
+from cogent.maths.stats.test import mantel, pearson, permute_2d
 from math import ceil, log
+from numpy import array, asarray, empty, ravel
+from numpy.random import permutation
 from types import ListType
+
+from python.qiime.parse import DistanceMatrix
 
 class GradientStats(object):
     """Top-level, abstract base class for gradient statistical analyses.
@@ -194,11 +200,11 @@ class MantelCorrelogram(CorrelationStats):
         """
         eco_dm = self.getDistanceMatrices()[0]
         geo_dm = self.getDistanceMatrices()[1]
-        size = eco_dm.getSize()
+        dm_size = eco_dm.getSize()
 
         # Find the number of lower/upper triangular elements (discounting the
         # diagonal).
-        num_dists = size * (size - 1) / 2
+        num_dists = dm_size * (dm_size - 1) // 2
 
         # Use Sturge's rule to determine the number of distance classes.
         num_classes = int(ceil(1 + log(num_dists, 2)))
@@ -213,6 +219,128 @@ class MantelCorrelogram(CorrelationStats):
             break_points.append(start_point + width * class_num)
         break_points.append(end_point)
 
-        half_classes = num_classes / 2
+        # Move the first breakpoint a little bit to the left. Machine epsilon
+        # is take from:
+        # http://en.wikipedia.org/wiki/Machine_epsilon#
+        #     Approximation_using_Python
+        epsilon = 2.2204460492503131e-16
+        break_points[0] = break_points[0] - epsilon
 
-        # TODO finish me
+        # Find the class indices (the midpoints between breakpoints).
+        class_indices = []
+        for bp_index, break_point in enumerate(break_points[0:num_classes]):
+            next_bp = break_points[bp_index + 1]
+            class_index = break_point + (0.5 * (next_bp - break_point))
+            class_indices.append(class_index)
+
+        # Create the matrix of distance classes.
+        flattened_geo_dm = geo_dm.flatten(lower=False)
+        dist_class_matrix = []
+        for dm_ele in flattened_geo_dm:
+            bps = [i for i, bp in enumerate(break_points) if bp >= dm_ele]
+            dist_class_matrix.append(min(bps))
+
+        # Start assembling the vectors of results.
+        class_index = [None]
+        num_dist = [None]
+        mantel_r = [None]
+        mantel_p = [None]
+
+        # Create a model-matrix for each distance class, then compute a Mantel
+        # test.
+        for class_idx in range(num_classes):
+            class_index.append(class_indices[class_idx])
+            model_matrix_list = [0] * (dm_size ** 2)
+            for ele_idx, ele in enumerate(dist_class_matrix):
+                # Fix this hack so we don't need to add 1.
+                if ele == (class_idx + 1):
+                    model_matrix_list[ele_idx] = 1
+            model_matrix = empty([dm_size, dm_size], dtype=int)
+            # Convert vector into matrix, setting diagonal to zero.
+            for idx, ele in enumerate(model_matrix_list):
+                col_num = idx // dm_size
+                row_num = idx % dm_size
+                if row_num == col_num:
+                    model_matrix[row_num][col_num] = 0
+                else:
+                    model_matrix[row_num][col_num] = ele
+            model_matrix = DistanceMatrix(model_matrix, geo_dm.SampleIds,
+                                          geo_dm.SampleIds)
+            num_distances = int(model_matrix.sum())
+            num_dist.append(num_distances)
+            if num_distances == 0:
+                mantel_r.append(None)
+                mantel_p.append(None)
+            else:
+                row_sums = model_matrix.sum(axis='observation')
+                row_sums = map(int, row_sums)
+                # Fix this hack so we don't need to add 1.
+                has_zero_sum = False
+                for row_sum in row_sums:
+                    if row_sum == 0:
+                        has_zero_sum = True
+                        break
+                # Only stop running Mantel tests if we've gone through half of
+                # the distance classes and at least one row has a sum of zero
+                # (i.e. the sample doesn't have any distances that fall in the
+                # current class).
+                if not ((class_idx + 1) > (num_classes // 2) and has_zero_sum):
+                    temp_p_val, orig_stat, perm_stats = self.mantel(
+                        model_matrix._data, eco_dm._data,
+                        self.getNumPermutations())
+                    mantel_r.append(-orig_stat)
+
+                    # The mantel() function produces a one-tailed p-value
+                    # (H1: r>0). Here, compute a one-tailed p-value in the
+                    # direction of the sign.
+                    if orig_stat < 0:
+                        perm_sum = sum([1 for ps in perm_stats \
+                            if ps <= orig_stat]) + 1
+                        temp_p_val = perm_sum / (self.getNumPermutations() + 1)
+                    mantel_p.append(temp_p_val)
+                else:
+                    mantel_r.append(None)
+                    mantel_p.append(None)
+
+        results = {}
+        results['method_name'] = 'Mantel Correlogram'
+        results['class_index'] = class_index[1:]
+        results['num_dist'] = num_dist[1:]
+        results['mantel_r'] = mantel_r[1:]
+        results['mantel_p'] = mantel_p[1:]
+        
+        # List mantel_p starts with a None value.
+        mantel_p = mantel_p[1:]
+        num_tests = len([p_val for p_val in mantel_p if p_val is not None])
+
+        # Correct p-values for multiple testing using Bonferroni correction
+        # (non-progressive).
+        corrected_p_vals = [min(p * num_tests, 1) \
+                            for p in mantel_p[0:num_tests]]
+        corrected_p_vals.extend([None] * (num_classes - num_tests))
+        results['mantel_p_corr'] = corrected_p_vals
+
+        return results
+            
+    def mantel(self, m1, m2, n):
+        # This was ripped from pycogent and modified to provide the necessary
+        # info. This will go away once the Mantel class is finished.
+        m1, m2 = asarray(m1), asarray(m2)
+        samp_ids = self.getDistanceMatrices()[0].SampleIds
+        m1_dm = DistanceMatrix(m1, samp_ids, samp_ids)
+        m2_dm = DistanceMatrix(m2, samp_ids, samp_ids)
+        m1_flat = m1_dm.flatten()
+        m2_flat = m2_dm.flatten()
+        size = m1_dm.getSize()
+        orig_stat = pearson(m1_flat, m2_flat)
+        better = 0
+        perm_stats = []
+        for i in range(n):
+            p2 = permute_2d(m2, permutation(size))
+            p2_dm = DistanceMatrix(p2, samp_ids, samp_ids)
+            p2_flat = p2_dm.flatten()
+            r = pearson(m1_flat, p2_flat)
+            perm_stats.append(r)
+            if r >= orig_stat:
+                better += 1
+        return (better + 1) / (n + 1), orig_stat, perm_stats
