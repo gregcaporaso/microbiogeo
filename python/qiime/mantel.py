@@ -14,7 +14,7 @@ __status__ = "Release"
  
 from stats import CorrelationStats
 from qiime.util import make_option
-from qiime.parse import parse_distmat, fields_to_dict
+from qiime.parse import parse_distmat
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
@@ -23,53 +23,19 @@ from qiime.util import (parse_command_line_parameters,
 from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
-options_lookup = get_options_lookup()
-
-script_info = {}
-script_info['brief_description'] = "Script for computing Mantel correlations between as set of distance matrices"
-script_info['script_description'] = ""
-script_info['script_usage'] = [("","Perform Mantel test on all pairs of four distance matrices, including 1000 Monte Carlo iterations. Write the output to mantel_out.txt.","%prog -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out.txt -n 1000")]
-script_info['output_description']= ""
-
-script_info['required_options'] = [\
-# Example required option
-make_option('-i','--input_dms',help='the input distance matrices, comma-separated'),\
-make_option('-o','--output_fp',help='the output filepath'),\
-]
-
-script_info['optional_options'] = [make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int'), make_option('-s','--sample_id_map_fp', help='Map of original sample ids to new sample ids [default: %default]', default=None)
-]
-script_info['version'] = __version__
-
-comment = """# Number of entries refers to the number of rows (or cols) 
-# retained in each distance matrix after filtering the distance matrices 
-# to include only those samples that were in both distance matrices. 
-# p-value contains the correct number of significant digits.
-"""
-
 class Mantel(CorrelationStats):
-    def runAnalysis(self):
-        option_parser, opts, args =\
-           parse_command_line_parameters(**script_info)
-       
-        sample_id_map_fp = opts.sample_id_map_fp
-        if sample_id_map_fp:
-            sample_id_map = dict([(k,v[0]) \
-            for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
-        else:
-            sample_id_map = None
+    def __init__(self, samp_id_map, in_dm_fps, num_iterates):
+        self.sample_id_map = samp_id_map
+        self.input_dm_fps = in_dm_fps
+        self.num_iterations = num_iterates
     
-        input_dm_fps = opts.input_dms.split(',')
-        output_f = open(opts.output_fp,'w')
-        output_f.write(comment)
-        output_f.write('DM1\tDM2\tNumber of entries\tMantel p-value\n')
-        num_iterations = opts.num_iterations
-        for i,fp1 in enumerate(input_dm_fps):
-            for fp2 in input_dm_fps[i+1:]:
+    def runAnalysis(self):
+        resultsList = []
+   
+        for i,fp1 in enumerate(self.input_dm_fps):
+            for fp2 in self.input_dm_fps[i+1:]:
                 (dm1_labels, dm1), (dm2_labels, dm2) =\
-                 make_compatible_distance_matrices(parse_distmat(open(fp1,'U')),
-                                                   parse_distmat(open(fp2,'U')),
-                                                   lookup=sample_id_map)
+                 make_compatible_distance_matrices(parse_distmat(open(fp1,'U')), parse_distmat(open(fp2,'U')), lookup=self.sample_id_map)
                 if len(dm1_labels) < 2:
                     output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
                     continue
@@ -81,7 +47,7 @@ class Mantel(CorrelationStats):
                 size = len(m1)
                 orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
                 better = 0
-                for i in range(num_iterations):
+                for i in range(self.num_iterations):
                     #p2 = m2[permutation(size)][:, permutation(size)]
                     p2 = self.permute_2d(m2, permutation(size))
                     r = abs(self.pearson(m1_flat, ravel(p2)))
@@ -92,10 +58,15 @@ class Mantel(CorrelationStats):
 
                 # End mantel edit here
 
-                p_str = format_p_value_for_num_iters(p,num_iterations)
-                output_f.write('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
-        output_f.close()
+                p_str = format_p_value_for_num_iters(p,self.num_iterations)
 
+                #output_f.write('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
+                resultsList.append('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
+        return resultsList
+
+    #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
+    #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
+    #More specifically it was grabbed from the file called "test" 
     def pearson(self, x_items, y_items):
         """Returns Pearson correlation coefficient between x and y."""
         x_items, y_items = array(x_items), array(y_items)
@@ -117,6 +88,9 @@ class Mantel(CorrelationStats):
             r = -1.0
         return r
       
+    #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
+    #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
+    #More specifically it was grabbed from the file called "test"
     def permute_2d(self, m, p):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]
@@ -124,13 +98,3 @@ class Mantel(CorrelationStats):
         #m_t = transpose(m)
         #r_t = take(m_t, p, axis=0)
         #return take(transpose(r_t), p, axis=0)
-
-
-
-
-def main():
-    testMantel = Mantel()
-    testMantel.runAnalysis()
-
-if __name__ == "__main__":
-    main()
