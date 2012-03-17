@@ -19,8 +19,11 @@ easily apply any number of statistical analyses and easily retrieve the
 results.
 """
 
-from cogent.maths.stats.test import mantel, pearson, permute_2d
+from cogent.maths.stats.test import pearson, permute_2d
 from math import ceil, log
+from matplotlib import use
+use('Agg', warn=False)
+from matplotlib.pyplot import figure
 from numpy import array, asarray, empty, ravel
 from numpy.random import permutation
 from types import ListType
@@ -320,6 +323,28 @@ class MantelCorrelogram(CorrelationStats):
         corrected_p_vals.extend([None] * (num_classes - num_tests))
         results['mantel_p_corr'] = corrected_p_vals
 
+        # Construct a matplotlib plot of distance class versus mantel
+        # correlation statistic.
+        fig = figure()
+        ax = fig.add_subplot(111)
+        ax.plot(results['class_index'], results['mantel_r'], 'ks-',
+                mfc='white', mew=1)
+        # Fill in each point that is significant (corrected p-value <= 0.05).
+        signif_classes = []
+        signif_stats = []
+        for idx, p_val in enumerate(results['mantel_p_corr']):
+            if p_val <= 0.05:
+                signif_classes.append(results['class_index'][idx])
+                signif_stats.append(results['mantel_r'][idx])
+        ax.plot(signif_classes, signif_stats, 'ks', mfc='k')
+
+        ax.set_title("Mantel Correlogram")
+        ax.set_xlabel("Distance class index")
+        ax.set_ylabel("Mantel correlation statistic")
+        results['correlogram_plot'] = fig
+
+        #fig.savefig('mantel_correlogram.png', format='png')
+
         return results
             
     def mantel(self, m1, m2, n):
@@ -333,6 +358,7 @@ class MantelCorrelogram(CorrelationStats):
         m2_flat = m2_dm.flatten()
         size = m1_dm.getSize()
         orig_stat = pearson(m1_flat, m2_flat)
+
         better = 0
         perm_stats = []
         for i in range(n):
