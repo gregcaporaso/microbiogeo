@@ -29,7 +29,9 @@ You should now be in the R console
 Now install vegan and mass with the commands, this will take a long time: ::
 
 	install.packages("vegan", dependencies=TRUE)
-	install.packages("MASS", dependencies=TRUE)
+	install.packages("MASS", dependencies=TRUE) 
+
+:note: vegan 2.0-3 was used, other versions may break functionality.
 	
 Change working directory to where the input files and scripts are: ::
 	
@@ -63,7 +65,7 @@ Our progress understanding MultiCoLA
         ENV<-read.table("env.txt",header=TRUE,row.names=1)
         source("VP.COL.1.3.r")
         source("corrcoeff.ENV.1.3.r")
-        source("signif.1.3.r")
+        source("signif.1.4.r")
 
 **Ran the commands:** ::
 
@@ -85,7 +87,6 @@ Our progress understanding MultiCoLA
 :download:`Order.matrix.txt <../downloads/MultiCoLA/Order.matrix.txt>`
 :download:`Family.matrix.txt <../downloads/MultiCoLA/Family.matrix.txt>`
 :download:`Genus.matrix.txt <../downloads/MultiCoLA/Genus.matrix.txt>`
-:download:`MultiCoLA.RData <../downloads/MultiCoLA/MultiCoLA.RData>`
 :download:`OTUs_completeDS.matrix.txt <../downloads/MultiCoLA/OTUs_completeDS.matrix.txt>`
 :download:`OTUs_wholeDS.matrix.txt <../downloads/MultiCoLA/OTUs_wholeDS.matrix.txt>`
 
@@ -97,7 +98,7 @@ Our progress understanding MultiCoLA
         truncated.DS.order<-COtables(all_taxa_pooled[[3]], Type="ADS",typem="dominant")
         truncated.DS.family<-COtables(all_taxa_pooled[[4]], Type="ADS",typem="dominant")
         truncated.DS.genus<-COtables(all_taxa_pooled[[5]], Type="ADS",typem="dominant")
-        truncated.DS.OTUpartDS<-COtables(all_taxa_pooled[[6]], Type="ADS",typem="dominant")
+        truncated.DS.OTUcompleteDS<-COtables(all_taxa_pooled[[6]], Type="ADS",typem="dominant")
         truncated.DS.OTUwholeDS<-COtables(all_taxa_pooled[[7]], Type="ADS",typem="dominant")
         corr.all<-cutoff.impact(all_taxa_pooled,Type="ADS",corcoef="spearman",typem="dominant")
 
@@ -129,7 +130,7 @@ Our progress understanding MultiCoLA
 .. image:: ../images/MultiCoLA/graph.png
       :align: center
 
-**Ran the commands:** ::
+**Ran the command:** ::
 
         VP.1.taxa<-VP.COL(all_taxa_pooled,ENV,Type="ADS")
 
@@ -150,23 +151,16 @@ Our progress understanding MultiCoLA
 :download:`Family.VarPart.txt <../downloads/MultiCoLA/Family.VarPart.txt>`
 :download:`Genus.sum.adjRsq.txt <../downloads/MultiCoLA/Genus.sum.adjRsq.txt>`
 :download:`Genus.VarPart.txt <../downloads/MultiCoLA/Genus.VarPart.txt>`
+:download:`OTUs_completeDS.sum.adjRsq.txt <../downloads/MultiCoLA/OTUs_completeDS.sum.adjRsq.txt>`
+:download:`OTUs_completeDS.VarPart.txt <../downloads/MultiCoLA/OTUs_completeDS.VarPart.txt>`
+:download:`OTUs_wholeDS.matrix.txt <../downloads/MultiCoLA/OTUs_wholeDS.matrix.txt>`
+:download:`OTUs_wholeDS.sum.adjRsq.txt <../downloads/MultiCoLA/OTUs_wholeDS.sum.adjRsq.txt>`
 
 **This graph was displayed:**
 
 .. image:: ../images/MultiCoLA/graph2.png
       :align: center
 
-
-**Ran the command:** ::
-
-        VP.1.taxa<-VP.COL(all_taxa_pooled,ENV,Type="ADS")
-
-**Answered the questions:**
-
-        Output as text files? (y/n)...  y
-
-        Plot the results? (y/n)...      y
- 
 **Ran the commands:** ::
         
         corrcoeff.table.ADS<-matrix(NA,21,5)
@@ -230,12 +224,17 @@ Our progress understanding MultiCoLA
         SPE<-OTU.ADS[[19]];signif.table.ADS[19,]<-signif(SPE,ENV);rm(SPE)
         SPE<-OTU.ADS[[20]];signif.table.ADS[20,]<-signif(SPE,ENV);rm(SPE)
         SPE<-OTU.ADS[[21]];signif.table.ADS[21,]<-signif(SPE,ENV);rm(SPE)
-        SPE<-OTU.ADS[[22]];signif.table.ADS[22,]<-signif(SPE,ENV);rm(SPE)
+        SPE<-all_taxa_pooled[[7]]
+        signif.table.ADS.orig<-signif(SPE,ENV)
+        row.names(signif.table.ADS.orig)<-c("CO_1")
+        signif.table.ADS<-rbind(signif.table.ADS, signif.table.ADS.orig)
+        write.table(signif.table.ADS,"signif.table.ADS.txt",quote=FALSE)
 
-**Got error:** ::
+**The file was created:**
+:download:`signif.table.ADS.txt <../downloads/MultiCoLA/signif.table.ADS.txt>`
 
-        Error in signif(SPE, ENV) : could not find function "permutest.cca"
-        ...researching
+**Reached the end of the manual:**
+        Trying to find out what the results mean, and how to use this with our datasets.
 
 Input Files
 -----------
