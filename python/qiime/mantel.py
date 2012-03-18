@@ -3,6 +3,11 @@
 # Modified by Logan Knecht on 03/13/2012 (Converted from script to Mantel class)
 from __future__ import division
 
+import sys
+sys.path.append("/home/ubuntu/")
+sys.path.append("/home/ubuntu/biom-format-0.9.1/biom-format-0.9.1/python-code/biom/")
+
+
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Greg Caporaso, Logan Knecht"]
@@ -25,9 +30,9 @@ from numpy.random import permutation
 
 class Mantel(CorrelationStats):
     def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
-        self.num_iterations = num_iterates
-        self.dm1 = initialDistanceMatrix1
-        self.dm2 = initialDistanceMatrix2
+        self._num_iterations = num_iterates
+        self._dm1 = initialDistanceMatrix1
+        self._dm2 = initialDistanceMatrix2
     
     def runAnalysis(self):
         resultsList = []
@@ -46,6 +51,7 @@ class Mantel(CorrelationStats):
         p = better
         p_str = format_p_value_for_num_iters(p,self.num_iter)
         resultsList.append('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
+
         return resultsList
 
     #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
@@ -78,3 +84,16 @@ class Mantel(CorrelationStats):
     def permute_2d(self, m, p):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]
+
+    def get_num_of_iterations(self):
+        return self._num_iterations
+
+    def set_num_of_iterations(self, new_num_of_iterations):
+        self._num_iterations = new_num_of_iterations
+
+    def get_distance_matrices(self):
+        return [self._dm1, self._dm2]
+
+    def set_distance_matrices(self, dm1, dm2):
+        self._dm1 = dm1 
+        self._dm2 = dm2 

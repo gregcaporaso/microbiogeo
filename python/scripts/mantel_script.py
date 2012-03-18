@@ -1,3 +1,7 @@
+import sys
+sys.path.append("/home/ubuntu/")
+sys.path.append("/home/ubuntu/biom-format-0.9.1/biom-format-0.9.1/python-code/biom/")
+
 from qiime.util import make_option
 from qiime.parse import parse_distmat
 from qiime.format import format_p_value_for_num_iters
