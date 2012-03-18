@@ -24,43 +24,33 @@ from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
 class Mantel(CorrelationStats):
-    def __init__(self, samp_id_map, in_dm_fps, num_iterates):
-        self.sample_id_map = samp_id_map
-        self.input_dm_fps = in_dm_fps
+    def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
         self.num_iterations = num_iterates
+        self.dm1 = initialDistanceMatrix1
+        self.dm2 = initialDistanceMatrix2
     
     def runAnalysis(self):
         resultsList = []
-   
-        for i,fp1 in enumerate(self.input_dm_fps):
-            for fp2 in self.input_dm_fps[i+1:]:
-                (dm1_labels, dm1), (dm2_labels, dm2) =\
-                 make_compatible_distance_matrices(parse_distmat(open(fp1,'U')), parse_distmat(open(fp2,'U')), lookup=self.sample_id_map)
-                if len(dm1_labels) < 2:
-                    output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
-                    continue
 
-                m1, m2 = asarray(dm1), asarray(dm2)
-                m1_flat = ravel(m1)
-                size = len(m1)
-                orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
-                better = 0
-                for i in range(self.num_iterations):
-                    p2 = self.permute_2d(m2, permutation(size))
-                    r = abs(self.pearson(m1_flat, ravel(p2)))
-                    if r >= orig_stat:
-                        better += 1
-                
-                p = better
-
-                p_str = format_p_value_for_num_iters(p,self.num_iterations)
-
-                resultsList.append('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
+        m1, m2 = asarray(self.dm1), asarray(self.dm2)
+        m1_flat = ravel(m1)
+        size = len(m1)
+        orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
+        better = 0
+        for i in range(self.num_iterations):
+            p2 = self.permute_2d(m2, permutation(size))
+            r = abs(self.pearson(m1_flat, ravel(p2)))
+            if r >= orig_stat:
+                better += 1
+        
+        p = better
+        p_str = format_p_value_for_num_iters(p,self.num_iter)
+        resultsList.append('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
         return resultsList
 
     #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
     #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
-    #More specifically it was grabbed from the file called "test" 
+    #More specifically it was grabbed from the file called "test.py" 
     def pearson(self, x_items, y_items):
         """Returns Pearson correlation coefficient between x and y."""
         x_items, y_items = array(x_items), array(y_items)
@@ -84,7 +74,7 @@ class Mantel(CorrelationStats):
       
     #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
     #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
-    #More specifically it was grabbed from the file called "test"
+    #More specifically it was grabbed from the file called "test.py"
     def permute_2d(self, m, p):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]

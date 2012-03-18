@@ -1,5 +1,5 @@
 from qiime.util import make_option
-from parse import parse_distmat
+from qiime.parse import parse_distmat
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
@@ -8,7 +8,7 @@ from qiime.util import (parse_command_line_parameters,
 from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
-from mantel import Mantel
+from python.qiime.mantel import Mantel
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
@@ -61,11 +61,19 @@ def main():
 
     num_iterations = opts.num_iterations
 
-    m = Mantel(sample_id_map, input_dm_fps, num_iterations)
+    for i,fp1 in enumerate(input_dm_fps):
+        for fp2 in input_dm_fps[i+1:]:
+            (dm1_labels, dm1), (dm2_labels, dm2) =\
+             make_compatible_distance_matrices(parse_distmat(open(fp1,'U')), parse_distmat(open(fp2,'U')), lookup=sample_id_map)
+            if len(dm1_labels) < 2:
+                output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
+                continue
+
+            m = Mantel(dm1, dm2, num_iterations)
 
     #m.runAnalysis returns a list of results
-    for line in m.runAnalysis():
-        output_f.write(line)
+    #for line in m.runAnalysis():
+        #output_f.write(line)
     output_f.close()
 
 if __name__ == "__main__":
