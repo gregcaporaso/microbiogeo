@@ -236,6 +236,8 @@ Our progress understanding MultiCoLA
 
 **Reached the end of the manual:**
         Trying to find out what the results mean, and how to use this with our datasets.
+        It looks like OTU_table has the same format as input.txt
+        map.txt might be the same as env.txt
 
 Input Files
 -----------
