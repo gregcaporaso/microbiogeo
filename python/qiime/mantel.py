@@ -29,30 +29,38 @@ from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
 class Mantel(CorrelationStats):
+
+    #def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
+        #self._num_iterations = num_iterates
+        #self._dm1 = initialDistanceMatrix1
+        #self._dm2 = initialDistanceMatrix2
+
     def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
         self._num_iterations = num_iterates
         self._dm1 = initialDistanceMatrix1
         self._dm2 = initialDistanceMatrix2
-    
-    def runAnalysis(self):
-        resultsList = []
 
-        m1, m2 = asarray(self.dm1), asarray(self.dm2)
+    def runAnalysis(self, fp1, fp2, dm1_labels):
+        resultsDict = {}
+
+        m1, m2 = asarray(self._dm1), asarray(self._dm2)
         m1_flat = ravel(m1)
         size = len(m1)
         orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
         better = 0
-        for i in range(self.num_iterations):
+        for i in range(self._num_iterations):
             p2 = self.permute_2d(m2, permutation(size))
             r = abs(self.pearson(m1_flat, ravel(p2)))
             if r >= orig_stat:
                 better += 1
         
         p = better
-        p_str = format_p_value_for_num_iters(p,self.num_iter)
-        resultsList.append('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
+        p_str = format_p_value_for_num_iters(p,self._num_iterations)
+        output_str = ('%s\t%s\t%d\t%s\n' % (fp1, fp2, len(dm1_labels),p_str))
+        #resultsDict['Results':('%s\t%s\t%d\t%s\n' % (fp1, fp2, len(dm1_labels),p_str))]
+        resultsDict['Results'] = output_str
 
-        return resultsList
+        return resultsDict
 
     #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
     #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats

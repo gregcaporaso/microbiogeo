@@ -14,6 +14,8 @@ from numpy.random import permutation
 
 from python.qiime.mantel import Mantel
 
+import re
+
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Greg Caporaso, Logan Knecht"]
@@ -61,7 +63,32 @@ def main():
 
     output_f = open(opts.output_fp,'w')
     output_f.write(comment)
-    output_f.write('DM1\tDM2\tNumber of entries\tMantel p-value\n')
+    #output_f.write('DM1\tDM2\tNumber of entries\tMantel p-value\n')
+
+    #this is where the headin information is added, it accounts for the spacing between file names for the first two elements DM1 and DM2, but it doesn't fix the spacing between the actual number values
+    output_f.write('DM1')
+
+    num_of_first_spaces = len(input_dm_fps[0])
+    first_space_string = ""
+    while(num_of_first_spaces > 0):
+        first_space_string = first_space_string + " "
+        num_of_first_spaces = num_of_first_spaces - 1
+    output_f.write(first_space_string)
+
+    output_f.write('\tDM2')
+
+    num_of_second_spaces = len(input_dm_fps[1])
+    second_space_string = ""
+    while(num_of_second_spaces > 0):
+        second_space_string = second_space_string + " "
+        num_of_second_spaces = num_of_second_spaces - 1
+    output_f.write(second_space_string)
+
+    num_of_entries_column_header = "Number of entries"
+    output_f.write("\t" + num_of_entries_column_header)
+    output_f.write('\t')
+
+    output_f.write('Mantel p-value\n')
 
     num_iterations = opts.num_iterations
 
@@ -73,11 +100,44 @@ def main():
                 output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
                 continue
 
+            #m = Mantel(dm1, dm2, num_iterations)
+            #probably better to just pass in the fp1 and fp2 here in the constructor
             m = Mantel(dm1, dm2, num_iterations)
 
-    #m.runAnalysis returns a list of results
-    #for line in m.runAnalysis():
-        #output_f.write(line)
+    m_output = m.runAnalysis(input_dm_fps[0], input_dm_fps[1], dm1_labels)
+    for line in  m_output:
+        #easy way to output the entries
+        #output_f.write(m_output[line])
+
+        #hard way to output entries on a per item basis, modify this to alter spacing for values
+        #I don't know why I didn't just use the above line because it's easier, just it doesn't handle white spacing like it should, so I wrote all the code below to handle the case for the third column so that the number is always space correctly creating a better sense of readability with the output.
+        items = m_output[line].split("\t")
+        tracker = 0
+        for item in items:
+            #This was grabbed from stack overflow in order to help with formatting...
+            #http://stackoverflow.com/questions/4703390/how-to-extract-a-floating-number-from-a-string-in-python
+            reFind = re.findall(r"[-+]?\d*\.\d+|\d+", item)
+            if(len(reFind) > 0):
+                spaces_to_add = 0
+                if(tracker == 2):
+                    spaces_to_add = len(num_of_entries_column_header) - len(item)
+                    spaces = ""
+                    if(spaces_to_add > 0):
+                        while(spaces_to_add > 0):
+                            spaces = spaces + " "
+                            spaces_to_add = spaces_to_add - 1
+                    output_f.write(item)
+                    output_f.write(spaces)
+                else:
+                    output_f.write(item)
+            else:
+                output_f.write(item)
+
+            if(tracker < len(items)-1):
+                output_f.write("\t")
+
+            tracker = tracker + 1
+
     output_f.close()
 
 if __name__ == "__main__":
