@@ -29,16 +29,14 @@ from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
 class Mantel(CorrelationStats):
-
-    #def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
-        #self._num_iterations = num_iterates
-        #self._dm1 = initialDistanceMatrix1
-        #self._dm2 = initialDistanceMatrix2
-
     def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
         self._num_iterations = num_iterates
+
         self._dm1 = initialDistanceMatrix1
         self._dm2 = initialDistanceMatrix2
+
+        parameterMatrices = [self._dm1, self._dm2]
+        super(MantelCorrelogram, self).setDistanceMatrices(parameterMatrices)
 
     def runAnalysis(self):
         m1, m2 = asarray(self._dm1), asarray(self._dm2)
@@ -53,9 +51,6 @@ class Mantel(CorrelationStats):
                 better += 1
         
         return better
-
-
-
 
     #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
     #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
@@ -88,15 +83,17 @@ class Mantel(CorrelationStats):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]
 
-    def get_num_of_iterations(self):
+    def getNumOfIterations(self):
         return self._num_iterations
 
-    def set_num_of_iterations(self, new_num_of_iterations):
+    def setNumOfIterations(self, new_num_of_iterations):
         self._num_iterations = new_num_of_iterations
 
-    def get_distance_matrices(self):
+    def getDistanceMatrices(self):
         return [self._dm1, self._dm2]
 
-    def set_distance_matrices(self, dm1, dm2):
-        self._dm1 = dm1 
-        self._dm2 = dm2 
+    #Grabbed from mantel correlelogram, alt signature to use for the setter
+    def setDistanceMatrices(self, matrices):
+        if len(matrices) != 2:
+            raise ValueError("Can only set exactly two distance matrices for a Mantel analysis.")
+        super(Mantel, self).setDistanceMatrices(matrices)
