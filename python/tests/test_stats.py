@@ -256,6 +256,20 @@ class MantelCorrelogramTests(TestHelper):
         """Test setting the number of permutations with a negative number."""
         self.assertRaises(ValueError, self.mc.setNumPermutations, -5)
 
+    def test_getAlpha(self):
+        """Test retrieving the value of alpha."""
+        self.assertEqual(self.mc.getAlpha(), 0.05)
+
+    def test_setAlpha(self):
+        """Test setting the value of alpha."""
+        self.mc.setAlpha(0.01)
+        self.assertEqual(self.mc.getAlpha(), 0.01)
+
+    def test_setAlpha(self):
+        """Test setting the value of alpha with an invalid value."""
+        self.assertRaises(ValueError, self.mc.setAlpha, -5)
+        self.assertRaises(ValueError, self.mc.setAlpha, 2)
+
     def test_setDistanceMatrices(self):
         """Test setting a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm]
@@ -308,7 +322,7 @@ class MantelCorrelogramTests(TestHelper):
         p_vals = obs['mantel_p']
         corr_p_vals = obs['mantel_p_corr']
         self.assertEqual(len(p_vals), 7)
-        self.assertTrue(p_vals[0] <= 0.01)
+        self.assertTrue(p_vals[0] >= 0 and p_vals[0] <= 0.01)
         self.assertTrue(p_vals[1] > 0.01 and p_vals[1] <= 0.1)
         self.assertTrue(p_vals[2] > 0.1 and p_vals[2] <= 0.5)
         self.assertEqual(p_vals[3:], [None, None, None, None])

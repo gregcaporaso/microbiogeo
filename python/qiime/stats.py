@@ -176,9 +176,10 @@ class CategoryStats(DistanceMatrixStats):
 
 
 class MantelCorrelogram(CorrelationStats):
-    def __init__(self, dm1, dm2, num_perms):
+    def __init__(self, dm1, dm2, num_perms, alpha=0.05):
         super(MantelCorrelogram, self).__init__([dm1, dm2])
         self.setNumPermutations(num_perms)
+        self.setAlpha(alpha)
 
     def getNumPermutations(self):
         return self._num_perms
@@ -188,6 +189,15 @@ class MantelCorrelogram(CorrelationStats):
             self._num_perms = num_perms
         else:
             raise ValueError("The number of permutations cannot be negative.")
+
+    def getAlpha(self):
+        return self._alpha
+
+    def setAlpha(self, alpha):
+        if alpha >= 0 and alpha <= 1:
+            self._alpha = alpha
+        else:
+            raise ValueError("Alpha must be between 0 and 1.")
 
     def setDistanceMatrices(self, matrices):
         if len(matrices) != 2:
@@ -333,7 +343,7 @@ class MantelCorrelogram(CorrelationStats):
         signif_classes = []
         signif_stats = []
         for idx, p_val in enumerate(results['mantel_p_corr']):
-            if p_val <= 0.05:
+            if p_val <= self.getAlpha():
                 signif_classes.append(results['class_index'][idx])
                 signif_stats.append(results['mantel_r'][idx])
         ax.plot(signif_classes, signif_stats, 'ks', mfc='k')
@@ -343,7 +353,7 @@ class MantelCorrelogram(CorrelationStats):
         ax.set_ylabel("Mantel correlation statistic")
         results['correlogram_plot'] = fig
 
-        fig.savefig('mantel_correlogram.png', format='png')
+        #fig.savefig('mantel_correlogram.png', format='png')
 
         return results
             
@@ -372,15 +382,33 @@ class MantelCorrelogram(CorrelationStats):
         dm2_flat = dm2_dm.flatten()
         size = dm1_dm.getSize()
         orig_stat = pearson(dm1_flat, dm2_flat)
-
         better = 0
         perm_stats = []
         for i in range(num_perms):
-            p2 = permute_2d(dm2, permutation(size))
-            p2_dm = DistanceMatrix(p2, samp_ids, samp_ids)
-            p2_flat = p2_dm.flatten()
-            r = pearson(dm1_flat, p2_flat)
+            p1 = permute_2d(dm1, permutation(size))
+            p1_dm = DistanceMatrix(p1, samp_ids, samp_ids)
+            p1_flat = p1_dm.flatten()
+            r = pearson(p1_flat, dm2_flat)
             perm_stats.append(r)
             if r >= orig_stat:
                 better += 1
         return (better + 1) / (num_perms + 1), orig_stat, perm_stats
+
+#    def _mantel2(self, m1, m2, n):
+#        """Compares two distance matrices. Reports P-value for correlation."""
+#        m1, m2 = asarray(m1), asarray(m2)
+#        m1_flat = ravel(m1)
+#        size = len(m1)
+#        #orig_stat = abs(pearson(m1_flat, ravel(m2)))
+#        orig_stat = pearson(m1_flat, ravel(m2))
+#        better = 0
+#        perm_stats = []
+#        for i in range(n):
+#            #p2 = m2[permutation(size)][:, permutation(size)]
+#            p2 = permute_2d(m2, permutation(size))
+#            #r = abs(pearson(m1_flat, ravel(p2)))
+#            r = pearson(m1_flat, ravel(p2))
+#            perm_stats.append(r)
+#            if r >= orig_stat:
+#                better += 1
+#        return better/n, orig_stat, perm_stats
