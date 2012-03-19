@@ -357,8 +357,7 @@ class MantelCorrelogram(CorrelationStats):
                 # current class).
                 if not ((class_idx + 1) > (num_classes // 2) and has_zero_sum):
                     temp_p_val, orig_stat, perm_stats = self._mantel(
-                        model_matrix._data, eco_dm._data,
-                        self.getNumPermutations())
+                        model_matrix, eco_dm, self.getNumPermutations())
                     mantel_r.append(-orig_stat)
 
                     # The mantel() function produces a one-tailed p-value
@@ -428,25 +427,23 @@ class MantelCorrelogram(CorrelationStats):
         This code is based on R's vegan::mantel function.
 
         Arguments:
-            dm1 - DistanceMatrix object
-            dm2 - DistanceMatrix object
-            num_perms - the number of permutations, must be >= 0
+            dm1 - the first DistanceMatrix object.
+            dm2 - the second DistanceMatrix object.
+            num_perms - the number of permutations, must be >= 0.
         """
-        dm1, dm2 = asarray(dm1), asarray(dm2)
-        samp_ids = self.getDistanceMatrices()[0].SampleIds
-        dm1_dm = DistanceMatrix(dm1, samp_ids, samp_ids)
-        dm2_dm = DistanceMatrix(dm2, samp_ids, samp_ids)
-        dm1_flat = dm1_dm.flatten()
-        dm2_flat = dm2_dm.flatten()
-        size = dm1_dm.getSize()
+        # Get a vector of lower triangular (excluding the diagonal) distances
+        # in column-major order.
+        dm1_flat, dm2_flat = dm1.flatten(), dm2.flatten()
         orig_stat = pearson(dm1_flat, dm2_flat)
+
         better = 0
         perm_stats = []
         for i in range(num_perms):
-            p1 = permute_2d(dm1, permutation(size))
-            p1_dm = DistanceMatrix(p1, samp_ids, samp_ids)
-            p1_flat = p1_dm.flatten()
-            r = pearson(p1_flat, dm2_flat)
+            dm1_data_perm = permute_2d(dm1, permutation(dm1.getSize()))
+            dm1_perm = DistanceMatrix(dm1_data_perm, dm1.SampleIds,
+                                      dm1.SampleIds)
+            dm1_perm_flat = dm1_perm.flatten()
+            r = pearson(dm1_perm_flat, dm2_flat)
             perm_stats.append(r)
             if r >= orig_stat:
                 better += 1
