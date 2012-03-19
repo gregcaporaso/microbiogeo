@@ -36,7 +36,7 @@ class Mantel(CorrelationStats):
         self._dm2 = initialDistanceMatrix2
 
         parameterMatrices = [self._dm1, self._dm2]
-        super(MantelCorrelogram, self).setDistanceMatrices(parameterMatrices)
+        super(Mantel, self).setDistanceMatrices(parameterMatrices)
 
     def runAnalysis(self):
         m1, m2 = asarray(self._dm1), asarray(self._dm2)
