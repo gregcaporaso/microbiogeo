@@ -176,37 +176,95 @@ class CategoryStats(DistanceMatrixStats):
 
 
 class MantelCorrelogram(CorrelationStats):
-    def __init__(self, dm1, dm2, num_perms, alpha=0.05):
-        super(MantelCorrelogram, self).__init__([dm1, dm2])
+    """Class for the Mantel correlogram statistical method.
+
+    This class provides the functionality to run a Mantel correlogram analysis
+    on two distance matrices. In a nutshell, the distances are split into
+    distance classes and a Mantel test is run over each distance class. A
+    Mantel correlogram is created, which is basically a plot of distance
+    classes versus Mantel statistics.
+
+    Uses Sturge's rule to determine the number of distance classes, and
+    Pearson's method to compute the correlation at each distance class. The
+    corrected p-values are computed using Bonferroni correction.
+    """
+
+    def __init__(self, eco_dm, geo_dm, num_perms, alpha=0.05):
+        """Constructs a new MantelCorrelogram instance.
+
+        Arguments:
+            eco_dm - a DistanceMatrix object representing the ecological
+                distances between samples (e.g. UniFrac distance matrix).
+            geo_dm - a DistanceMatrix object representing some other distance
+                measure between samples (most commonly geographical distances,
+                but could also be distances in pH, temperature, etc.).
+            num_perms - the number of permutations to use when computing the
+                p-values.
+            alpha - the alpha value to use when marking the Mantel
+                correlogram plot for significance.
+        """
+        super(MantelCorrelogram, self).__init__([eco_dm, geo_dm])
         self.setNumPermutations(num_perms)
         self.setAlpha(alpha)
 
     def getNumPermutations(self):
+        """Returns the number of permutations to use in the Mantel tests."""
         return self._num_perms
 
     def setNumPermutations(self, num_perms):
+        """Sets the number of permutations to use in the Mantel tests.
+        
+        Arguments:
+            num_perms - the number of permutations. This value must be greater
+                than or equal to zero.
+        """
         if num_perms >= 0:
             self._num_perms = num_perms
         else:
             raise ValueError("The number of permutations cannot be negative.")
 
     def getAlpha(self):
+        """Returns the alpha value."""
         return self._alpha
 
     def setAlpha(self, alpha):
+        """Sets the alpha value.
+
+        Arguments:
+            alpha - the value of alpha. Must be between 0 and 1, inclusive.
+        """
         if alpha >= 0 and alpha <= 1:
             self._alpha = alpha
         else:
             raise ValueError("Alpha must be between 0 and 1.")
 
     def setDistanceMatrices(self, matrices):
+        """Sets the distance matrices to use in the Mantel correlogram test.
+
+        This method overrides its parent.
+        
+        Arguments:
+            matrices - list of exactly two DistanceMatrix objects.
+        """
         if len(matrices) != 2:
             raise ValueError("Can only set exactly two distance matrices for "
                              "a Mantel correlogram analysis.")
         super(MantelCorrelogram, self).setDistanceMatrices(matrices)
 
     def runAnalysis(self):
-        """Run a Mantel correlogram test over the current distance matrices.
+        """Runs a Mantel correlogram test over the current distance matrices.
+
+        Returns a dict containing the results. The following keys are set:
+            method_name - name of the statistical method
+            class_index - list of distance class indices (the center of each
+                distance class)
+            num_dist - list of the number of distances in each distance class
+            mantel_r - list of the Mantel r statistics for each distance class
+            mantel_p - list of the p-values for each distance class
+            mantel_p_corr - list of the p-values for each distance class,
+                corrected for multiple tests
+            correlogram_plot - a matplotlib Figure object containing the
+                correlogram
         
         Note: This code is heavily based on the implementation of
         mantel.correlog in R's vegan package.
@@ -370,9 +428,9 @@ class MantelCorrelogram(CorrelationStats):
         This code is based on R's vegan::mantel function.
 
         Arguments:
-            m1 - DistanceMatrix object
-            m2 - DistanceMatrix object
-            n  - the number of permutations, must be >= 0
+            dm1 - DistanceMatrix object
+            dm2 - DistanceMatrix object
+            num_perms - the number of permutations, must be >= 0
         """
         dm1, dm2 = asarray(dm1), asarray(dm2)
         samp_ids = self.getDistanceMatrices()[0].SampleIds
