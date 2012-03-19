@@ -241,7 +241,8 @@ class MantelCorrelogram(CorrelationStats):
     def setDistanceMatrices(self, matrices):
         """Sets the distance matrices to use in the Mantel correlogram test.
 
-        This method overrides its parent.
+        This method overrides its parent. Only two distance matrices may be
+        set, and the smallest allowable size is 3x3 (for Pearson correlation).
         
         Arguments:
             matrices - list of exactly two DistanceMatrix objects.
@@ -249,6 +250,8 @@ class MantelCorrelogram(CorrelationStats):
         if len(matrices) != 2:
             raise ValueError("Can only set exactly two distance matrices for "
                              "a Mantel correlogram analysis.")
+        if matrices[0].getSize() < 3 or matrices[1].getSize() < 3:
+            raise ValueError("Both distance matrices must be at least 3x3.")
         super(MantelCorrelogram, self).setDistanceMatrices(matrices)
 
     def runAnalysis(self):

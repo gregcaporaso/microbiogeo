@@ -241,7 +241,17 @@ class MantelCorrelogramTests(TestHelper):
     def setUp(self):
         """Set up mantel correlogram instances for use in tests."""
         super(MantelCorrelogramTests, self).setUp()
+
+        # Mantel correlogram test using the overview tutorial's unifrac dm as
+        # both inputs.
         self.mc = MantelCorrelogram(self.overview_dm, self.overview_dm, 999)
+
+        # Smallest test case: 3x3 matrices.
+        ids = ['s1', 's2', 's3']
+        self.small_mc = MantelCorrelogram(
+            DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids, ids),
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids, ids),
+            999)
     
     def test_getNumPermutations(self):
         """Test retrieving the number of permutations."""
@@ -282,6 +292,11 @@ class MantelCorrelogramTests(TestHelper):
             [self.overview_dm])
         self.assertRaises(ValueError, self.mc.setDistanceMatrices,
             [self.overview_dm, self.overview_dm, self.overview_dm])
+
+    def test_setDistanceMatrices_too_small(self):
+        """Test setting distance matrices that are too small."""
+        self.assertRaises(ValueError, self.mc.setDistanceMatrices,
+            [self.single_ele_dm, self.single_ele_dm])
 
     def test_runAnalysis(self):
         """Test running a Mantel correlogram analysis on valid input."""
@@ -328,7 +343,44 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(p_vals[3:], [None, None, None, None])
         self.assertFloatEqual(corr_p_vals,
             [p_val * 3 if p_val is not None else None for p_val in p_vals])
-        
+
+    def test_runAnalysis_small(self):
+        """Test running a Mantel correlogram analysis on the smallest input."""
+        # The expected output was verified with vegan's mantel correlogram
+        # function.
+        obs = self.small_mc.runAnalysis()
+
+        exp_method_name = 'Mantel Correlogram'
+        self.assertEqual(obs['method_name'], exp_method_name)
+
+        exp_class_index = [3.0, 5.0, 7.0]
+        self.assertFloatEqual(obs['class_index'], exp_class_index)
+
+        exp_num_dist = [2, 2, 2]
+        self.assertEqual(obs['num_dist'], exp_num_dist)
+
+        exp_mantel_r = [0.86602540378443871, None, None]
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+
+        # Test matplotlib Figure for a sane state.
+        obs_fig = obs['correlogram_plot']
+        obs_ax = obs_fig.get_axes()[0]
+        self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
+        self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
+        self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
+        self.assertFloatEqual(obs_ax.get_xticks(), [2.85, 2.9, 2.95, 3., 3.05,
+            3.1, 3.15, 3.2])
+        self.assertFloatEqual(obs_ax.get_yticks(), [0.82, 0.83, 0.84, 0.85,
+            0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
+
+        # Test p-values and corrected p-values.
+        p_vals = obs['mantel_p']
+        corr_p_vals = obs['mantel_p_corr']
+        self.assertEqual(len(p_vals), 3)
+        self.assertTrue(p_vals[0] >= 0 and p_vals[0] <= 0.5)
+        self.assertEqual(p_vals[1:], [None, None])
+        self.assertFloatEqual(corr_p_vals, p_vals)
+
 
 if __name__ == "__main__":
     main()
