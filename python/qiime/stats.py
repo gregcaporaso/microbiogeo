@@ -288,7 +288,7 @@ class MantelCorrelogram(CorrelationStats):
                 # (i.e. the sample doesn't have any distances that fall in the
                 # current class).
                 if not ((class_idx + 1) > (num_classes // 2) and has_zero_sum):
-                    temp_p_val, orig_stat, perm_stats = self.mantel(
+                    temp_p_val, orig_stat, perm_stats = self._mantel(
                         model_matrix._data, eco_dm._data,
                         self.getNumPermutations())
                     mantel_r.append(-orig_stat)
@@ -343,30 +343,44 @@ class MantelCorrelogram(CorrelationStats):
         ax.set_ylabel("Mantel correlation statistic")
         results['correlogram_plot'] = fig
 
-        #fig.savefig('mantel_correlogram.png', format='png')
+        fig.savefig('mantel_correlogram.png', format='png')
 
         return results
             
-    def mantel(self, m1, m2, n):
-        # This was ripped from pycogent and modified to provide the necessary
-        # info. This will go away once the Mantel class is finished.
-        m1, m2 = asarray(m1), asarray(m2)
+    def _mantel(self, dm1, dm2, num_perms):
+        """Runs a Mantel test over the supplied distance matrices.
+
+        Returns a tuple containing the p-value, Mantel r statistic, and the
+        Mantel r statistic for each permutation.
+
+        The first distance matrix is the one that is permuted when calculating
+        the p-value. The p-value is based on a one-tailed test (H1: r>0). The
+        Mantel r statistic is computed using Pearson's correlation method.
+
+        This code is based on R's vegan::mantel function.
+
+        Arguments:
+            m1 - DistanceMatrix object
+            m2 - DistanceMatrix object
+            n  - the number of permutations, must be >= 0
+        """
+        dm1, dm2 = asarray(dm1), asarray(dm2)
         samp_ids = self.getDistanceMatrices()[0].SampleIds
-        m1_dm = DistanceMatrix(m1, samp_ids, samp_ids)
-        m2_dm = DistanceMatrix(m2, samp_ids, samp_ids)
-        m1_flat = m1_dm.flatten()
-        m2_flat = m2_dm.flatten()
-        size = m1_dm.getSize()
-        orig_stat = pearson(m1_flat, m2_flat)
+        dm1_dm = DistanceMatrix(dm1, samp_ids, samp_ids)
+        dm2_dm = DistanceMatrix(dm2, samp_ids, samp_ids)
+        dm1_flat = dm1_dm.flatten()
+        dm2_flat = dm2_dm.flatten()
+        size = dm1_dm.getSize()
+        orig_stat = pearson(dm1_flat, dm2_flat)
 
         better = 0
         perm_stats = []
-        for i in range(n):
-            p2 = permute_2d(m2, permutation(size))
+        for i in range(num_perms):
+            p2 = permute_2d(dm2, permutation(size))
             p2_dm = DistanceMatrix(p2, samp_ids, samp_ids)
             p2_flat = p2_dm.flatten()
-            r = pearson(m1_flat, p2_flat)
+            r = pearson(dm1_flat, p2_flat)
             perm_stats.append(r)
             if r >= orig_stat:
                 better += 1
-        return (better + 1) / (n + 1), orig_stat, perm_stats
+        return (better + 1) / (num_perms + 1), orig_stat, perm_stats

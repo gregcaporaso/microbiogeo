@@ -271,8 +271,50 @@ class MantelCorrelogramTests(TestHelper):
 
     def test_runAnalysis(self):
         """Test running a Mantel correlogram analysis on valid input."""
-        self.mc.runAnalysis()
+        # A lot of the returned numbers are based on random permutations and
+        # thus cannot be tested for exact values. We'll test what we can
+        # exactly, and then test for "sane" values for the "random" values. The
+        # matplotlib Figure object cannot be easily tested either, so we'll try
+        # our best to make sure it appears sane.
+        obs = self.mc.runAnalysis()
 
+        exp_method_name = 'Mantel Correlogram'
+        self.assertEqual(obs['method_name'], exp_method_name)
+
+        exp_class_index = [0.5757052546507142, 0.60590471266814283,
+            0.63610417068557146, 0.66630362870299997, 0.69650308672042849,
+            0.72670254473785723, 0.75690200275528574]
+        self.assertFloatEqual(obs['class_index'], exp_class_index)
+
+        exp_num_dist = [12, 6, 8, 10, 12, 16, 8]
+        self.assertEqual(obs['num_dist'], exp_num_dist)
+
+        exp_mantel_r = [0.73244729118260765, 0.31157641757444593,
+            0.17627427296718071, None, None, None, None]
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+
+        # Test matplotlib Figure for a sane state.
+        obs_fig = obs['correlogram_plot']
+        obs_ax = obs_fig.get_axes()[0]
+        self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
+        self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
+        self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
+        self.assertFloatEqual(obs_ax.get_xticks(), [0.57, 0.58, 0.59, 0.6,
+            0.61, 0.62, 0.63, 0.64, 0.65])
+        self.assertFloatEqual(obs_ax.get_yticks(), [0.1, 0.2, 0.3, 0.4, 0.5,
+            0.6, 0.7, 0.8, 0.9])
+
+        # Test p-values and corrected p-values.
+        p_vals = obs['mantel_p']
+        corr_p_vals = obs['mantel_p_corr']
+        self.assertEqual(len(p_vals), 7)
+        self.assertTrue(p_vals[0] <= 0.01)
+        self.assertTrue(p_vals[1] > 0.01 and p_vals[1] <= 0.1)
+        self.assertTrue(p_vals[2] > 0.1 and p_vals[2] <= 0.5)
+        self.assertEqual(p_vals[3:], [None, None, None, None])
+        self.assertFloatEqual(corr_p_vals,
+            [p_val * 3 if p_val is not None else None for p_val in p_vals])
+        
 
 if __name__ == "__main__":
     main()
