@@ -539,7 +539,7 @@ class PartialMantel(CorrelationStats):
         if num_perms >= 0:
             self._num_perms = num_perms
         else:
-            raise ValueError("The number of permutations cannot be negative.")
+            raise ValueError("The number of permutations cannot be a negative value.")
 
     def setDistanceMatrices(self, matrices):
         if len(matrices) != 3:

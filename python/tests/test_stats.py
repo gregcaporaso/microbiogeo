@@ -484,35 +484,30 @@ class PartialMantelTests(TestHelper):
             999)
     
     def test_getNumPermutations(self):
-        """Test retrieving the number of permutations."""
+        """Test retrieval of the number of permutations."""
         self.assertEqual(self.pm.getNumPermutations(), 999)
 
     def test_setNumPermutations(self):
-        """Test setting the number of permutations."""
+        """Test setting of the number of permutations."""
         self.pm.setNumPermutations(7)
         self.assertEqual(self.pm.getNumPermutations(), 7)
 
     def test_setNumPermutations_invalid(self):
-        """Test setting the number of permutations with a negative number."""
+        """Test setting of the number of permutations using a negative(invalid) number."""
         self.assertRaises(ValueError, self.pm.setNumPermutations, -22)
 
     def test_setDistanceMatrices(self):
-        """Test setting a valid number of distance matrices."""
+        """Test setting matrices using a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm, self.overview_dm]
         self.pm.setDistanceMatrices(dms)
         self.assertEqual(self.pm.getDistanceMatrices(), dms)
 
     def test_setDistanceMatrices_wrong_number(self):
-        """Test setting an invalid number of distance matrices."""
+        """Test setting matrices using an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
             [self.overview_dm, self.overview_dm])
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
             [self.overview_dm, self.overview_dm, self.overview_dm, self.overview_dm])
-
-    def test_setDistanceMatrices_too_small(self):
-        """Test setting distance matrices that are too small."""
-        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
-            [self.single_ele_dm, self.single_ele_dm])
 
     def test_runAnalysis(self):
         """Test running partial Mantel analysis on valid input."""
