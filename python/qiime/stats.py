@@ -24,7 +24,8 @@ from math import ceil, log
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import array, asarray, empty, ravel
+from numpy import array, asarray, empty, finfo, ravel, zeros
+from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 from types import ListType
 
@@ -276,147 +277,200 @@ class MantelCorrelogram(CorrelationStats):
         geo_dm = self.getDistanceMatrices()[1]
         dm_size = eco_dm.getSize()
 
-        # Find the number of lower/upper triangular elements (discounting the
+        # Find the number of lower triangular elements (excluding the
         # diagonal).
         num_dists = dm_size * (dm_size - 1) // 2
 
         # Use Sturge's rule to determine the number of distance classes.
         num_classes = int(ceil(1 + log(num_dists, 2)))
 
-        # Compute the breakpoints based on the number of distance classes.
-        flattened_lower = geo_dm.flatten()
-        start_point = min(flattened_lower)
-        end_point = max(flattened_lower)
-        width = (end_point - start_point) / num_classes
-        break_points = []
+        # Create the matrix of distance classes. Each element in the matrix
+        # contains what distance class the original element is in. Also find
+        # the distance class indices, which are the midpoints in each distance
+        # class.
+        dist_class_matrix, class_indices = self._find_distance_classes(geo_dm,
+            num_classes)
+
+        # Start assembling the results.
+        results = {}
+        results['method_name'] = 'Mantel Correlogram'
+        results['class_index'] = []
+        results['num_dist'] = []
+        results['mantel_r'] = []
+        results['mantel_p'] = []
+
+        # Create a model matrix for each distance class, then compute a Mantel
+        # test using it and the original eco distance matrix. A model matrix
+        # contains ones for each element that is in the current distance class,
+        # and zeros otherwise (zeros on the diagonal as well).
         for class_num in range(num_classes):
-            break_points.append(start_point + width * class_num)
-        break_points.append(end_point)
-
-        # Move the first breakpoint a little bit to the left. Machine epsilon
-        # is take from:
-        # http://en.wikipedia.org/wiki/Machine_epsilon#
-        #     Approximation_using_Python
-        epsilon = 2.2204460492503131e-16
-        break_points[0] = break_points[0] - epsilon
-
-        # Find the class indices (the midpoints between breakpoints).
-        class_indices = []
-        for bp_index, break_point in enumerate(break_points[0:num_classes]):
-            next_bp = break_points[bp_index + 1]
-            class_index = break_point + (0.5 * (next_bp - break_point))
-            class_indices.append(class_index)
-
-        # Create the matrix of distance classes.
-        flattened_geo_dm = geo_dm.flatten(lower=False)
-        dist_class_matrix = []
-        for dm_ele in flattened_geo_dm:
-            bps = [i for i, bp in enumerate(break_points) if bp >= dm_ele]
-            dist_class_matrix.append(min(bps))
-
-        # Start assembling the vectors of results.
-        class_index = [None]
-        num_dist = [None]
-        mantel_r = [None]
-        mantel_p = [None]
-
-        # Create a model-matrix for each distance class, then compute a Mantel
-        # test.
-        for class_idx in range(num_classes):
-            class_index.append(class_indices[class_idx])
-            model_matrix_list = [0] * (dm_size ** 2)
-            for ele_idx, ele in enumerate(dist_class_matrix):
-                # Fix this hack so we don't need to add 1.
-                if ele == (class_idx + 1):
-                    model_matrix_list[ele_idx] = 1
-            model_matrix = empty([dm_size, dm_size], dtype=int)
-            # Convert vector into matrix, setting diagonal to zero.
-            for idx, ele in enumerate(model_matrix_list):
-                col_num = idx // dm_size
-                row_num = idx % dm_size
-                if row_num == col_num:
-                    model_matrix[row_num][col_num] = 0
-                else:
-                    model_matrix[row_num][col_num] = ele
+            results['class_index'].append(class_indices[class_num])
+            model_matrix = zeros([dm_size, dm_size], dtype=int)
+            for i in range(dm_size):
+                for j in range(dm_size):
+                    curr_ele = dist_class_matrix[i][j]
+                    if curr_ele == class_num and i != j:
+                        model_matrix[i][j] = 1
             model_matrix = DistanceMatrix(model_matrix, geo_dm.SampleIds,
                                           geo_dm.SampleIds)
+
+            # Count the number of distances in the current distance class.
             num_distances = int(model_matrix.sum())
-            num_dist.append(num_distances)
+            results['num_dist'].append(num_distances)
             if num_distances == 0:
-                mantel_r.append(None)
-                mantel_p.append(None)
+                results['mantel_r'].append(None)
+                results['mantel_p'].append(None)
             else:
                 row_sums = model_matrix.sum(axis='observation')
                 row_sums = map(int, row_sums)
-                # Fix this hack so we don't need to add 1.
-                has_zero_sum = False
-                for row_sum in row_sums:
-                    if row_sum == 0:
-                        has_zero_sum = True
-                        break
+                has_zero_sum = 0 in row_sums
+
                 # Only stop running Mantel tests if we've gone through half of
                 # the distance classes and at least one row has a sum of zero
                 # (i.e. the sample doesn't have any distances that fall in the
                 # current class).
-                if not ((class_idx + 1) > (num_classes // 2) and has_zero_sum):
-                    temp_p_val, orig_stat, perm_stats = self._mantel(
+                if not (class_num > ((num_classes // 2) - 1) and has_zero_sum):
+                    p_val, orig_stat, perm_stats = self._mantel(
                         model_matrix, eco_dm, self.getNumPermutations())
-                    mantel_r.append(-orig_stat)
+                    results['mantel_r'].append(-orig_stat)
 
-                    # The mantel() function produces a one-tailed p-value
+                    # The mantel function produces a one-tailed p-value
                     # (H1: r>0). Here, compute a one-tailed p-value in the
                     # direction of the sign.
                     if orig_stat < 0:
                         perm_sum = sum([1 for ps in perm_stats \
                             if ps <= orig_stat]) + 1
-                        temp_p_val = perm_sum / (self.getNumPermutations() + 1)
-                    mantel_p.append(temp_p_val)
+                        p_val = perm_sum / (self.getNumPermutations() + 1)
+                    results['mantel_p'].append(p_val)
                 else:
-                    mantel_r.append(None)
-                    mantel_p.append(None)
-
-        results = {}
-        results['method_name'] = 'Mantel Correlogram'
-        results['class_index'] = class_index[1:]
-        results['num_dist'] = num_dist[1:]
-        results['mantel_r'] = mantel_r[1:]
-        results['mantel_p'] = mantel_p[1:]
-        
-        # List mantel_p starts with a None value.
-        mantel_p = mantel_p[1:]
-        num_tests = len([p_val for p_val in mantel_p if p_val is not None])
+                    results['mantel_r'].append(None)
+                    results['mantel_p'].append(None)
 
         # Correct p-values for multiple testing using Bonferroni correction
         # (non-progressive).
+        num_tests = len([p_val for p_val in results['mantel_p'] \
+                         if p_val is not None])
         corrected_p_vals = [min(p * num_tests, 1) \
-                            for p in mantel_p[0:num_tests]]
+                            for p in results['mantel_p'][0:num_tests]]
         corrected_p_vals.extend([None] * (num_classes - num_tests))
         results['mantel_p_corr'] = corrected_p_vals
 
-        # Construct a matplotlib plot of distance class versus mantel
-        # correlation statistic.
+        # Construct a correlogram of distance class versus mantel correlation
+        # statistic and fill in each point that is statistically significant.
+        results['correlogram_plot'] = self._generate_correlogram(
+            results['class_index'], results['mantel_r'],
+            results['mantel_p_corr'])
+        #results['correlogram_plot'].savefig('mantel_correlogram.png', format='png')
+        return results
+
+    def _find_distance_classes(self, dm, num_classes):
+        """Computes a distance class matrix and distance class midpoints.
+        
+        Returns a matrix of the same dimensions as the input matrix but each
+        element indicates which distance class (0..num_classes-1) the original
+        element belongs to. The diagonal will always have a value of -1,
+        indicating that it is not apart of any distance class. Also returns a
+        list of distance class midpoints.
+
+        Distance classes are determined by the minimum and maximum values in
+        the input matrix and the number of specified classes.
+
+        Arguments:
+            dm - the input DistanceMatrix object to compute distance classes on
+            num_classes - the number of desired distance classes
+        """
+        if num_classes < 1:
+            raise ValueError("Cannot have fewer than one distance class.")
+
+        # Compute the breakpoints of the distance classes based on the number
+        # of specified classes and the ranges of values in the lower triangular
+        # portion of the distance matrix (excluding the diagonal).
+        dm_lower_flat = dm.flatten()
+        break_points = self._find_break_points(np_min(dm_lower_flat),
+            np_max(dm_lower_flat), num_classes)
+
+        # Find the class indices (the midpoints between breakpoints).
+        class_indices = []
+        for bp_index, break_point in enumerate(break_points[0:num_classes]):
+            next_bp = break_points[bp_index + 1]
+            class_indices.append(break_point + (0.5 * (next_bp - break_point)))
+
+        # Create the matrix of distance classes. Every element in the matrix
+        # tells what distance class the original element belongs to.
+        size = dm.getSize()
+        dist_class_matrix = empty([size, size], dtype=int)
+        for i in range(size):
+            for j in range(size):
+                if i != j:
+                    curr_ele = dm[i][j]
+                    bps = [(k - 1) for k, bp in enumerate(break_points) \
+                        if bp >= curr_ele]
+                    dist_class_matrix[i][j] = min(bps)
+                else:
+                    dist_class_matrix[i][j] = -1
+        return dist_class_matrix, class_indices
+
+    def _find_break_points(self, start, end, num_classes):
+        """Finds the points to break a range into equal width classes.
+
+        Returns a list of floats indicating breakpoints in the range.
+
+        Arguments:
+            start - the minimum value in the range
+            end - the maximum value in the range
+            num_classes - the number of classes to break the range into
+        """
+        if start >= end:
+            raise ValueError("Cannot find breakpoints because the starting "
+                "point is greater than or equal to the ending point.")
+        if num_classes < 1:
+            raise ValueError("Cannot have fewer than one distance class.")
+
+        width = (end - start) / num_classes
+        break_points = [start + width * class_num \
+            for class_num in range(num_classes)]
+        break_points.append(float(end))
+
+        # Move the first breakpoint a little bit to the left. Machine epsilon
+        # is take from:
+        # http://en.wikipedia.org/wiki/Machine_epsilon#
+        #     Approximation_using_Python
+        epsilon = finfo(float).eps
+        break_points[0] = break_points[0] - epsilon
+        return break_points
+
+    def _generate_correlogram(self, class_indices, mantel_stats,
+            corrected_p_vals):
+        """Generates a matplotlib plot of the Mantel correlogram.
+
+        Returns a matplotlib Figure instance, which can then be manipulated
+        further or saved to a file as necessary.
+
+        Arguments:
+            class_indices - list of distance class indices (for the x-axis)
+            mantel_stats - list of Mantel r stats (for the y-axis)
+            corrected_p_vals - list of corrected p-values (for filling in
+                points to indicate significance)
+        """
+        # Plot distance class index versus mantel correlation statistic.
         fig = figure()
         ax = fig.add_subplot(111)
-        ax.plot(results['class_index'], results['mantel_r'], 'ks-',
-                mfc='white', mew=1)
-        # Fill in each point that is significant (corrected p-value <= 0.05).
+        ax.plot(class_indices, mantel_stats, 'ks-', mfc='white', mew=1)
+
+        # Fill in each point that is significant (based on alpha).
         signif_classes = []
         signif_stats = []
-        for idx, p_val in enumerate(results['mantel_p_corr']):
+        for idx, p_val in enumerate(corrected_p_vals):
             if p_val <= self.getAlpha():
-                signif_classes.append(results['class_index'][idx])
-                signif_stats.append(results['mantel_r'][idx])
+                signif_classes.append(class_indices[idx])
+                signif_stats.append(mantel_stats[idx])
         ax.plot(signif_classes, signif_stats, 'ks', mfc='k')
 
         ax.set_title("Mantel Correlogram")
         ax.set_xlabel("Distance class index")
         ax.set_ylabel("Mantel correlation statistic")
-        results['correlogram_plot'] = fig
+        return fig
 
-        #fig.savefig('mantel_correlogram.png', format='png')
-
-        return results
-            
     def _mantel(self, dm1, dm2, num_perms):
         """Runs a Mantel test over the supplied distance matrices.
 
@@ -451,22 +505,3 @@ class MantelCorrelogram(CorrelationStats):
             if r >= orig_stat:
                 better += 1
         return (better + 1) / (num_perms + 1), orig_stat, perm_stats
-
-#    def _mantel2(self, m1, m2, n):
-#        """Compares two distance matrices. Reports P-value for correlation."""
-#        m1, m2 = asarray(m1), asarray(m2)
-#        m1_flat = ravel(m1)
-#        size = len(m1)
-#        #orig_stat = abs(pearson(m1_flat, ravel(m2)))
-#        orig_stat = pearson(m1_flat, ravel(m2))
-#        better = 0
-#        perm_stats = []
-#        for i in range(n):
-#            #p2 = m2[permutation(size)][:, permutation(size)]
-#            p2 = permute_2d(m2, permutation(size))
-#            #r = abs(pearson(m1_flat, ravel(p2)))
-#            r = pearson(m1_flat, ravel(p2))
-#            perm_stats.append(r)
-#            if r >= orig_stat:
-#                better += 1
-#        return better/n, orig_stat, perm_stats

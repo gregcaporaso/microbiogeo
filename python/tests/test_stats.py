@@ -381,6 +381,87 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(p_vals[1:], [None, None])
         self.assertFloatEqual(corr_p_vals, p_vals)
 
+    def test_find_distance_classes(self):
+        """Test finding the distance classes a matrix's elements are in."""
+        exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
+               [3.0, 5.0, 7.0])
+        obs = self.small_mc._find_distance_classes(
+            self.small_mc.getDistanceMatrices()[1], 3)
+        self.assertFloatEqual(obs, exp)
+
+        exp = (array([[-1,  1,  2,  0,  0,  5,  7,  4,  6],
+            [ 1, -1,  0,  2,  3,  6,  6,  6,  4],
+            [ 2,  0, -1,  4,  5,  5,  7,  4,  6],
+            [ 0,  2,  4, -1,  3,  3,  3,  3,  2],
+            [ 0,  3,  5,  3, -1,  5,  7,  6,  6],
+            [ 5,  6,  5,  3,  5, -1,  5,  2,  5],
+            [ 7,  6,  7,  3,  7,  5, -1,  0,  0],
+            [ 4,  6,  4,  3,  6,  2,  0, -1,  0],
+            [ 6,  4,  6,  2,  6,  5,  0,  0, -1]]),
+            [0.57381779, 0.60024231, 0.62666684, 0.65309137, 0.67951589,
+             0.70594042, 0.73236494, 0.75878947])
+        obs = self.mc._find_distance_classes(
+            self.mc.getDistanceMatrices()[1], 8)
+        self.assertFloatEqual(obs, exp)
+
+    def test_find_distance_classes_invalid_num_classes(self):
+        """Test finding the distance classes for a bad number of classes."""
+        self.assertRaises(ValueError, self.mc._find_distance_classes,
+                self.mc.getDistanceMatrices()[1], 0)
+        self.assertRaises(ValueError, self.mc._find_distance_classes,
+                self.mc.getDistanceMatrices()[1], -1)
+
+    def test_find_break_points(self):
+        """Test finding equal-spaced breakpoints in a range."""
+        exp = [-2.2204460492503131e-16, 1.0, 2.0, 3.0, 4.0, 5.0]
+        obs = self.mc._find_break_points(0, 5, 5)
+        self.assertFloatEqual(obs, exp)
+
+        exp = [-2.0, -1.66666666667, -1.33333333333, -1.0]
+        obs = self.mc._find_break_points(-2, -1, 3)
+        self.assertFloatEqual(obs, exp)
+
+        exp = [-1.0, -0.5, 0.0, 0.5, 1.0]
+        obs = self.mc._find_break_points(-1, 1, 4)
+        self.assertFloatEqual(obs, exp)
+
+        exp = [-1.0, 1.0]
+        obs = self.mc._find_break_points(-1, 1, 1)
+        self.assertFloatEqual(obs, exp)
+
+    def test_find_break_points_invalid_range(self):
+        """Test finding breakpoints on an invalid range."""
+        self.assertRaises(ValueError, self.mc._find_break_points, 1, 0, 5)
+        self.assertRaises(ValueError, self.mc._find_break_points, 1, 1, 5)
+
+    def test_find_break_points_invalid_num_classes(self):
+        """Test finding breakpoints with an invalid number of classes."""
+        self.assertRaises(ValueError, self.mc._find_break_points, 0, 1, 0)
+        self.assertRaises(ValueError, self.mc._find_break_points, 0, 1, -1)
+
+    def test_generate_correlogram(self):
+        """Test creating a correlogram plot."""
+        obs_fig = self.mc._generate_correlogram([0, 1, 2], [-0.9, 0, 0.9],
+                [0.001, 0.1, 0.9])
+        obs_ax = obs_fig.get_axes()[0]
+        self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
+        self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
+        self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
+        self.assertFloatEqual(obs_ax.get_xticks(), [0., 0.5, 1., 1.5, 2.])
+        self.assertFloatEqual(obs_ax.get_yticks(), [-1., -0.5, 0., 0.5, 1.])
+
+    def test_generate_correlogram_empty(self):
+        """Test creating a correlogram plot with no data."""
+        obs_fig = self.mc._generate_correlogram([], [], [])
+        obs_ax = obs_fig.get_axes()[0]
+        self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
+        self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
+        self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
+        self.assertFloatEqual(obs_ax.get_xticks(),
+            [0., 0.2, 0.4, 0.6, 0.8, 1.0])
+        self.assertFloatEqual(obs_ax.get_yticks(),
+            [0., 0.2, 0.4, 0.6, 0.8, 1.0])
+
 
 if __name__ == "__main__":
     main()
