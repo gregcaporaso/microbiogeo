@@ -20,7 +20,7 @@ results.
 """
 
 from cogent.maths.stats.test import pearson, permute_2d
-from math import ceil, log
+from math import ceil, log, sqrt
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
@@ -379,6 +379,7 @@ class MantelCorrelogram(CorrelationStats):
             dm - the input DistanceMatrix object to compute distance classes on
             num_classes - the number of desired distance classes
         """
+
         if num_classes < 1:
             raise ValueError("Cannot have fewer than one distance class.")
 
@@ -505,3 +506,84 @@ class MantelCorrelogram(CorrelationStats):
             if r >= orig_stat:
                 better += 1
         return (better + 1) / (num_perms + 1), orig_stat, perm_stats
+
+#    def _mantel2(self, m1, m2, n):
+#        """Compares two distance matrices. Reports P-value for correlation."""
+#        m1, m2 = asarray(m1), asarray(m2)
+#        m1_flat = ravel(m1)
+#        size = len(m1)
+#        #orig_stat = abs(pearson(m1_flat, ravel(m2)))
+#        orig_stat = pearson(m1_flat, ravel(m2))
+#        better = 0
+#        perm_stats = []
+#        for i in range(n):
+#            #p2 = m2[permutation(size)][:, permutation(size)]
+#            p2 = permute_2d(m2, permutation(size))
+#            #r = abs(pearson(m1_flat, ravel(p2)))
+#            r = pearson(m1_flat, ravel(p2))
+#            perm_stats.append(r)
+#            if r >= orig_stat:
+#                better += 1
+#        return better/n, orig_stat, perm_stats
+
+
+class PartialMantel(CorrelationStats):
+    def __init__(self, dm1, dm2, cdm, num_perms):
+        super(PartialMantel, self).__init__([dm1, dm2, cdm])
+        self.setNumPermutations(num_perms)
+
+    def getNumPermutations(self):
+        return self._num_perms
+
+    def setNumPermutations(self, num_perms):
+        if num_perms >= 0:
+            self._num_perms = num_perms
+        else:
+            raise ValueError("The number of permutations cannot be negative.")
+
+    def setDistanceMatrices(self, matrices):
+        if len(matrices) != 3:
+            raise ValueError("partial Mantel analysis requires two distance matrices and a third control matrix.")
+        super(PartialMantel, self).setDistanceMatrices(matrices)
+
+    def runAnalysis(self):
+        """Run a partial Mantel test on the current distance matrices and control matrix.
+        
+        Credit: The code herein is based strongly off the implementation found in the Vegan
+                package of the R language and software libraries.
+        """
+
+        corr = lambda rxy, rxz, ryz: (rxy - rxz*ryz)/(sqrt(1 - rxz**2)*sqrt(1 - ryz**2))
+
+        perm_num = self.getNumPermutations()
+
+        dm1 = self.getDistanceMatrices()[0]
+        dm2 = self.getDistanceMatrices()[1]
+        cdm = self.getDistanceMatrices()[2]
+        dm_sizes = dm1.getSize()
+
+        dm1_flat = dm1.flatten()
+        dm2_flat = dm2.flatten()
+        cdm_flat = cdm.flatten()
+        
+        rval1 = pearson(dm1_flat, dm2_flat)
+        rval2 = pearson(dm1_flat, cdm_flat)
+        rval3 = pearson(dm2_flat, cdm_flat)
+        orig_stat = corr(rval1, rval2, rval3)
+
+        perm_stats = [0 for i in range(perm_num)]
+        numerator = 0
+        for i in range(0,perm_num):
+            p1 = permute_2d(dm1, permutation(dm1.getSize()))
+            dm1_perm = DistanceMatrix(p1, dm1.SampleIds, dm1.SampleIds)
+            dm1_perm_flat = dm1_perm.flatten()
+            rval1 = pearson(dm1_perm_flat, dm2_flat)
+            rval2 = pearson(dm1_perm_flat, cdm_flat)
+            perm_stats.append(corr(rval1, rval2, rval3))
+            if perm_stats[-1] >= orig_stat:
+              numerator += perm_stats[-1]
+
+        #if perm_stats[-1] >= orig_stat:
+        #  numerator += perm_stats[-1]
+
+        return (numerator + 1) / (perm_num + 1)

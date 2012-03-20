@@ -14,11 +14,12 @@ __status__ = "Development"
 """Test suite for classes, methods and functions of the stats module."""
  
 from numpy import array
+from math import sqrt
 
 from cogent.util.unit_test import TestCase, main
 from python.qiime.stats import GradientStats, DistanceMatrixStats, \
                                CorrelationStats, CategoryStats, \
-                               MantelCorrelogram
+                               MantelCorrelogram, PartialMantel
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class TestHelper(TestCase):
@@ -461,6 +462,71 @@ class MantelCorrelogramTests(TestHelper):
             [0., 0.2, 0.4, 0.6, 0.8, 1.0])
         self.assertFloatEqual(obs_ax.get_yticks(),
             [0., 0.2, 0.4, 0.6, 0.8, 1.0])
+
+
+class PartialMantelTests(TestHelper):
+    """Tests for the PartialMantel class."""
+
+    def setUp(self):
+        """Set up PartialMantel instances for use in tests."""
+        super(PartialMantelTests, self).setUp()
+
+        # Test partial Mantel using the unifrac dm from the overview tutorial as
+        # all three inputs(should be a small value).
+        self.pm = PartialMantel(self.overview_dm, self.overview_dm, self.overview_dm, 999)
+
+        # Justa small matrix that is easy to edit and observe.
+        smpl_ids = ['s1', 's2', 's3']
+        self.small_pm = PartialMantel(
+            DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[10, 7, 13], [9, 7, 0], [10, 2, 8]]), smpl_ids, smpl_ids),
+            999)
+    
+    def test_getNumPermutations(self):
+        """Test retrieving the number of permutations."""
+        self.assertEqual(self.pm.getNumPermutations(), 999)
+
+    def test_setNumPermutations(self):
+        """Test setting the number of permutations."""
+        self.pm.setNumPermutations(7)
+        self.assertEqual(self.pm.getNumPermutations(), 7)
+
+    def test_setNumPermutations_invalid(self):
+        """Test setting the number of permutations with a negative number."""
+        self.assertRaises(ValueError, self.pm.setNumPermutations, -22)
+
+    def test_setDistanceMatrices(self):
+        """Test setting a valid number of distance matrices."""
+        dms = [self.overview_dm, self.overview_dm, self.overview_dm]
+        self.pm.setDistanceMatrices(dms)
+        self.assertEqual(self.pm.getDistanceMatrices(), dms)
+
+    def test_setDistanceMatrices_wrong_number(self):
+        """Test setting an invalid number of distance matrices."""
+        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
+            [self.overview_dm, self.overview_dm])
+        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
+            [self.overview_dm, self.overview_dm, self.overview_dm, self.overview_dm])
+
+    def test_setDistanceMatrices_too_small(self):
+        """Test setting distance matrices that are too small."""
+        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
+            [self.single_ele_dm, self.single_ele_dm])
+
+    def test_runAnalysis(self):
+        """Test running partial Mantel analysis on valid input."""
+        obs = self.pm.runAnalysis()
+
+        #print '\n' + str(obs) + '\n'
+
+    def test_runAnalysis(self):
+        """Test the correct running of partial Mantel analysis on small, controlled input."""
+        # The output needs to be verified against the Vegan mantel.partial
+        # function.
+        obs = self.small_pm.runAnalysis()
+
+        #print '\n' + str(obs) + '\n'
 
 
 if __name__ == "__main__":
