@@ -13,7 +13,7 @@ from qiime.util import (parse_command_line_parameters,
 from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
-from python.qiime.mantel import Mantel
+from python.qiime.stats import Mantel
 from cogent.util.dict2d import Dict2D
 
 __author__ = "Greg Caporaso"
