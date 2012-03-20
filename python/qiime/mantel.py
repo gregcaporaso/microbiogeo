@@ -39,7 +39,7 @@ class Mantel(CorrelationStats):
         super(Mantel, self).setDistanceMatrices(parameterMatrices)
 
     def runAnalysis(self):
-        m1, m2 = asarray(self._dm1), asarray(self._dm2)
+        m1, m2 = asarray(self._dm1._data), asarray(self._dm2._data)
         m1_flat = ravel(m1)
         size = len(m1)
         orig_stat = abs(self.pearson(m1_flat, ravel(m2)))

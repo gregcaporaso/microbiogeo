@@ -1,9 +1,10 @@
 import sys
 sys.path.append("/home/ubuntu/")
-sys.path.append("/home/ubuntu/biom-format-0.9.1/biom-format-0.9.1/python-code/biom/")
+sys.path.append("/home/ubuntu/biom-format-0.9.1/biom-format-0.9.1/python-code/")
 
 from qiime.util import make_option
 from qiime.parse import parse_distmat
+from python.qiime.parse import DistanceMatrix
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
@@ -13,8 +14,7 @@ from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
 from python.qiime.mantel import Mantel
-
-import re
+from cogent.util.dict2d import Dict2D
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
@@ -64,6 +64,7 @@ def main():
     output_f = open(opts.output_fp,'w')
 
     #this is where the heading information is added, it accounts for the spacing between file names for the first two elements DM1 and DM2, but it doesn't fix the spacing between the actual number values
+    output_f.write(comment)
     output_f.write('DM1')
 
     num_of_first_spaces = len(input_dm_fps[0])
@@ -98,7 +99,7 @@ def main():
                 output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
                 continue
 
-            m = Mantel(dm1, dm2, num_iterations)
+            m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations)
 
     resultsDict = {}
 
