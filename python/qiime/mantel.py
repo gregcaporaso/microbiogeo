@@ -29,7 +29,24 @@ from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
 class Mantel(CorrelationStats):
+    """
+    Class for the Mantel statistical method.
+
+    This class provides the functionality to run a Mantel analysis on two distance matrices.
+    
+    TO DO: Put plain english explanation here, have Damien explain it.
+    """
     def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
+        """
+        Constructs a new Mantel instance.
+
+        Arguements:
+            initalDistanceMatrix1 - This is a distance matrix object representing one of the distance matrices being compared
+
+            initalDistanceMatrix2 - This is a distance matrix object representing one of the distance matrices being compared
+
+            num_iters - This is the number of times to iterate when permuting and calculating the pearson value
+        """
         self._num_iterations = num_iterates
 
         self._dm1 = initialDistanceMatrix1
@@ -39,7 +56,7 @@ class Mantel(CorrelationStats):
         super(Mantel, self).setDistanceMatrices(parameterMatrices)
 
     def runAnalysis(self):
-        m1, m2 = asarray(self._dm1._data), asarray(self._dm2._data)
+        m1, m2 = asarray(self._dm1._data), asarray(self._dm1._data)
         m1_flat = ravel(m1)
         size = len(m1)
         orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
@@ -84,16 +101,28 @@ class Mantel(CorrelationStats):
         return m[p][:, p]
 
     def getNumOfIterations(self):
+        """
+        Returns the number of iterations used
+        """
         return self._num_iterations
 
     def setNumOfIterations(self, new_num_of_iterations):
+        """
+        Sets the number of iterations to be used
+        """
         self._num_iterations = new_num_of_iterations
 
     def getDistanceMatrices(self):
+        """
+        Returns the distance matrices that are having the analysis performed on
+        """
         return [self._dm1, self._dm2]
 
     #Grabbed from mantel correlelogram, alt signature to use for the setter
     def setDistanceMatrices(self, matrices):
+        """
+        Sets the distance matrices being used for the analysis.
+        """
         if len(matrices) != 2:
             raise ValueError("Can only set exactly two distance matrices for a Mantel analysis.")
         super(Mantel, self).setDistanceMatrices(matrices)

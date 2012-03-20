@@ -93,12 +93,14 @@ def main():
 
     for i,fp1 in enumerate(input_dm_fps):
         for fp2 in input_dm_fps[i+1:]:
+            #this is a relatively benign looking line of code, but a lot is going on in the background that isn't being seen. For starters it's parsing distance matrice files and returning the infomration as a list in an array, then it has it made compatable and returned yet again as a pair of data with the informations being (sample ids, distant matrix data)
             (dm1_labels, dm1), (dm2_labels, dm2) =\
              make_compatible_distance_matrices(parse_distmat(open(fp1,'U')), parse_distmat(open(fp2,'U')), lookup=sample_id_map)
             if len(dm1_labels) < 2:
                 output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
                 continue
 
+            #This takes in a distance matrix object for the dm1 and dm2 of Mantel
             m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations)
 
     resultsDict = {}
