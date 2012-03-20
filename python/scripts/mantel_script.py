@@ -106,7 +106,7 @@ def main():
     resultsDict = {}
 
     p = m.runAnalysis()
-    p_str = format_p_value_for_num_iters(p,num_iterations)
+    p_str = format_p_value_for_num_iters(p[0],num_iterations)
     #output_str = ('%s\t%s\t%d\t%s\n' % (input_dm_fps[0], input_dm_fps[1], len(dm1_labels),p_str))
     #resultsDict['Results':('%s\t%s\t%d\t%s\n' % (fp1, fp2, len(dm1_labels),p_str))]
 

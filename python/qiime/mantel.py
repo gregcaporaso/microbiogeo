@@ -25,6 +25,8 @@ from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_compatible_distance_matrices)
 
+from python.qiime.parse import DistanceMatrix
+
 from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
@@ -40,7 +42,7 @@ class Mantel(CorrelationStats):
         """
         Constructs a new Mantel instance.
 
-        Arguements:
+        Arguments:
             initalDistanceMatrix1 - This is a distance matrix object representing one of the distance matrices being compared
 
             initalDistanceMatrix2 - This is a distance matrix object representing one of the distance matrices being compared
@@ -56,18 +58,56 @@ class Mantel(CorrelationStats):
         super(Mantel, self).setDistanceMatrices(parameterMatrices)
 
     def runAnalysis(self):
-        m1, m2 = asarray(self._dm1._data), asarray(self._dm1._data)
-        m1_flat = ravel(m1)
-        size = len(m1)
-        orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
+#--------------------------------------------------------------------------
+       # Get a vector of lower triangular (excluding the diagonal) distances
+        # in column-major order.
+        dm1_flat, dm2_flat = self._dm1.flatten(), self._dm2.flatten()
+        orig_stat = self.pearson(dm1_flat, dm2_flat)
+
         better = 0
+        perm_stats = []
         for i in range(self._num_iterations):
-            p2 = self.permute_2d(m2, permutation(size))
-            r = abs(self.pearson(m1_flat, ravel(p2)))
+            dm1_data_perm = self.permute_2d(self._dm1, permutation(self._dm1.getSize()))
+            dm1_perm = DistanceMatrix(dm1_data_perm, self._dm1.SampleIds, self._dm1.SampleIds)
+            dm1_perm_flat = dm1_perm.flatten()
+            r = self.pearson(dm1_perm_flat, dm2_flat)
+            perm_stats.append(r)
             if r >= orig_stat:
                 better += 1
-        
-        return better
+        return (better + 1) / (self._num_iterations + 1), orig_stat, perm_stats
+#--------------------------------------------------------------------------
+#Alternate first implementation with more information
+#        """Compares two distance matrices. Reports P-value for correlation."""
+#        m1, m2 = asarray(self._dm1._data), asarray(self._dm2._data)
+#        m1_flat = ravel(m1)
+#        size = len(m1)
+#        #orig_stat = abs(pearson(m1_flat, ravel(m2)))
+#        orig_stat = self.pearson(m1_flat, ravel(m2))
+#        better = 0
+#        perm_stats = []
+#        for i in range(self._num_iterations):
+#            #p2 = m2[permutation(size)][:, permutation(size)]
+#            p2 = self.permute_2d(m2, permutation(size))
+#            #r = abs(pearson(m1_flat, ravel(p2)))
+#            r = self.pearson(m1_flat, ravel(p2))
+#            perm_stats.append(r)
+#            if r >= orig_stat:
+#                better += 1
+#        return better, orig_stat, perm_stats
+#--------------------------------------------------------------------------
+#First implementation
+#        m1, m2 = asarray(self._dm1._data), asarray(self._dm1._data)
+#        m1_flat = ravel(m1)
+#        size = len(m1)
+#        orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
+#        better = 0
+#        for i in range(self._num_iterations):
+#            p2 = self.permute_2d(m2, permutation(size))
+#            r = abs(self.pearson(m1_flat, ravel(p2)))
+#            if r >= orig_stat:
+#                better += 1
+#        return better
+#--------------------------------------------------------------------------
 
     #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
     #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
