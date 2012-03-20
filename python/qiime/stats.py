@@ -360,7 +360,6 @@ class MantelCorrelogram(CorrelationStats):
         results['correlogram_plot'] = self._generate_correlogram(
             results['class_index'], results['mantel_r'],
             results['mantel_p_corr'])
-        #results['correlogram_plot'].savefig('mantel_correlogram.png', format='png')
         return results
 
     def _find_distance_classes(self, dm, num_classes):
@@ -507,24 +506,6 @@ class MantelCorrelogram(CorrelationStats):
                 better += 1
         return (better + 1) / (num_perms + 1), orig_stat, perm_stats
 
-#    def _mantel2(self, m1, m2, n):
-#        """Compares two distance matrices. Reports P-value for correlation."""
-#        m1, m2 = asarray(m1), asarray(m2)
-#        m1_flat = ravel(m1)
-#        size = len(m1)
-#        #orig_stat = abs(pearson(m1_flat, ravel(m2)))
-#        orig_stat = pearson(m1_flat, ravel(m2))
-#        better = 0
-#        perm_stats = []
-#        for i in range(n):
-#            #p2 = m2[permutation(size)][:, permutation(size)]
-#            p2 = permute_2d(m2, permutation(size))
-#            #r = abs(pearson(m1_flat, ravel(p2)))
-#            r = pearson(m1_flat, ravel(p2))
-#            perm_stats.append(r)
-#            if r >= orig_stat:
-#                better += 1
-#        return better/n, orig_stat, perm_stats
 
 class Mantel(CorrelationStats):
     """
