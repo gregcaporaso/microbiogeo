@@ -19,6 +19,7 @@ There are currently notes on the following statistical methods:
    notes/adonis
    notes/anosim
    notes/best
+   notes/isa
    notes/lsa
    notes/mantel
    notes/mantel_correlogram

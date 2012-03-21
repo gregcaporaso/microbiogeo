@@ -138,7 +138,8 @@ Python Version: mantel_out.txt - includes the statistic as computed from the thr
 
 Testing Results
 ----------------
-The keyboard data (outlined above) was used to test the Python implementation of the partial Mantel test
+The keyboard data (outlined above) and the 88 soils data were used to test the R implementation of the partial 
+Mantel test. The Python version was tested just with the Keyboard dataset.
 
 
 Keyboard
