@@ -672,6 +672,11 @@ class PartialMantel(CorrelationStats):
 
         corr = lambda rxy, rxz, ryz: (rxy - rxz*ryz)/(sqrt(1 - rxz**2)*sqrt(1 - ryz**2))
 
+        res = {}
+        res['method_name'] = 'partial Mantel'
+        res['mantel_r'] = None
+        res['mantel_p'] = None
+
         perm_num = self.getNumPermutations()
 
         dm1 = self.getDistanceMatrices()[0]
@@ -702,5 +707,8 @@ class PartialMantel(CorrelationStats):
 
         #if perm_stats[-1] >= orig_stat:
         #  numerator += perm_stats[-1]
-
-        return (numerator + 1) / (perm_num + 1)
+        
+        res['mantel_r'] = orig_stat
+        res['mantel_p'] = (numerator + 1) / (perm_num + 1)
+        
+        return res

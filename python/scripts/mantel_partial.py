@@ -12,7 +12,6 @@ __status__ = "Development"
 
 from os import path
 from cogent.util.misc import create_dir
-from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_distmat, fields_to_dict
 from qiime.util import (get_options_lookup, make_compatible_distance_matrices,
                         make_option, parse_command_line_parameters)
@@ -26,7 +25,7 @@ script_info['brief_description'] = """
 Computes a partial Mantel statistic between two distance matrices controlling for a third matrix.
 """
 script_info['script_description'] = """
-This script computes and outputs the p-value test statistic 
+This script computes and outputs the p-value and the Mantel test statistic(r-value).
 """
 script_info['script_usage'] = [("Compute partial Mantel statistic",
 "This example computes a partial Mantel p-value on two unifrac distance matrices holding a" 
@@ -103,8 +102,8 @@ def main():
     res = pm.runAnalysis()
 
     # Output statistic to result file.
-    res_file.write('\np-val\t')
-    res_file.write('%f' % (res))
+    res_file.write('\nMantel stat(r-val)\tp-val\t')
+    res_file.write('\n%f\t%f' % (res['mantel_r'], res['mantel_p']))
     res_file.close()
 
 
