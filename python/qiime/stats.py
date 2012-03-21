@@ -7,7 +7,7 @@ __credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
-__email__ = "mgd25@nau.edu"
+__email__ = "mdwan.tgen@gmail.com"
 __status__ = "Development"
 
 """
