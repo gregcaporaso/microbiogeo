@@ -14,10 +14,8 @@ from os import path
 from cogent.util.misc import create_dir
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_distmat, fields_to_dict
-from qiime.util import make_option
-from qiime.util import (parse_command_line_parameters,
-                        get_options_lookup,
-                        make_compatible_distance_matrices)
+from qiime.util import (get_options_lookup, make_compatible_distance_matrices,
+                        make_option, parse_command_line_parameters)
 from python.qiime.parse import DistanceMatrix
 from python.qiime.stats import MantelCorrelogram
 
@@ -36,7 +34,8 @@ distance matrix has its distances split into a number of distance classes \
 (the number of classes is determined by Sturge's rule). A Mantel test is run \
 over these distance classes versus the ecological distance matrix. The \
 Mantel statistics obtained from each of these tests is then plotted in a \
-correlogram.
+correlogram. A filled-in point on the plot indicates that the Mantel \
+statistic was statistically significant (you may provide what alpha to use).
 """
 script_info['script_usage'] = [("Compute Mantel correlogram",
 "This example computes a Mantel correlogram on two distance matrices using "
@@ -74,6 +73,9 @@ comment = """# Number of entries refers to the number of rows (or cols)
 # retained in each distance matrix after filtering the distance matrices 
 # to include only those samples that were in both distance matrices. 
 # p-value contains the correct number of significant digits.
+# Distance classes with values of None were in the second half of the distance
+# classes and not all samples could be included in the distance class, so
+# calculations were not performed.
 """
 
 def main():
@@ -93,8 +95,6 @@ def main():
     results_f = open(path.join(
         opts.output_dir, "mantel_correlogram_results.txt"), 'w')
     results_f.write(comment)
-    results_f.write('DM1: %s\nDM2: %s\nNumber of permutations: %d\nAlpha: %s\n'
-        % (input_dm_fps[0], input_dm_fps[1], num_perms, alpha))
 
     # Make the two distance matrices compatible before running the analysis.
     # This code was taken from Greg's compare_distance_matrices.py script.
@@ -113,6 +113,11 @@ def main():
             "after filtering them to include only samples that were in both "
             "matrices. The minimum required size to compute a Mantel "
             "correlogram is 3x3.")
+
+    # Write header info to the results file.
+    results_f.write('DM1: %s\nDM2: %s\nNumber of entries: %d\nNumber of '
+        'permutations: %d\nAlpha: %s\n' % (input_dm_fps[0], input_dm_fps[1],
+        len(dm1_labels), num_perms, alpha))
 
     # Construct a MantelCorrelogram object and run the analysis.
     results = MantelCorrelogram(DistanceMatrix(dm1, dm1_labels,

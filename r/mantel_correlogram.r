@@ -12,6 +12,10 @@
 # Load libraries and source files.
 library('optparse', warn.conflicts=FALSE, quietly=TRUE)
 library('vegan', warn.conflicts=FALSE, quietly=TRUE)
+
+# TODO - remove me
+#source('source/vegan/R/mantel.correlog.R')
+
 envvars <- as.list(Sys.getenv())
 if (is.element('QIIME_DIR', names(envvars))) {
     qiimedir <- envvars[['QIIME_DIR']]
@@ -44,7 +48,8 @@ geodistmat <- load.qiime.distance.matrix(opts$geodistmat)
 
 # Run Mantel correlogram, write results summary to a file, and create a plot of
 # the correlogram (save as a PDF).
-results <- mantel.correlog(as.dist(distmat), D.geo=as.dist(geodistmat))
+results <- mantel.correlog(as.dist(distmat), D.geo=as.dist(geodistmat),
+r.type="pearson", mult="bonferroni", progressive=FALSE)
 results.filepath <- sprintf('%s/mantel_correlogram_results.txt', opts$outdir)
 sink(results.filepath)
 print(results)
