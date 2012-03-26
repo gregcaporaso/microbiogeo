@@ -19,7 +19,7 @@ from math import sqrt
 from cogent.util.unit_test import TestCase, main
 from python.qiime.stats import GradientStats, DistanceMatrixStats, \
                                CorrelationStats, CategoryStats, \
-                               MantelCorrelogram, PartialMantel
+                               MantelCorrelogram, Mantel, PartialMantel
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class TestHelper(TestCase):
@@ -466,7 +466,7 @@ class MantelCorrelogramTests(TestHelper):
 class MantelTests(TestHelper):
     """Tests for the Mantel class."""
     def setUp(self):
-        """Set up PartialMantel instances for use in tests."""
+        """Set up Mantel instances for use in tests."""
         super(MantelTests, self).setUp()
 
         self.mantel = Mantel(self.overview_dm, self.overview_dm, 999)
@@ -476,6 +476,16 @@ class MantelTests(TestHelper):
             DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
             999)
+
+    def test_getNumPermutations(self):
+        """Test retrieval of the number of permutations."""
+        self.assertEqual(self.mantel.getNumPermutations(), 999)
+
+    def test_setNumPermutations(self):
+        """Test setting of the number of permutations."""
+        permutations = 10
+        self.mantel.setNumPermutations(permutations)
+        self.assertEqual(self.mantel.getNumPermutations(), permutations, "The expected permutations of %d was not returned" % permutations)
 
 class PartialMantelTests(TestHelper):
     """Tests for the PartialMantel class."""

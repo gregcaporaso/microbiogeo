@@ -515,7 +515,7 @@ class Mantel(CorrelationStats):
     
     TO DO: Put plain english explanation here, have Damien explain it.
     """
-    def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, num_iterates):
+    def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, permutations):
         """
         Constructs a new Mantel instance.
 
@@ -526,33 +526,30 @@ class Mantel(CorrelationStats):
 
             num_iters - This is the number of times to iterate when permuting and calculating the pearson value
         """
-        self._num_iterations = num_iterates
-
-        self._dm1 = initialDistanceMatrix1
-        self._dm2 = initialDistanceMatrix2
-
-        parameterMatrices = [self._dm1, self._dm2]
-        super(Mantel, self).__init__(parametMatrices)
+        parameterMatrices = [initialDistanceMatrix1, initialDistanceMatrix2]
+        super(Mantel, self).__init__(parameterMatrices)
         super(Mantel, self).setDistanceMatrices(parameterMatrices)
+
+        self.setNumPermutations(permutations)
 
     def runAnalysis(self):
 #--------------------------------------------------------------------------
        # Get a vector of lower triangular (excluding the diagonal) distances
         # in column-major order.
-        dm1_flat, dm2_flat = self._dm1.flatten(), self._dm2.flatten()
+        dm1_flat, dm2_flat = self.getDistanceMatrices()[0].flatten(), self.getDistanceMatrices()[1].flatten()
         orig_stat = self.pearson(dm1_flat, dm2_flat)
 
         better = 0
         perm_stats = []
-        for i in range(self._num_iterations):
-            dm1_data_perm = self.permute_2d(self._dm1, permutation(self._dm1.getSize()))
-            dm1_perm = DistanceMatrix(dm1_data_perm, self._dm1.SampleIds, self._dm1.SampleIds)
+        for i in range(self._num_perms):
+            dm1_data_perm = self.permute_2d(self.getDistanceMatrices()[0], permutation(self.getDistanceMatrices()[0].getSize()))
+            dm1_perm = DistanceMatrix(dm1_data_perm, self.getDistanceMatrices()[0].SampleIds, self.getDistanceMatrices()[0].SampleIds)
             dm1_perm_flat = dm1_perm.flatten()
             r = self.pearson(dm1_perm_flat, dm2_flat)
             perm_stats.append(r)
             if r >= orig_stat:
                 better += 1
-        return (better + 1) / (self._num_iterations + 1), orig_stat, perm_stats
+        return (better + 1) / (self._num_perms + 1), orig_stat, perm_stats
 #--------------------------------------------------------------------------
 #Alternate first implementation with more information
 #        """Compares two distance matrices. Reports P-value for correlation."""
@@ -563,7 +560,7 @@ class Mantel(CorrelationStats):
 #        orig_stat = self.pearson(m1_flat, ravel(m2))
 #        better = 0
 #        perm_stats = []
-#        for i in range(self._num_iterations):
+#        for i in range(self._num_perms):
 #            #p2 = m2[permutation(size)][:, permutation(size)]
 #            p2 = self.permute_2d(m2, permutation(size))
 #            #r = abs(pearson(m1_flat, ravel(p2)))
@@ -579,7 +576,7 @@ class Mantel(CorrelationStats):
 #        size = len(m1)
 #        orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
 #        better = 0
-#        for i in range(self._num_iterations):
+#        for i in range(self._num_perms):
 #            p2 = self.permute_2d(m2, permutation(size))
 #            r = abs(self.pearson(m1_flat, ravel(p2)))
 #            if r >= orig_stat:
@@ -618,23 +615,20 @@ class Mantel(CorrelationStats):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]
 
-    def getNumOfIterations(self):
+    def getNumPermutations(self):
         """
         Returns the number of iterations used
         """
-        return self._num_iterations
+        return self._num_perms
 
-    def setNumOfIterations(self, new_num_of_iterations):
+    def setNumPermutations(self, num_perms):
         """
         Sets the number of iterations to be used
         """
-        self._num_iterations = new_num_of_iterations
-
-    def getDistanceMatrices(self):
-        """
-        Returns the distance matrices that are having the analysis performed on
-        """
-        return [self._dm1, self._dm2]
+        if num_perms >= 0:
+            self._num_perms = num_perms
+        else:
+            raise ValueError("The number of permutations cannot be a negative value.")
 
     #Grabbed from mantel correlelogram, alt signature to use for the setter
     def setDistanceMatrices(self, matrices):

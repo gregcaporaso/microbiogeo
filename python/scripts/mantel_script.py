@@ -1,7 +1,3 @@
-import sys
-sys.path.append("/home/ubuntu/")
-sys.path.append("/home/ubuntu/biom-format-0.9.1/biom-format-0.9.1/python-code/")
-
 from qiime.util import make_option
 from qiime.parse import parse_distmat
 from python.qiime.parse import DistanceMatrix
