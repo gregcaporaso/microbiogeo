@@ -463,6 +463,19 @@ class MantelCorrelogramTests(TestHelper):
         self.assertFloatEqual(obs_ax.get_yticks(),
             [0., 0.2, 0.4, 0.6, 0.8, 1.0])
 
+class MantelTests(TestHelper):
+    """Tests for the Mantel class."""
+    def setUp(self):
+        """Set up PartialMantel instances for use in tests."""
+        super(MantelTests, self).setUp()
+
+        self.mantel = Mantel(self.overview_dm, self.overview_dm, 999)
+
+        smpl_ids = ['s1', 's2', 's3']
+        self.small_mantel = Mantel(
+            DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
+            999)
 
 class PartialMantelTests(TestHelper):
     """Tests for the PartialMantel class."""
