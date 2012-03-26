@@ -469,7 +469,8 @@ class MantelTests(TestHelper):
         """Set up Mantel instances for use in tests."""
         super(MantelTests, self).setUp()
 
-        self.mantel = Mantel(self.overview_dm, self.overview_dm, 999)
+        self.defaultPermutations = 999
+        self.mantel = Mantel(self.overview_dm, self.overview_dm, self.defaultPermutations)
 
         smpl_ids = ['s1', 's2', 's3']
         self.small_mantel = Mantel(
@@ -477,9 +478,9 @@ class MantelTests(TestHelper):
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
             999)
 
-    def test_getNumPermutations(self):
+    def test_initialGetNumPermutations(self):
         """Test retrieval of the number of permutations."""
-        self.assertEqual(self.mantel.getNumPermutations(), 999)
+        self.assertEqual(self.mantel.getNumPermutations(), self.defaultPermutations, "The default value for the permutations is not the same as the value that was used to initialize it.")
 
     def test_setNumPermutations(self):
         """Test setting of the number of permutations."""
