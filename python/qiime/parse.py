@@ -187,3 +187,19 @@ class MetadataMap():
             category - the category name whose value will be returned.
         """
         return self._metadata[sampleId][category]
+
+    def getSampleIds(self):
+        """Returns the IDs of all samples in the metadata map.
+
+        The sample IDs are returned as a list of strings in alphabetical order.
+        """
+        return sorted(self._metadata.keys())
+
+    def getCategoryNames(self):
+        """Returns the names of all categories in the metadata map.
+
+        The category names are returned as a list of strings in alphabetical
+        order.
+        """
+        return sorted(self.getSampleMetadata(self.getSampleIds()[0]).keys()) \
+            if len(self.getSampleIds()) > 0 else []

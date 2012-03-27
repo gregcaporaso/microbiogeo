@@ -29,7 +29,7 @@ from numpy import min as np_min, max as np_max
 from numpy.random import permutation
 from types import ListType
 
-from python.qiime.parse import DistanceMatrix
+from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class GradientStats(object):
     """Top-level, abstract base class for gradient statistical analyses.
@@ -117,8 +117,8 @@ class CategoryStats(DistanceMatrixStats):
     def __init__(self, mdmap, dm, cats):
         """Default constructor."""
         super(CategoryStats, self).__init__([dm])
-        self._metadata_map = mdmap
-        self._categories = cats
+        self.setMetadataMap(mdmap)
+        self.setCategories(cats)
     
     def setMetadataMap(self, new_map):
         """Sets the instance's metadata map to a new MetadataMap instance.
@@ -126,7 +126,7 @@ class CategoryStats(DistanceMatrixStats):
         Arguments:
           new_map - A MetadataMap object instance.
         """
-        if not isinstance(new_map, self.__class__):
+        if not isinstance(new_map, MetadataMap):
             raise TypeError('Invalid type: %s; not MetadataMap' %
                             new_map.__class__.__name__)
         self._metadata_map = new_map
@@ -144,7 +144,7 @@ class CategoryStats(DistanceMatrixStats):
         Arguments:
           new_distmat - A DistanceMatrix object instance.
         """
-        if not isinstance(new_distmat, self.__class__):
+        if not isinstance(new_distmat, DistanceMatrix):
             raise TypeError('Invalid type: %s; not DistanceMatrix' %
                             new_distmat.__class__.__name__)
         self.setDistanceMatrices([new_distmat])
@@ -164,8 +164,11 @@ class CategoryStats(DistanceMatrixStats):
           new_categories - A list of category name strings.
         """
         for el in new_categories:
-          if not isinstance(el, self.__class__):
-            raise TypeError('Invalid category: not of type "string"')
+            if not isinstance(el, str):
+                raise TypeError("Invalid category: not of type 'string'")
+            elif el not in self._metadata_map.getCategoryNames():
+                raise ValueError("The category %s is not in the mapping file."
+                    % el)
         self._categories = new_categories
 
     def getCategories(self):
@@ -174,6 +177,31 @@ class CategoryStats(DistanceMatrixStats):
         Returns a list of mapping file category name strings.
         """
         return self._categories
+
+
+class DistanceBasedRda(CategoryStats):
+    """Class for distance-based redundancy analysis."""
+
+    def __init__(self, dm, metadata_map, category):
+        """Default constructor."""
+        if not isinstance(category, str):
+            raise TypeError("The supplied category must be a string.")
+        super(DistanceBasedRda, self).__init__(metadata_map, dm, [category])
+
+    def getCategory(self):
+        """Returns the single category of interest to this analysis."""
+        return self.getCategories()[0]
+
+    def setCategory(self, cat):
+        """Sets the category of interest to this analysis.
+
+        Arguments:
+          cat - the category name (string). Must be present in the mapping
+              file.
+        """
+        if not isinstance(cat, str):
+            raise TypeError("The supplied category must be a string.")
+        self.setCategories([cat])
 
 
 class MantelCorrelogram(CorrelationStats):

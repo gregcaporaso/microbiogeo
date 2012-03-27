@@ -19,7 +19,8 @@ from math import sqrt
 from cogent.util.unit_test import TestCase, main
 from python.qiime.stats import GradientStats, DistanceMatrixStats, \
                                CorrelationStats, CategoryStats, \
-                               MantelCorrelogram, Mantel, PartialMantel
+                               DistanceBasedRda, MantelCorrelogram, Mantel, \
+                               PartialMantel
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class TestHelper(TestCase):
@@ -72,6 +73,19 @@ class TestHelper(TestCase):
                                 \t0.560605525642\t0.575788039321\t0.0"]
         self.overview_dm = DistanceMatrix.parseDistanceMatrix(
             self.overview_dm_str)
+
+        # The overview tutorial's metadata mapping file.
+        self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
+                                 "PC.354\tAGCACGAGCCTA\tControl\t20061218",
+                                 "PC.355\tAACTCGTCGATG\tControl\t20061218",
+                                 "PC.356\tACAGACCACTCA\tControl\t20061126",
+                                 "PC.481\tACCAGCGACTAG\tControl\t20070314",
+                                 "PC.593\tAGCAGCACTTGT\tControl\t20071210",
+                                 "PC.607\tAACTGTGCGTAC\tFast\t20071112",
+                                 "PC.634\tACAGAGTCGGCT\tFast\t20080116",
+                                 "PC.635\tACCGCAGAGTCA\tFast\t20080116",
+                                 "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
+        self.overview_map = MetadataMap.parseMetadataMap(self.overview_map_str)
 
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
@@ -186,54 +200,88 @@ class CorrelationStatsTests(TestHelper):
         self.assertRaises(NotImplementedError, self.cs.runAnalysis)
 
 
-class CategoryStatsTests(TestCase):
+class CategoryStatsTests(TestHelper):
     """Tests for the CategoryStats class."""
 
     def setUp(self):
         """Define some useful data to use in testing."""
-        self.test_map = MetadataMap({}, [])
-        self.test_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
-        self.test_cats = ['cat1', 'cat2', 'cat3']
-        self.test_inst = CategoryStats(self.test_map, self.test_dm, self.test_cats)
+        super(CategoryStatsTests, self).setUp()
+        self.cs_overview = CategoryStats(self.overview_map, self.overview_dm,
+            ["Treatment", "DOB"])
 
-    def test_setMetadataMap_valid_input(self):
-        """ CategoryStats.setMetadataMap() must receive an instance of MetadataMap """
-        self.assertRaises(TypeError, self.test_inst.setMetadataMap, "Hello!")
-        self.assertRaises(TypeError, self.test_inst.setMetadataMap, self.test_dm)
-        #etc...
+    def test_setMetadataMap_invalid_input(self):
+        """setMetadataMap() must receive an instance of MetadataMap."""
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, "Hello!")
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap,
+            self.overview_dm)
 
     def test_getMetadataMap(self):
-        """ Test valid return of getMetadataMap method """
-        expected = MetadataMap({}, [])
-        observed = self.test_inst.getMetadataMap()
-        self.assertEqual(expected, observed)
+        """Test valid return of getMetadataMap method."""
+        obs = self.cs_overview.getMetadataMap()
+        self.assertEqual(self.overview_map, obs)
 
-    def test_setDistanceMatrix_valid_input(self):
-        """ CategoryStats.setDistanceMatrix() must receive an instance of DistanceMatrix """
-        self.assertRaises(TypeError, self.test_inst.setDistanceMatrix, "Hello!")
-        self.assertRaises(TypeError, self.test_inst.setDistanceMatrix, self.test_map)
+    def test_setDistanceMatrix_invalid_input(self):
+        """setDistanceMatrix() must receive an instance of DistanceMatrix."""
+        self.assertRaises(TypeError, self.cs_overview.setDistanceMatrix,
+            "Hello!")
+        self.assertRaises(TypeError, self.cs_overview.setDistanceMatrix,
+            self.overview_map)
 
     def test_getDistanceMatrix(self):
-        """ Test valid return of getDistanceMatrix method """
-        expected = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
-        observed = self.test_inst.getDistanceMatrix()
-        self.assertEqual(expected, observed)
+        """Test valid return of getDistanceMatrix()."""
+        obs = self.cs_overview.getDistanceMatrix()
+        self.assertEqual(self.overview_dm, obs)
 
-    def test_setCategories_valid_input(self):
-        """ CategoryStats.setCategories() must receive an a list of strings """
-        self.assertRaises(TypeError, self.test_inst.setCategories, "Hello!")
-        self.assertRaises(TypeError, self.test_inst.setCategories, self.test_dm)
-        self.assertRaises(TypeError, self.test_inst.setCategories, ["hehehe", 123, "hello"])
+    def test_setCategories_invalid_input(self):
+        """Must receive a list of strings that are in the mapping file."""
+        self.assertRaises(ValueError, self.cs_overview.setCategories, "Hello!")
+        self.assertRaises(TypeError, self.cs_overview.setCategories,
+            self.overview_dm)
+        self.assertRaises(ValueError, self.cs_overview.setCategories,
+            ["hehehe", 123, "hello"])
+        self.assertRaises(ValueError, self.cs_overview.setCategories, ["foo"])
 
     def test_getCategories(self):
-        """ Test valid return of getDistanceMatrix method """
-        expected = ['cat1', 'cat2', 'cat3']
-        observed = self.test_inst.getCategories()
+        """Test valid return of getCategories()."""
+        expected = ['Treatment', 'DOB']
+        observed = self.cs_overview.getCategories()
         self.assertEqual(expected, observed)
 
     def runAnalysis(self):
-        """ runAnalysis not implemented in abstract base CategoryStats """ 
+        """runAnalysis() not implemented in abstract base CategoryStats."""
         raise NotImplementedError("Method not implemented by abstract base.")
+
+
+class DistanceBasedRdaTests(TestHelper):
+    """Tests for the DistanceBasedRda class."""
+
+    def setUp(self):
+        """Define some useful data to use in testing."""
+        super(DistanceBasedRdaTests, self).setUp()
+        self.dbrda = DistanceBasedRda(self.overview_dm, self.overview_map,
+            "Treatment")
+
+    def test_getCategory(self):
+        """Test the category getter method. Should return a single category."""
+        self.assertEqual(self.dbrda.getCategory(), "Treatment")
+
+    def test_setCategory(self):
+        """Test the category setter method."""
+        self.dbrda.setCategory("DOB")
+        self.assertEqual(self.dbrda.getCategory(), "DOB")
+
+    def test_setCategory_invalid_input(self):
+        """Test the category setter method with invalid input."""
+        self.assertRaises(TypeError, self.dbrda.setCategory, ["DOB"])
+        self.assertRaises(TypeError, self.dbrda.setCategory,
+            ["DOB", "Treatment"])
+        self.assertRaises(TypeError, self.dbrda.setCategory, 123)
+        self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
+            self.overview_map, ["DOB"])
+        self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
+            self.overview_map, ["DOB", "Treatment"])
+        self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
+            self.overview_map, 123)
 
 
 class MantelCorrelogramTests(TestHelper):

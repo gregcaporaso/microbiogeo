@@ -419,6 +419,31 @@ class MetadataMapTests(TestCase):
         self.assertRaises(KeyError, self.no_metadata.getCategoryValue,
             'PC.354', None)
 
+    def test_getSampleIds(self):
+        """Test sample IDs getter."""
+        exp = ["PC.354", "PC.355", "PC.356", "PC.481", "PC.593", "PC.607",
+               "PC.634", "PC.635", "PC.636"]
+        obs = self.overview_map.getSampleIds()
+        self.assertEqual(obs, exp)
+
+        obs = self.no_metadata.getSampleIds()
+        self.assertEqual(obs, exp)
+
+        obs = self.empty_map.getSampleIds()
+        self.assertEqual(obs, [])
+
+    def test_getCategoryNames(self):
+        """Test category names getter."""
+        exp = ["BarcodeSequence", "DOB", "Treatment"]
+        obs = self.overview_map.getCategoryNames()
+        self.assertEqual(obs, exp)
+
+        obs = self.no_metadata.getCategoryNames()
+        self.assertEqual(obs, [])
+
+        obs = self.empty_map.getCategoryNames()
+        self.assertEqual(obs, [])
+
 
 if __name__ == "__main__":
     main()
