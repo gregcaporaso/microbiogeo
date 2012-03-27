@@ -19,6 +19,7 @@ easily apply any number of statistical analyses and easily retrieve the
 results.
 """
 
+from cogent.cluster.metric_scaling import principal_coordinates_analysis
 from cogent.maths.stats.test import pearson, permute_2d
 from math import ceil, log, sqrt
 from matplotlib import use
@@ -217,6 +218,39 @@ class DistanceBasedRda(CategoryStats):
         """
         results = {}
         results['method_name'] = "Distance-Based Redundancy Analysis"
+
+        mdmap = self.getMetadataMap()
+        dm = self.getDistanceMatrix()
+        k = dm.getSize() - 1
+        inertia_str = "Distance squared"
+
+        # TODO: move to DistanceMatrix class
+        max_val = dm[0][0]
+        for row_idx in range(dm.getSize()):
+            for col_idx in range(dm.getSize()):
+                if dm[row_idx][col_idx] > max_val:
+                    max_val = dm[row_idx][col_idx]
+
+        if max_val >= 4:
+            inertia_str = "mean " + inertia_str
+            adjust = 1
+        else:
+            adjust = sqrt(k)
+
+        points, eigs = principal_coordinates_analysis(dm._data)
+        for eig in eigs:
+            if eig < 0:
+                raise ValueError("Encountered negative eigenvalue after "
+                    "performing PCoA on the distance matrix. This might have "
+                    "occurred if the distances are semi-metric or non-metric.")
+        points = adjust * points
+        if adjust == 1:
+            eigs <- eigs / k
+
+        group_membership = [mdmap.getCategoryValue(sid, self.getCategory()) \
+                            for sid in dm.SampleIds]
+
+        # TODO finish this method
 
         return results
 
