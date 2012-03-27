@@ -117,19 +117,31 @@ class CategoryStats(DistanceMatrixStats):
     def __init__(self, mdmap, dm, cats):
         """Default constructor."""
         super(CategoryStats, self).__init__([dm])
-        self.setMetadataMap(mdmap)
+        self.setData(mdmap, dm)
         self.setCategories(cats)
     
-    def setMetadataMap(self, new_map):
-        """Sets the instance's metadata map to a new MetadataMap instance.
+    def setData(self, new_map, new_dm):
+        """Sets the instance's metadata map and distance matrix.
+
+        Separate setter methods for the map and distance matrix are not
+        provided because we need to be able to validate that the sample IDs
+        match up between the two data structures.
       
         Arguments:
           new_map - A MetadataMap object instance.
+          new_dm - A DistanceMatrix object instance.
         """
         if not isinstance(new_map, MetadataMap):
             raise TypeError('Invalid type: %s; not MetadataMap' %
                             new_map.__class__.__name__)
+        if not isinstance(new_dm, DistanceMatrix):
+            raise TypeError('Invalid type: %s; not DistanceMatrix' %
+                            new_dm.__class__.__name__)
+        if sorted(new_map.getSampleIds()) != sorted(new_dm.SampleIds):
+            raise ValueError("The metadata map and distance matrix must have "
+                "the same sample IDs.")
         self._metadata_map = new_map
+        self.setDistanceMatrices([new_dm])
 
     def getMetadataMap(self):
         """Returns the instance's metadata map.
@@ -137,17 +149,6 @@ class CategoryStats(DistanceMatrixStats):
         The metadata map is returned as a MetadataMap class instance.
         """
         return self._metadata_map
-
-    def setDistanceMatrix(self, new_distmat):
-        """Sets the instance's distance matrix.
-    
-        Arguments:
-          new_distmat - A DistanceMatrix object instance.
-        """
-        if not isinstance(new_distmat, DistanceMatrix):
-            raise TypeError('Invalid type: %s; not DistanceMatrix' %
-                            new_distmat.__class__.__name__)
-        self.setDistanceMatrices([new_distmat])
 
     def getDistanceMatrix(self):
         """Gets the instance's distance matrix.
@@ -202,6 +203,22 @@ class DistanceBasedRda(CategoryStats):
         if not isinstance(cat, str):
             raise TypeError("The supplied category must be a string.")
         self.setCategories([cat])
+
+    def runAnalysis(self):
+        """Runs a distance-based redundancy analysis over the current data.
+
+        TODO: add more useful comments
+
+        Returns a dict containing the results. The following keys are set:
+            method_name - name of the statistical method
+        
+        Note: This code is heavily based on the implementation of capscale in
+        R's vegan package.
+        """
+        results = {}
+        results['method_name'] = "Distance-Based Redundancy Analysis"
+
+        return results
 
 
 class MantelCorrelogram(CorrelationStats):

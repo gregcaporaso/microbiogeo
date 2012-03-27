@@ -209,23 +209,18 @@ class CategoryStatsTests(TestHelper):
         self.cs_overview = CategoryStats(self.overview_map, self.overview_dm,
             ["Treatment", "DOB"])
 
-    def test_setMetadataMap_invalid_input(self):
-        """setMetadataMap() must receive an instance of MetadataMap."""
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, "Hello!")
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap,
-            self.overview_dm)
+    def test_setData_invalid_input(self):
+        """setData() must receive the correct object types."""
+        self.assertRaises(TypeError, self.cs_overview.setData, "Hello!", "foo")
+        self.assertRaises(TypeError, self.cs_overview.setData,
+            self.overview_dm, self.overview_map)
+        self.assertRaises(ValueError, self.cs_overview.setData,
+            self.overview_map, self.single_ele_dm)
 
     def test_getMetadataMap(self):
         """Test valid return of getMetadataMap method."""
         obs = self.cs_overview.getMetadataMap()
         self.assertEqual(self.overview_map, obs)
-
-    def test_setDistanceMatrix_invalid_input(self):
-        """setDistanceMatrix() must receive an instance of DistanceMatrix."""
-        self.assertRaises(TypeError, self.cs_overview.setDistanceMatrix,
-            "Hello!")
-        self.assertRaises(TypeError, self.cs_overview.setDistanceMatrix,
-            self.overview_map)
 
     def test_getDistanceMatrix(self):
         """Test valid return of getDistanceMatrix()."""
