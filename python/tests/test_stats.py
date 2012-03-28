@@ -512,9 +512,11 @@ class MantelTests(TestHelper):
         """Set up Mantel instances for use in tests."""
         super(MantelTests, self).setUp()
 
+        #used to test that the constuctor sets the default permutations correctly
         self.defaultPermutations = 999
         self.mantel = Mantel(self.overview_dm, self.overview_dm, self.defaultPermutations)
 
+        #not sure what these values should be.....
         smpl_ids = ['s1', 's2', 's3']
         self.small_mantel = Mantel(
             DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
@@ -522,7 +524,7 @@ class MantelTests(TestHelper):
             999)
 
     def test_initialGetNumPermutations(self):
-        """Test retrieval of the number of permutations."""
+        """Test retrieval of the intial permutations value passed into the constructor of a Mantel object."""
         self.assertEqual(self.mantel.getNumPermutations(), self.defaultPermutations, "The default value for the permutations is not the same as the value that was used to initialize it.")
 
     def test_setNumPermutations(self):
@@ -530,6 +532,27 @@ class MantelTests(TestHelper):
         permutations = 10
         self.mantel.setNumPermutations(permutations)
         self.assertEqual(self.mantel.getNumPermutations(), permutations, "The expected permutations of %d was not returned" % permutations)
+
+    def test_getNumPermutations(self):
+        """Test retrieval of the number of permutations."""
+        test_perms = 200
+        self.mantel.setNumPermutations(test_perms)
+        self.assertEqual(self.mantel.getNumPermutations(), test_perms, "The default value for the permutations is not the same as the value that it was set to.")
+
+    def test_setNumPermutations_invalid(self):
+        """Test setting of the number of permutations using a negative(invalid) number."""
+        self.assertRaises(ValueError, self.mantel.setNumPermutations, -22)
+
+    def test_setDistanceMatrices(self):
+        """Test setting matrices using a valid number of distance matrices."""
+        dms = [self.overview_dm, self.overview_dm]
+        self.mantel.setDistanceMatrices(dms)
+        self.assertEqual(self.mantel.getDistanceMatrices(), dms)
+
+    def test_setDistanceMatrices_wrong_number_of_distance_matrices(self):
+        """Test setting matrices using an invalid number of distance matrices."""
+        self.assertRaises(ValueError, self.mantel.setDistanceMatrices, [self.overview_dm])
+        self.assertRaises(ValueError, self.mantel.setDistanceMatrices, [self.overview_dm, self.overview_dm, self.overview_dm])
 
 class PartialMantelTests(TestHelper):
     """Tests for the PartialMantel class."""
@@ -614,7 +637,7 @@ class PartialMantelTests(TestHelper):
 
 
         obs = self.small_pm_diff.runAnalysis()
-        print obs
+        #print obs
         exp_method_name = 'partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
