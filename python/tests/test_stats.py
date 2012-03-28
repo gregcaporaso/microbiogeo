@@ -643,7 +643,7 @@ class PartialMantelTests(TestHelper):
 
         exp_mantel_r = 0.99999999999999734
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.31 and obs['mantel_p'] < 0.35)
+        self.assertTrue(obs['mantel_p'] > 0.29 and obs['mantel_p'] < 0.37)
 
 
 if __name__ == "__main__":
