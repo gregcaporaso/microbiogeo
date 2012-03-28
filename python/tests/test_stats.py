@@ -536,6 +536,7 @@ class PartialMantelTests(TestHelper):
 
     def setUp(self):
         """Set up PartialMantel instances for use in tests."""
+
         super(PartialMantelTests, self).setUp()
 
         # Test partial Mantel using the unifrac dm from the overview tutorial as
@@ -549,28 +550,39 @@ class PartialMantelTests(TestHelper):
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
             DistanceMatrix(array([[10, 7, 13], [9, 7, 0], [10, 2, 8]]), smpl_ids, smpl_ids),
             999)
+
+        self.small_pm_diff = PartialMantel(
+            DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[100, 25, 53], [20, 30, 87], [51, 888, 0]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[10, 7, 13], [9, 7, 0], [10, 2, 8]]), smpl_ids, smpl_ids),
+            999)
     
     def test_getNumPermutations(self):
         """Test retrieval of the number of permutations."""
+
         self.assertEqual(self.pm.getNumPermutations(), 999)
 
     def test_setNumPermutations(self):
         """Test setting of the number of permutations."""
+
         self.pm.setNumPermutations(7)
         self.assertEqual(self.pm.getNumPermutations(), 7)
 
     def test_setNumPermutations_invalid(self):
         """Test setting of the number of permutations using a negative(invalid) number."""
+
         self.assertRaises(ValueError, self.pm.setNumPermutations, -22)
 
     def test_setDistanceMatrices(self):
         """Test setting matrices using a valid number of distance matrices."""
+
         dms = [self.overview_dm, self.overview_dm, self.overview_dm]
         self.pm.setDistanceMatrices(dms)
         self.assertEqual(self.pm.getDistanceMatrices(), dms)
 
     def test_setDistanceMatrices_wrong_number(self):
         """Test setting matrices using an invalid number of distance matrices."""
+
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
             [self.overview_dm, self.overview_dm])
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
@@ -578,17 +590,37 @@ class PartialMantelTests(TestHelper):
 
     def test_runAnalysis(self):
         """Test running partial Mantel analysis on valid input."""
+
         obs = self.pm.runAnalysis()
+        exp_method_name = 'partial Mantel'
+        self.assertEqual(obs['method_name'], exp_method_name)
 
-        #print '\n' + str(obs) + '\n'
+        exp_mantel_r = 0.49999999999999989
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
 
-    def test_runAnalysis(self):
+        self.assertTrue(obs['mantel_p'] >= 0.001 and obs['mantel_p'] < 0.01)
+
+
+    def test_runAnalysis_small(self):
         """Test the correct running of partial Mantel analysis on small, controlled input."""
-        # The output needs to be verified against the Vegan mantel.partial
-        # function.
-        obs = self.small_pm.runAnalysis()
 
-        #print '\n' + str(obs) + '\n'
+        obs = self.small_pm.runAnalysis()
+        exp_method_name = 'partial Mantel'
+        self.assertEqual(obs['method_name'], exp_method_name)
+
+        exp_mantel_r = 0.99999999999999944
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        self.assertTrue(obs['mantel_p'] > 0.46 and obs['mantel_p'] < 0.54)
+
+
+        obs = self.small_pm_diff.runAnalysis()
+        print obs
+        exp_method_name = 'partial Mantel'
+        self.assertEqual(obs['method_name'], exp_method_name)
+
+        exp_mantel_r = 0.99999999999999734
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        self.assertTrue(obs['mantel_p'] > 0.31 and obs['mantel_p'] < 0.35)
 
 
 if __name__ == "__main__":

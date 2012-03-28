@@ -95,7 +95,7 @@ The output is printed to stdout. It can be summarized, but generally outputs
 
 Testing Results
 ----------------
-It is not immediately obvious what datasets will be most helpful. It would seem the Glen Canyon and 88 Soils would
+It is not immediately obvious what datasets will be most helpful. It seems the Glen Canyon and 88 Soils would
 be good candidates since they would both 
 
 Specifically, though, it would seem, that the OTU tables, and not distance matrices will be used here.

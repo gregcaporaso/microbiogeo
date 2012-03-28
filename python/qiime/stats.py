@@ -744,8 +744,10 @@ class PartialMantel(CorrelationStats):
                 package of the R language and software libraries.
         """
 
+        # calculate the correlation statistic. 
         corr = lambda rxy, rxz, ryz: (rxy - rxz*ryz)/(sqrt(1 - rxz**2)*sqrt(1 - ryz**2))
 
+        # Load initial/placeholder values in the results dictionary.
         res = {}
         res['method_name'] = 'partial Mantel'
         res['mantel_r'] = None
@@ -762,26 +764,34 @@ class PartialMantel(CorrelationStats):
         dm2_flat = dm2.flatten()
         cdm_flat = cdm.flatten()
         
+        # Get the initial r-values before permuting.
         rval1 = pearson(dm1_flat, dm2_flat)
         rval2 = pearson(dm1_flat, cdm_flat)
         rval3 = pearson(dm2_flat, cdm_flat)
+
+        # Calculate the orginal test statistic (p-value)
         orig_stat = corr(rval1, rval2, rval3)
 
+        # Calculate permuted r-values and p-values, storing
+        # them for use in the calculation of the final statistic.
         perm_stats = [0 for i in range(perm_num)]
         numerator = 0
         for i in range(0,perm_num):
+            # Permute the first distance matrix and calculate new
+            # r and p-values 
             p1 = permute_2d(dm1, permutation(dm1.getSize()))
             dm1_perm = DistanceMatrix(p1, dm1.SampleIds, dm1.SampleIds)
             dm1_perm_flat = dm1_perm.flatten()
             rval1 = pearson(dm1_perm_flat, dm2_flat)
             rval2 = pearson(dm1_perm_flat, cdm_flat)
             perm_stats.append(corr(rval1, rval2, rval3))
+
+            # Sum the permuted statistics for calculation of the final statistic.
             if perm_stats[-1] >= orig_stat:
               numerator += perm_stats[-1]
 
-        #if perm_stats[-1] >= orig_stat:
-        #  numerator += perm_stats[-1]
         
+        # Load the final statistics into the result dictionary.
         res['mantel_r'] = orig_stat
         res['mantel_p'] = (numerator + 1) / (perm_num + 1)
         
