@@ -278,6 +278,10 @@ class DistanceBasedRdaTests(TestHelper):
         self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
             self.overview_map, 123)
 
+    def test_runAnalysis(self):
+        """Test running RDA over various inputs."""
+        self.dbrda.runAnalysis()
+
     def test_center_matrix(self):
         """Test the centering of matrices."""
         exp = matrix([[-0.5, -1.0, 2.5], [0.5, 1.0, -2.5]])

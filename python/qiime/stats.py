@@ -233,6 +233,15 @@ class DistanceBasedRda(CategoryStats):
             adjust = sqrt(k)
 
         points, eigs = principal_coordinates_analysis(dm._data)
+
+        # Order the axes in descending order based on eigenvalue. This code is
+        # taken from QIIME's principal_coordinates.py library.
+        idxs_descending = eigs.argsort()[::-1]
+        points = points[idxs_descending]
+        eigs = eigs[idxs_descending]
+
+        #print points
+        #print eigs
         for eig in eigs:
             if eig < 0:
                 raise ValueError("Encountered negative eigenvalue after "
@@ -244,6 +253,9 @@ class DistanceBasedRda(CategoryStats):
 
         group_membership = [mdmap.getCategoryValue(sid, self.getCategory()) \
                             for sid in dm.SampleIds]
+
+        self._compute_rda(points, group_membership)
+
         return results
 
     def _compute_rda(self, point_matrix, group_membership):
@@ -282,16 +294,16 @@ class DistanceBasedRda(CategoryStats):
         # sd function.
         points_bar_stdv = std(points_bar, axis=0, ddof=1)
 
-        total_chi = sum(svd(points_bar, full_matrices=False, compute_uv=False)
-            ^ 2) / num_rows
+        total_chi = sum(svd(points_bar, full_matrices=False,
+                            compute_uv=False) ** 2) / num_rows
         
         # Do we need this?
         z_r = None
 
         factor = self._create_factor(group_membership)
+#        print factor
+        factor_r = self._center_matrix(factor)
 
-
-   #     Y <- as.matrix(Y)
    #     Y.r <- scale(Y, center = TRUE, scale = FALSE)
    #     Q <- qr(cbind(Z.r, Y.r), tol = ZERO)
    #     if (is.null(pCCA)) 
