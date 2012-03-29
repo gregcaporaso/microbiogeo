@@ -25,8 +25,10 @@ from math import ceil, log, sqrt
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import array, asarray, empty, finfo, ravel, zeros
+from numpy import array, asarray, asmatrix, empty, finfo, matrix, ravel, std, \
+    zeros
 from numpy import min as np_min, max as np_max
+from numpy.linalg import svd
 from numpy.random import permutation
 from types import ListType
 
@@ -213,8 +215,8 @@ class DistanceBasedRda(CategoryStats):
         Returns a dict containing the results. The following keys are set:
             method_name - name of the statistical method
         
-        Note: This code is heavily based on the implementation of capscale in
-        R's vegan package.
+        Note: This code is heavily based on the implementation of capscale/rda
+        in R's vegan package.
         """
         results = {}
         results['method_name'] = "Distance-Based Redundancy Analysis"
@@ -224,14 +226,7 @@ class DistanceBasedRda(CategoryStats):
         k = dm.getSize() - 1
         inertia_str = "Distance squared"
 
-        # TODO: move to DistanceMatrix class
-        max_val = dm[0][0]
-        for row_idx in range(dm.getSize()):
-            for col_idx in range(dm.getSize()):
-                if dm[row_idx][col_idx] > max_val:
-                    max_val = dm[row_idx][col_idx]
-
-        if max_val >= 4:
+        if dm.getMax() >= 4:
             inertia_str = "mean " + inertia_str
             adjust = 1
         else:
@@ -249,10 +244,133 @@ class DistanceBasedRda(CategoryStats):
 
         group_membership = [mdmap.getCategoryValue(sid, self.getCategory()) \
                             for sid in dm.SampleIds]
-
-        # TODO finish this method
-
         return results
+
+    def _compute_rda(self, point_matrix, group_membership):
+        """Runs a traditional RDA analysis over the given data matrix.
+
+        Returns all necessary information related to constrained/unconstrained
+        axes (see vegan's rda method for more details).
+
+        This method is heavily based on the RDA implementation found in R's
+        vegan package.
+
+        Arguments:
+            point_matrix - numpy matrix where each row represents an axis and
+                the columns represent points within that axis. Should be the
+                output of principal_coordinates_analysis().
+            group_membership - a list of metadata mapping category values that
+                indicate group membership for each of the samples. These values
+                can be categorical or numerical and should be ordered the same
+                as the sample IDs in the original distance matrix that was used
+                as input to principal_coordinates_analysis(). Any strings
+                representing categorical data will be converted to a number
+                starting from zero (in the order they are encountered). Thus,
+                ordinal categorical data must already be encoded as a number
+                before being passed to this method. Otherwise, it will be
+                interpretted as nominal categorical data.
+        """
+        zero = 0.0001
+        cca = {}
+        pcca = {}
+        ca = {}
+        point_matrix = asmatrix(point_matrix)
+        num_rows = point_matrix.shape[0] - 1
+        points_bar = self._center_matrix(point_matrix)
+
+        # Find the standard deviation of each column. Use df of 1 to match R's
+        # sd function.
+        points_bar_stdv = std(points_bar, axis=0, ddof=1)
+
+        total_chi = sum(svd(points_bar, full_matrices=False, compute_uv=False)
+            ^ 2) / num_rows
+        
+        # Do we need this?
+        z_r = None
+
+        factor = self._create_factor(group_membership)
+
+
+   #     Y <- as.matrix(Y)
+   #     Y.r <- scale(Y, center = TRUE, scale = FALSE)
+   #     Q <- qr(cbind(Z.r, Y.r), tol = ZERO)
+   #     if (is.null(pCCA)) 
+   #         rank <- Q$rank
+   #     else rank <- Q$rank - pCCA$rank
+   #     ## qrank saves the rank of the constraints
+   #     qrank <- rank
+   #     Y <- qr.fitted(Q, Xbar)
+   #     sol <- svd(Y)
+   #     ## it can happen that rank < qrank
+   #     rank <- min(rank, sum(sol$d > ZERO))
+   #     sol$d <- sol$d/sqrt(NR)
+   #     ax.names <- paste("RDA", 1:length(sol$d), sep = "")
+   #     colnames(sol$u) <- ax.names
+   #     colnames(sol$v) <- ax.names
+   #     names(sol$d) <- ax.names
+   #     rownames(sol$u) <- rownames(X)
+   #     rownames(sol$v) <- colnames(X)
+
+
+    def _center_matrix(self, matrix):
+        """Returns a centered version of the matrix.
+
+        The mean of each column in the input matrix will be calculated. Each
+        element in that column will have the mean subtracted from it, thus
+        centering the elements.
+
+        Returns a numpy matrix of type float.
+
+        This code is derived from http://stackoverflow.com/a/8917508.
+
+        Arguments:
+            matrix - should be a numpy matrix
+        """
+        # Convert to float type because testing this with an integer numpy
+        # matrix gave a resulting matrix of ints, which is probably not what we
+        # want here.
+        centered = matrix.copy().astype(float)
+        centered -= centered.sum(0) / len(centered)
+        return centered
+
+    def _create_factor(self, group_membership):
+        """Transforms group membership list into a factor.
+        
+        The factor is basically a column vector. Any categorical data (strings)
+        are transformed into a numeric representation. This does not respect
+        ordinal categorical data; it will simply represent the first category
+        it encounters as a zero. This code is mimicing R's 'factor' data
+        structure.
+
+        The return value is a numpy column vector (i.e. nx1 matrix), where n is
+        len(group_membership). For example, say we have the following input:
+            ["Fast", "Fast", "Control", "Fast", "Control"]
+
+        The output would be (written as a python list, but it will be a column
+        vector in actuality):
+            [0, 0, 1, 0, 1]
+
+        The returned column vector will contain floats.
+
+        Arguments:
+            group_membership - a list of categorical data values (strings) or a
+                numeric list if it represents numeric data. If the list is
+                numeric, it will simply be returned as a numpy column vector
+                (i.e. no transformation).
+        """
+        try:
+            factor = map(float, group_membership)
+        except:
+            # We have categorical data represented as strings.
+            factor = []
+            category_symbol = 0
+            conversion = {}
+            for ele in group_membership:
+                if ele not in conversion:
+                    conversion[ele] = category_symbol
+                    category_symbol += 1
+                factor.append(conversion[ele])
+        return matrix(factor).T
 
 
 class MantelCorrelogram(CorrelationStats):

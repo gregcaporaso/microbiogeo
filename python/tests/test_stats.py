@@ -13,7 +13,7 @@ __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""
  
-from numpy import array
+from numpy import array, matrix
 from math import sqrt
 
 from cogent.util.unit_test import TestCase, main
@@ -277,6 +277,39 @@ class DistanceBasedRdaTests(TestHelper):
             self.overview_map, ["DOB", "Treatment"])
         self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
             self.overview_map, 123)
+
+    def test_center_matrix(self):
+        """Test the centering of matrices."""
+        exp = matrix([[-0.5, -1.0, 2.5], [0.5, 1.0, -2.5]])
+        obs = self.dbrda._center_matrix(matrix([[1, 2, 5], [2, 4, 0]]))
+        self.assertFloatEqual(exp, obs)
+
+    def test_create_factor(self):
+        """Test creating factors from a group membership list."""
+        cat_data = ["Fast", "Fast", "Control", "Fast", "Control"]
+        exp = matrix([0, 0, 1, 0, 1]).T
+        obs = self.dbrda._create_factor(cat_data)
+        self.assertFloatEqual(exp, obs)
+
+        num_data = [1, 2.0, 5, 0, -20, 99.99]
+        exp = matrix(num_data).T
+        obs = self.dbrda._create_factor(num_data)
+        self.assertFloatEqual(exp, obs)
+
+        small_data = ["foo"]
+        exp = matrix([0]).T
+        obs = self.dbrda._create_factor(small_data)
+        self.assertFloatEqual(exp, obs)
+
+        no_data = []
+        exp = matrix([]).T
+        obs = self.dbrda._create_factor(no_data)
+        self.assertFloatEqual(exp, obs)
+
+        mixed_data = ["foo", 20.5]
+        exp = matrix([0, 1]).T
+        obs = self.dbrda._create_factor(mixed_data)
+        self.assertFloatEqual(exp, obs)
 
 
 class MantelCorrelogramTests(TestHelper):

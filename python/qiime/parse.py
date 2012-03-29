@@ -83,6 +83,19 @@ class DistanceMatrix(DenseTable):
         """
         return self._size
 
+    def getMax(self):
+        """Returns the maximum value present in the distance matrix.
+
+        Since distance matrices are guaranteed to be at least 1x1 in size, this
+        method will always return a valid maximum.
+        """
+        max_val = self[0][0]
+        for row_idx in range(self.getSize()):
+            for col_idx in range(self.getSize()):
+                if self[row_idx][col_idx] > max_val:
+                    max_val = self[row_idx][col_idx]
+        return max_val
+
     def flatten(self, lower=True):
         """Returns a list containing the flattened distance matrix.
 
