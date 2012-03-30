@@ -74,7 +74,7 @@ The process is automatic after this step.
 
 On this system I'm running vegan 2.0-2 and optparse version 0.9.4
 
-Next, run the following command in order to test if you can run the partial Mantel script: ::
+Next, run the following command in order to test if you can run the ISA script: ::
 
     R --slave --args -h < isa.r
 

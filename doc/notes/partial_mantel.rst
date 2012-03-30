@@ -9,7 +9,7 @@ Synopsis
 The partial Mantel statistic is used to estimate the correlation between two matrices, 
 A and B, while controlling for the effect of C. For instance, you could compare the
 weighted and unweighted unifrac for soil, while controling for a third variable matrix,
-such as pH or some measure of euclidian distance.
+such as pH or some measure of euclidean distance.
 
 Introduction
 ------------
