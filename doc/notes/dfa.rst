@@ -158,7 +158,75 @@ team has access to. These data files will not be included for download due to
 their (usually) large size. Unless otherwise noted, the data files that were
 used can be found under the datasets directory.
 
-TODO: Finish testing
+Whole Body
+^^^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
+
+This test uses the `BODY_SITE` category. We want to see what OTUs best predict
+the type of body site a sample is in.
+
+**Command:** ::
+
+    R --slave --args -i datasets/whole_body/otu_table.txt -m datasets/whole_body/map.txt -c BODY_SITE -o dfa_output < r/dfa.r
+
+**Results:**
+
+The following output files are created: ::
+
+    method      : lda 
+    final model : qiime.data$map[[opts$category]] ~ 368907 + 269541 + 259569
+    <environment: 0x31ce350>
+    
+    correctness rate = 0.325 
+
+
+.. image:: ../images/dfa/whole_body_test_1.png
+   :align: center
+
+The text output indicates that the combination of OTUs 368907, 269541, and
+259569 best predict the body site that the sample will be in. The correctness
+rate is 32.5%. The plot shows the correctness rate increasing as OTUs are added
+to the model. By default, DFA stops adding OTUs if the correctness rate improves
+less than 5%.
+
+OTU 368907 is: ::
+
+    k__Bacteria;p__Actinobacteria;c__Actinobacteria (class);o__Actinomycetales;f__Propionibacteriaceae;g__Propionibacterium;s__Propionibacterium acnes
+
+OTU 269541 is: ::
+
+    k__Bacteria;p__Firmicutes;c__Bacilli;o__Bacillales;f__Staphylococcaceae;g__Staphylococcus;s__
+
+OTU 259569 is: ::
+
+    k__Bacteria;p__Bacteroidetes;c__Bacteroidia;o__Bacteroidales;f__Rikenellaceae;g__Alistipes;s__Alistipes putredinis
+
+I'm not sure if these results are meaningful or not. I will talk with Greg and
+see if he has any papers that I can refer to in order to determine whether these
+results make sense or not.
+
+Test 2
+~~~~~~
+**Description:**
+
+This test uses the `BODY_SITE` category again, but this time the sample IDs are
+shuffled in the OTU table. We want to see what OTUs best predict the type of
+body site, given shuffled samples. This test is a negative control. We use three
+different shuffled OTU tables.
+
+**Command:** ::
+
+    R --slave --args -i datasets/whole_body/otu_table_shuffled_1.txt -m datasets/whole_body/map.txt -c BODY_SITE -o dfa_output < r/dfa.r
+    R --slave --args -i datasets/whole_body/otu_table_shuffled_2.txt -m datasets/whole_body/map.txt -c BODY_SITE -o dfa_output < r/dfa.r
+    R --slave --args -i datasets/whole_body/otu_table_shuffled_3.txt -m datasets/whole_body/map.txt -c BODY_SITE -o dfa_output < r/dfa.r
+
+**Results:**
+
+The following output files are created:
+
+TODO: finish adding results of these tests
 
 References
 ----------
