@@ -742,60 +742,73 @@ class Mantel(CorrelationStats):
         self.setNumPermutations(permutations)
 
     def runAnalysis(self):
-#--------------------------------------------------------------------------
-       # Get a vector of lower triangular (excluding the diagonal) distances
-        # in column-major order.
-        dm1_flat, dm2_flat = self.getDistanceMatrices()[0].flatten(), self.getDistanceMatrices()[1].flatten()
-        orig_stat = self.pearson(dm1_flat, dm2_flat)
+        """Compares two distance matrices. Reports P-value for correlation.
+    
+        The p-value is based on a two-sided test.
+    
+        This function is retained for backwards-compatibility. Please use
+        mantel_test() for more control over how the test is performed.
+        """
+        return self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
 
+
+    def mantel_test(self, m1, m2, n, alt="two sided"):
+        """Runs a Mantel test on two distance matrices.
+    
+        Returns the p-value, Mantel correlation statistic, and a list of Mantel
+        correlation statistics for each permutation test.
+    
+        Arguments:
+            m1  - the first distance matrix to use in the test (should be a numpy
+                array or convertible to a numpy array)
+            m2  - the second distance matrix to use in the test (should be a numpy
+                array or convertible to a numpy array)
+            n   - the number of permutations to test when calculating the p-value
+            alt - the type of alternative hypothesis to test (can be either
+                'two-sided' for a two-sided test, 'greater' or 'less' for one-sided
+                tests)
+        """
+        # Perform some sanity checks on our input.
+        if alt not in ("two sided", "greater", "less"):
+            raise ValueError("Unrecognized alternative hypothesis. Must be either "
+                             "'two sided', 'greater', or 'less'.")
+        m1, m2 = asarray(m1._data), asarray(m2._data)
+
+        #Jai's code did a sanity check based on shape, but shape doesn't apply and instead the size should be checked -04/04/2012 LK
+        #if m1.shape != m2.shape:
+
+        if m1.size != m2.size:
+            raise ValueError("Both matrices must be the same size.")
+        if n < 1:
+            raise ValueError("The number of permutations must be greater than or "
+                             "equal to one.")
+
+        #I can't get the _flatten_lower_triangle to work at all, talked to Michael and he stated that the normal flatten should resolve this as is.
+        #It primarily doesn't work because it can't identify based on shape, and instead size should be used
+        #m1_flat, m2_flat = self._flatten_lower_triangle(m1), self._flatten_lower_triangle(m2)
+        m1_flat, m2_flat = m1.flatten(), m2.flatten()
+
+        orig_stat = self.pearson(m1_flat, m2_flat)
+    
+        # Run our permutation tests so we can calculate a p-value for the test.
+        size = len(m1)
         better = 0
         perm_stats = []
-        for i in range(self._num_perms):
-            dm1_data_perm = self.permute_2d(self.getDistanceMatrices()[0], permutation(self.getDistanceMatrices()[0].getSize()))
-            dm1_perm = DistanceMatrix(dm1_data_perm, self.getDistanceMatrices()[0].SampleIds, self.getDistanceMatrices()[0].SampleIds)
-            dm1_perm_flat = dm1_perm.flatten()
-            r = self.pearson(dm1_perm_flat, dm2_flat)
+        for i in range(n):
+            perm = permute_2d(m1, permutation(size))
+            perm_flat = perm.flatten()
+            r = pearson(perm_flat, m2_flat)
+    
+            if alt == 'two sided':
+                if abs(r) >= abs(orig_stat):
+                    better += 1
+            else:
+                if ((alt == 'greater' and r >= orig_stat) or
+                    (alt == 'less' and r <= orig_stat)):
+                    better += 1
             perm_stats.append(r)
-            if r >= orig_stat:
-                better += 1
-        return (better + 1) / (self._num_perms + 1), orig_stat, perm_stats
-#--------------------------------------------------------------------------
-#Alternate first implementation with more information
-#        """Compares two distance matrices. Reports P-value for correlation."""
-#        m1, m2 = asarray(self._dm1._data), asarray(self._dm2._data)
-#        m1_flat = ravel(m1)
-#        size = len(m1)
-#        #orig_stat = abs(pearson(m1_flat, ravel(m2)))
-#        orig_stat = self.pearson(m1_flat, ravel(m2))
-#        better = 0
-#        perm_stats = []
-#        for i in range(self._num_perms):
-#            #p2 = m2[permutation(size)][:, permutation(size)]
-#            p2 = self.permute_2d(m2, permutation(size))
-#            #r = abs(pearson(m1_flat, ravel(p2)))
-#            r = self.pearson(m1_flat, ravel(p2))
-#            perm_stats.append(r)
-#            if r >= orig_stat:
-#                better += 1
-#        return better, orig_stat, perm_stats
-#--------------------------------------------------------------------------
-#First implementation
-#        m1, m2 = asarray(self._dm1._data), asarray(self._dm1._data)
-#        m1_flat = ravel(m1)
-#        size = len(m1)
-#        orig_stat = abs(self.pearson(m1_flat, ravel(m2)))
-#        better = 0
-#        for i in range(self._num_perms):
-#            p2 = self.permute_2d(m2, permutation(size))
-#            r = abs(self.pearson(m1_flat, ravel(p2)))
-#            if r >= orig_stat:
-#                better += 1
-#        return better
-#--------------------------------------------------------------------------
+        return (better + 1) / (n + 1), orig_stat, perm_stats
 
-    #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
-    #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
-    #More specifically it was grabbed from the file called "test.py" 
     def pearson(self, x_items, y_items):
         """Returns Pearson correlation coefficient between x and y."""
         x_items, y_items = array(x_items), array(y_items)
