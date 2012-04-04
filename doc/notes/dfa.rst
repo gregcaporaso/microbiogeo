@@ -36,6 +36,12 @@ predictor variables are normally distributed, linearly related, and of equal
 variance within each group, while logistic regression is not bound by these
 assumptions [:ref:`3 <dfaref3>`].
 
+DFA may not be the right or best method to use if the continuous explanatory
+variables (predictor variables) used in the model are collinear (i.e. there is a
+strong or perfect linear relationship between two of the variables).
+Collinearity causes problems because the covariance matrix cannot be inverted
+[:ref:`5 <dfaref5>`].
+
 Existing Implementations
 ------------------------
 There are existing implementations of DFA in the following statistical packages:
@@ -158,6 +164,8 @@ team has access to. These data files will not be included for download due to
 their (usually) large size. Unless otherwise noted, the data files that were
 used can be found under the datasets directory.
 
+:note: As discussed in the introduction, DFA has trouble with collinear explanatory variables. As it steps through the variables and constructs each model, if two variables are collinear, it reports a warning message. Thus, since many models are constructed, there can be many warnings. This means that the model containing collinearity cannot be tested to see its prediction power (i.e.  how well it can classify samples). It appears that this might account for the small number of OTUs that end up in the final model. I'm not sure if this is a good thing or a bad thing. Maybe it's neither.
+
 Whole Body
 ^^^^^^^^^^
 Test 1
@@ -180,7 +188,6 @@ The following output files are created: ::
     <environment: 0x31ce350>
     
     correctness rate = 0.325 
-
 
 .. image:: ../images/dfa/whole_body_test_1.png
    :align: center
@@ -224,9 +231,43 @@ different shuffled OTU tables.
 
 **Results:**
 
-The following output files are created:
+The following output files are created: ::
 
-TODO: finish adding results of these tests
+    method      : lda 
+    final model : qiime.data$map[[opts$category]] ~ 258406
+    <environment: 0x28a4380>
+    
+    correctness rate = 0.1233
+
+.. image:: ../images/dfa/whole_body_test_2_1.png
+   :align: center
+
+::
+
+    method      : lda 
+    final model : qiime.data$map[[opts$category]] ~ 264558
+    <environment: 0x1efe380>
+    
+    correctness rate = 0.1233
+
+.. image:: ../images/dfa/whole_body_test_2_2.png
+   :align: center
+
+::
+
+    method      : lda 
+    final model : qiime.data$map[[opts$category]] ~ 576765
+    <environment: 0x1973380>
+    
+    correctness rate = 0.1217
+
+.. image:: ../images/dfa/whole_body_test_2_3.png
+   :align: center
+
+These results seem to indicate that the shuffling of sample IDs makes it hard to
+pick OTUs that explain which body site a sample is in. The correctness rate for
+the three tests is sitting around 12%, and only one OTU is picked to predict
+group membership.
 
 References
 ----------
@@ -244,4 +285,8 @@ References
 
 .. _dfaref4:
 
-[3] http://www.statsoft.com/textbook/discriminant-function-analysis/
+[4] http://www.statsoft.com/textbook/discriminant-function-analysis/
+
+.. _dfaref5:
+
+[5] http://r.789695.n4.nabble.com/klaR-stepclass-td826698.html
