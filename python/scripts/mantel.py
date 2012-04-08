@@ -35,7 +35,10 @@ make_option('-i','--input_dms',help='the input distance matrices, comma-separate
 make_option('-o','--output_fp',help='the output filepath'),\
 ]
 
-script_info['optional_options'] = [make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int'), make_option('-s','--sample_id_map_fp', help='Map of original sample ids to new sample ids [default: %default]', default=None)
+script_info['optional_options'] = [
+make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int'),\
+make_option('-s','--sample_id_map_fp', help='Map of original sample ids to new sample ids [default: %default]', default=None),\
+make_option('-t','--tail_type',help='the type of tailed test to perform(1, or 2 tailed)'),\
 ]
 script_info['version'] = __version__
 
@@ -97,7 +100,7 @@ def main():
                 continue
 
             #This takes in a distance matrix object for the dm1 and dm2 of Mantel
-            m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations)
+            m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations, opts.tail_type)
 
     resultsDict = {}
 

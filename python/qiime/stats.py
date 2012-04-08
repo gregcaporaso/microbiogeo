@@ -724,7 +724,7 @@ class Mantel(CorrelationStats):
     
     TO DO: Put plain english explanation here, have Damien explain it.
     """
-    def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, permutations):
+    def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, permutations, tailType="two-sided"):
         """
         Constructs a new Mantel instance.
 
@@ -740,6 +740,15 @@ class Mantel(CorrelationStats):
         super(Mantel, self).setDistanceMatrices(parameterMatrices)
 
         self.setNumPermutations(permutations)
+        self.setTailType(tailType)
+
+    def getTailType(self):
+        """This returns the tail type being used for the current Mantel object """
+        return self._tail_type
+
+    def setTailType(self, tail_type):
+        """This sets the tail type that will be used for the current Mantel object calculation"""
+        self._tail_type = tail_type
 
     def runAnalysis(self):
         """Compares two distance matrices. Reports P-value for correlation.
@@ -752,7 +761,7 @@ class Mantel(CorrelationStats):
         return self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
 
 
-    def mantel_test(self, m1, m2, n, alt="two sided"):
+    def mantel_test(self, m1, m2, n, alt="two-sided"):
         """Runs a Mantel test on two distance matrices.
     
         Returns the p-value, Mantel correlation statistic, and a list of Mantel
@@ -769,9 +778,9 @@ class Mantel(CorrelationStats):
                 tests)
         """
         # Perform some sanity checks on our input.
-        if alt not in ("two sided", "greater", "less"):
+        if alt not in ("two-sided", "greater", "less"):
             raise ValueError("Unrecognized alternative hypothesis. Must be either "
-                             "'two sided', 'greater', or 'less'.")
+                             "'two-sided', 'greater', or 'less'.")
         m1, m2 = asarray(m1._data), asarray(m2._data)
 
         #Jai's code did a sanity check based on shape, but shape doesn't apply and instead the size should be checked -04/04/2012 LK
@@ -799,7 +808,7 @@ class Mantel(CorrelationStats):
             perm_flat = perm.flatten()
             r = pearson(perm_flat, m2_flat)
     
-            if alt == 'two sided':
+            if alt == 'two-sided':
                 if abs(r) >= abs(orig_stat):
                     better += 1
             else:
