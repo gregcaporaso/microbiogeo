@@ -3,8 +3,9 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Jai Ram Rideout", "Logan Knecht"]
+__credits__ = ["Jai Ram Rideout", "Logan Knecht", "Michael Dwan"]
 __license__ = "GPL"
+
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jr378@nau.edu"
@@ -95,6 +96,9 @@ class DistanceMatrix(DenseTable):
                 if self[row_idx][col_idx] > max_val:
                     max_val = self[row_idx][col_idx]
         return max_val
+
+    def getSampleIds(self):
+        return self.SampleIds
 
     def flatten(self, lower=True):
         """Returns a list containing the flattened distance matrix.
@@ -201,6 +205,19 @@ class MetadataMap():
         """
         return self._metadata[sampleId][category]
 
+    def getCategoryValues(self, sample_ids, category):
+        """Returns all the values of a given category 
+
+        The return categories will be a list
+
+        Arguments:
+            sample_ids - An ordered list of sample IDs (i.e., from a distance
+                                                        matrix)
+            category - the category name whose values will be returned.
+        """
+
+        return [self._metadata[sid][category] for sid in sample_ids] 
+
     def getSampleIds(self):
         """Returns the IDs of all samples in the metadata map.
 
@@ -216,3 +233,15 @@ class MetadataMap():
         """
         return sorted(self.getSampleMetadata(self.getSampleIds()[0]).keys()) \
             if len(self.getSampleIds()) > 0 else []
+            
+    def deriveEuclideanDM(self, cats):
+        """Returns an n x n, euclidean distance matrix, where n = len(cats)
+        
+        Used primarily by the BioEnv statistic.
+        """
+    
+if __name__ == '__main__':
+    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+    print dm.getSampleIds()
+    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+    print md_map.getCategoryValues(dm.getSampleIds(), 'PH')

@@ -243,6 +243,20 @@ class DistanceMatrixTests(TestCase):
         del obs['date']
         self.assertFloatEqual(obs, exp)
 
+    def test_getSampleIds(self):
+        """Test sample ID getter method."""
+        exp =  ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 
+                    'PC.607', 'PC.634', 'PC.635', 'PC.636']
+        obs = self.overview_dm.getSampleIds()
+        self.assertEqual(obs, exp)
+
+        exp = ['s1', 's2', 's3']
+        obs = self.dm.getSampleIds()
+        self.assertEqual(obs, exp)
+
+        obs = self.single_ele_dm.getSampleIds()
+        self.assertEqual(obs, ['s1'])
+
 
 class MetadataMapTests(TestCase):
     """Tests for the MetadataMap class."""

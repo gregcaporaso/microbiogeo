@@ -114,6 +114,8 @@ def main():
             "matrices. The minimum required size to compute a Mantel "
             "correlogram is 3x3.")
 
+
+
     # Write header info to the results file.
     results_f.write('DM1: %s\nDM2: %s\nNumber of entries: %d\nNumber of '
         'permutations: %d\nAlpha: %s\n' % (input_dm_fps[0], input_dm_fps[1],
@@ -127,7 +129,7 @@ def main():
     # Write the correlogram plot to a file.
     results['correlogram_plot'].savefig(path.join(opts.output_dir,
         'mantel_correlogram.%s' % opts.image_type), format=opts.image_type)
-
+    
     # Iterate over the results and write them to the text file.
     results_f.write('\nClass index\tNum dists\tMantel stat\tp-val\t'
         'p-val (Bonferroni corrected)\n')

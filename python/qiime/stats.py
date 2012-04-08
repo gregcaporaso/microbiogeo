@@ -15,10 +15,11 @@ This module provides functionality for the application of various statistical
 methods to QIIME formatted data sets.
 
 The module provides classes, methods and functions that enable the user to
-easily apply any number of statistical analyses and easily retrieve the 
-results.
+easily apply any number of statistical analyses and just as easily retrieve 
+the results.
 """
 
+from cogent.util.misc import combinate
 from cogent.cluster.metric_scaling import principal_coordinates_analysis
 from cogent.maths.stats.test import pearson, permute_2d
 from math import ceil, log, sqrt
@@ -181,6 +182,33 @@ class CategoryStats(DistanceMatrixStats):
         Returns a list of mapping file category name strings.
         """
         return self._categories
+
+
+class BioEnv(CategoryStats):
+    """Class for BioEnv analysis."""
+
+    def __init__(self, dm, metadata_map, cats):
+        """Default constructor."""
+        if not isinstance(category, str):
+            raise TypeError("The supplied category must be a string.")
+        super(BioEnv, self).__init__(metadata_map, dm, cats)
+
+    def runAnalysis(self):
+        """Runs the BioEnv analysis on a distance matrix using specified
+        metadata map categories.
+
+        TODO: ADD COMMENTS
+
+        Returns a dictionary which contains the resulting data. Keys:
+            method_name - name of the statistical method
+        
+        Note: This code is loosely based on the implementation of BioEnv
+        in the vegan package of R.
+        """
+
+        cats = self.getCategories()
+        dm = self.getDistanceMatrices()[0]
+        
 
 
 class DistanceBasedRda(CategoryStats):
@@ -499,7 +527,7 @@ class MantelCorrelogram(CorrelationStats):
         # class.
         dist_class_matrix, class_indices = self._find_distance_classes(geo_dm,
             num_classes)
-
+        
         # Start assembling the results.
         results = {}
         results['method_name'] = 'Mantel Correlogram'

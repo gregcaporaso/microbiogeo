@@ -70,7 +70,7 @@ def main():
     res_file = open(path.join(opts.output_dir, "mantel_partial_results.txt"), 'w')
     res_file.write(comment)
 
-    # All of the matrices to be compatible for analysis to be valid.
+    # All of the matrices must be compatible for analysis to be valid.
     # credit: Greg Caporaso, from the script compare_distance_matrices.py.
     sample_id_map_fp = opts.sample_id_map_fp
     if sample_id_map_fp:
