@@ -207,28 +207,31 @@ class BioEnv(CategoryStats):
 
         cats = self.getCategories()
         dm = self.getDistanceMatrices()[0]
+        print dm
         dm_flat = dm.flatten()
 
         row_count = dm.getSize()
-        col_count = len(cats)+1
+        col_count = len(cats)
         sum = 0 
-        for i in range(col_count):
-            combo = list(combinate([j for j in range(col_count)], i))
+        for i in range(col_count+1):
+            combo = list(combinate([j for j in range(0,col_count)], i))[1:]
+            # print len(combo)
 
             for c in range(len(combo)):
+                # print combo[c]
                 cat_mat = self._make_cat_mat(cats, combo[c])
-                # if i < 2: print self._derive_euclidean_dm(cat_mat, row_count)
+                cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
+                # print cat_dm
+                stat = pearson(dm_flat, cat_dm.flatten())
+                #print stat
 
-        for m in self._derive_euclidean_dm(([1,4,7], [2,5,8], [3,6,9]), 3):
-            print m
-
-        # print sum
         # print (2**col_count - 1)/2
        
 
     def _derive_euclidean_dm(self, cat_mat, dim):
         """Returns an n x n, euclidean distance matrix, where n = len(cats) """
 
+        dm_labels = self.getDistanceMatrix().getSampleIds()
         res_mat = []
         for i in range(dim):
             res_mat.append([0 for k in range(dim)])
@@ -236,7 +239,7 @@ class BioEnv(CategoryStats):
                 res_mat[i][j] = self._vector_dist(cat_mat[i], cat_mat[j])
                 res_mat[j][i] = res_mat[i][j]
 
-        return res_mat
+        return DistanceMatrix(asarray(res_mat), dm_labels, dm_labels)
     
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors"""
@@ -251,21 +254,21 @@ class BioEnv(CategoryStats):
         dm = self.getDistanceMatrix()
         md_map = self.getMetadataMap()
         res = []
-        for i,c in enumerate(cats):
-            res.append(md_map.getCategoryValues(dm.getSampleIds(), c))
+        for i in combo:
+            res.append(md_map.getCategoryValues(dm.getSampleIds(), cats[i]))
 
         return zip(*res)
 
 
-if __name__ == '__main__':
-    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
-
-
-    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
-
-    bioenv = BioEnv(dm, md_map, cats)
-    bioenv.runAnalysis()
+#if __name__ == '__main__':
+#    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+#    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+#
+#
+#    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
+#
+#    bioenv = BioEnv(dm, md_map, cats)
+#    bioenv.runAnalysis()
 
 
 
