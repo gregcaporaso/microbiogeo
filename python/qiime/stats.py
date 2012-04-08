@@ -733,7 +733,9 @@ class Mantel(CorrelationStats):
 
             initalDistanceMatrix2 - This is a distance matrix object representing one of the distance matrices being compared
 
-            num_iters - This is the number of times to iterate when permuting and calculating the pearson value
+            permutations - This is the number of times to iterate when permuting and calculating the pearson value
+
+            tailType - This is the type of Mantel test to perform, variations can be "two-sided"[default], "lesser", "greater"
         """
         parameterMatrices = [initialDistanceMatrix1, initialDistanceMatrix2]
         super(Mantel, self).__init__(parameterMatrices)
@@ -741,14 +743,6 @@ class Mantel(CorrelationStats):
 
         self.setNumPermutations(permutations)
         self.setTailType(tailType)
-
-    def getTailType(self):
-        """This returns the tail type being used for the current Mantel object """
-        return self._tail_type
-
-    def setTailType(self, tail_type):
-        """This sets the tail type that will be used for the current Mantel object calculation"""
-        self._tail_type = tail_type
 
     def runAnalysis(self):
         """Compares two distance matrices. Reports P-value for correlation.
@@ -855,6 +849,14 @@ class Mantel(CorrelationStats):
     def permute_2d(self, m, p):
         """Performs 2D permutation of matrix m according to p."""
         return m[p][:, p]
+
+    def getTailType(self):
+        """This returns the tail type being used for the current Mantel object """
+        return self._tail_type
+
+    def setTailType(self, tail_type):
+        """This sets the tail type that will be used for the current Mantel object calculation"""
+        self._tail_type = tail_type
 
     def getNumPermutations(self):
         """
