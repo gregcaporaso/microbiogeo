@@ -393,6 +393,17 @@ class MetadataMapTests(TestCase):
                 'PC.636', 'BarcodeSequence')
         self.assertEqual(obs, exp)
 
+    def test_getCategoryValues(self):
+        """Test category value list by sample ID/category name accessor."""
+        smpl_ids = ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607',
+                    'PC.634', 'PC.635', 'PC.636']
+
+        exp = ['Control','Control','Control','Control','Control','Fast'
+                    ,'Fast','Fast','Fast']
+        obs = self.overview_map.getCategoryValues(smpl_ids, 'Treatment')
+        self.assertEqual(obs, exp)
+
+
     def test_getCategoryValue_bad_sample_id(self):
         """Test category value by sample ID accessor with bad sample IDs."""
         # Nonexistent sample ID.

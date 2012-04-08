@@ -189,8 +189,7 @@ class BioEnv(CategoryStats):
 
     def __init__(self, dm, metadata_map, cats):
         """Default constructor."""
-        if not isinstance(category, str):
-            raise TypeError("The supplied category must be a string.")
+
         super(BioEnv, self).__init__(metadata_map, dm, cats)
 
     def runAnalysis(self):
@@ -208,7 +207,67 @@ class BioEnv(CategoryStats):
 
         cats = self.getCategories()
         dm = self.getDistanceMatrices()[0]
-        
+        dm_flat = dm.flatten()
+
+        row_count = dm.getSize()
+        col_count = len(cats)+1
+        sum = 0 
+        for i in range(col_count):
+            combo = list(combinate([j for j in range(col_count)], i))
+
+            for c in range(len(combo)):
+                cat_mat = self._make_cat_mat(cats, combo[c])
+                # if i < 2: print self._derive_euclidean_dm(cat_mat, row_count)
+
+        for m in self._derive_euclidean_dm(([1,4,7], [2,5,8], [3,6,9]), 3):
+            print m
+
+        # print sum
+        # print (2**col_count - 1)/2
+       
+
+    def _derive_euclidean_dm(self, cat_mat, dim):
+        """Returns an n x n, euclidean distance matrix, where n = len(cats) """
+
+        res_mat = []
+        for i in range(dim):
+            res_mat.append([0 for k in range(dim)])
+            for j in range(i):
+                res_mat[i][j] = self._vector_dist(cat_mat[i], cat_mat[j])
+                res_mat[j][i] = res_mat[i][j]
+
+        return res_mat
+    
+    def _vector_dist(self, vec1, vec2):
+        """Calculates the Euclidean distance between two vectors"""
+        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in zip(vec1,vec2)]))
+
+
+    def _make_cat_mat(self, cats, combo):
+        """Returns a matrix with len(sample_ids) rows of columns pulled
+        from category values, the number of columns for each category is
+        determined by the current combination(combo)."""
+
+        dm = self.getDistanceMatrix()
+        md_map = self.getMetadataMap()
+        res = []
+        for i,c in enumerate(cats):
+            res.append(md_map.getCategoryValues(dm.getSampleIds(), c))
+
+        return zip(*res)
+
+
+if __name__ == '__main__':
+    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+
+
+    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
+
+    bioenv = BioEnv(dm, md_map, cats)
+    bioenv.runAnalysis()
+
+
 
 
 class DistanceBasedRda(CategoryStats):
@@ -329,7 +388,7 @@ class DistanceBasedRda(CategoryStats):
         z_r = None
 
         factor = self._create_factor(group_membership)
-#        print factor
+    #   print factor
         factor_r = self._center_matrix(factor)
 
    #     Y.r <- scale(Y, center = TRUE, scale = FALSE)
@@ -932,7 +991,7 @@ class PartialMantel(CorrelationStats):
     def runAnalysis(self):
         """Run a partial Mantel test on the current distance matrices and control matrix.
         
-        Credit: The code herein is based strongly off the implementation found in the Vegan
+        Credit: The code herein is based loosely on the implementation found in the Vegan
                 package of the R language and software libraries.
         """
 

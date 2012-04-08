@@ -18,6 +18,7 @@ native QIIME data files into in-memory data structures that allow access to and
 manipulation of the data.
 """
 
+from cogent.util.misc import combinate
 from biom.table import DenseTable
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 
@@ -233,15 +234,5 @@ class MetadataMap():
         """
         return sorted(self.getSampleMetadata(self.getSampleIds()[0]).keys()) \
             if len(self.getSampleIds()) > 0 else []
-            
-    def deriveEuclideanDM(self, cats):
-        """Returns an n x n, euclidean distance matrix, where n = len(cats)
-        
-        Used primarily by the BioEnv statistic.
-        """
-    
-if __name__ == '__main__':
-    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-    print dm.getSampleIds()
-    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
-    print md_map.getCategoryValues(dm.getSampleIds(), 'PH')
+
+

@@ -18,6 +18,7 @@ from math import sqrt
 
 from cogent.util.unit_test import TestCase, main
 from python.qiime.stats import GradientStats, DistanceMatrixStats, \
+                               BioEnv, \
                                CorrelationStats, CategoryStats, \
                                DistanceBasedRda, MantelCorrelogram, Mantel, \
                                PartialMantel
@@ -246,6 +247,14 @@ class CategoryStatsTests(TestHelper):
         """runAnalysis() not implemented in abstract base CategoryStats."""
         raise NotImplementedError("Method not implemented by abstract base.")
 
+
+class BioEnvTests(TestHelper):
+    """Tests for the DistanceBasedRda class."""
+
+    def setUp(self):
+        """Define some useful data to use in testing."""
+        super(BioEnvTests, self).setUp()
+        self.bioenv = BioEnv
 
 class DistanceBasedRdaTests(TestHelper):
     """Tests for the DistanceBasedRda class."""
