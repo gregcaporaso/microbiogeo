@@ -103,35 +103,47 @@ def main():
             m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations, opts.tail_type)
 
     resultsDict = {}
+    resultsDict = m.runAnalysis()
+    resultsDict['DM1_file_name'] = input_dm_fps[0] 
+    resultsDict['DM2_file_name'] = input_dm_fps[1] 
+    resultsDict['sample_size'] = len(dm1_labels)
 
-    p = m.runAnalysis()
-    p_str = format_p_value_for_num_iters(p[0],num_iterations)
-    #output_str = ('%s\t%s\t%d\t%s\n' % (input_dm_fps[0], input_dm_fps[1], len(dm1_labels),p_str))
-    #resultsDict['Results':('%s\t%s\t%d\t%s\n' % (fp1, fp2, len(dm1_labels),p_str))]
+    p_str = format_p_value_for_num_iters(resultsDict['p_value'],num_iterations)
 
-    resultsDict['Results'] = p_str
-    resultsDict['DM1'] = input_dm_fps[0] 
-    resultsDict['DM2'] = input_dm_fps[1] 
-    resultsDict['sampleSize'] = len(dm1_labels)
-    resultsDict['pvalue'] = p_str
-
-    output_f.write(resultsDict['DM1'])
+    output_f.write(resultsDict['DM1_file_name'])
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
     output_f.write("\t")
 
-    output_f.write(resultsDict['DM2'])
+    output_f.write(resultsDict['DM2_file_name'])
+    output_f.write("\t")
+    output_f.write("\t")
     output_f.write("\t")
 
     #fixes space issues for formatting
-    third_word_spaces_needed = len("Number of entries") - len(str(resultsDict['sampleSize']))
+    third_word_spaces_needed = len("Number of entries") - len(dm1_labels)
     third_word_spaces = "" 
     while(third_word_spaces_needed > 0):
         third_word_spaces_needed = third_word_spaces_needed - 1
         third_word_spaces = third_word_spaces + " "
-    output_f.write(str(resultsDict['sampleSize']))
+    output_f.write(str(resultsDict['sample_size']))
     output_f.write(third_word_spaces)
     output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
+    output_f.write("\t")
 
-    output_f.write(resultsDict['pvalue'])
+    output_f.write(str(resultsDict['p_value']))
 
     output_f.write("\n")
     output_f.close()

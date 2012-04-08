@@ -758,8 +758,18 @@ class Mantel(CorrelationStats):
         This function is retained for backwards-compatibility. Please use
         mantel_test() for more control over how the test is performed.
         """
-        return self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
 
+        results = self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
+
+        resultsDict = {}
+        resultsDict['Results'] = results 
+        resultsDict['DM1'] = self.getDistanceMatrices()[0]
+        resultsDict['DM2'] = self.getDistanceMatrices()[1]
+        resultsDict['number_of_permutations'] = self.getNumPermutations() 
+        resultsDict['p_value'] = results[0]
+        resultsDict['tail_type_used'] = self.getTailType()
+
+        return resultsDict
 
     def mantel_test(self, m1, m2, n, alt="two-sided"):
         """Runs a Mantel test on two distance matrices.
