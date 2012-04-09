@@ -17,11 +17,9 @@ from numpy import array, matrix
 from math import sqrt
 
 from cogent.util.unit_test import TestCase, main
-from python.qiime.stats import GradientStats, DistanceMatrixStats, \
-                               BioEnv, \
-                               CorrelationStats, CategoryStats, \
-                               DistanceBasedRda, MantelCorrelogram, Mantel, \
-                               PartialMantel
+from python.qiime.stats import (BioEnv, CategoryStats, CorrelationStats,
+    DistanceBasedRda, DistanceMatrixStats, GradientStats, MantelCorrelogram,
+    Mantel, PartialMantel)
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class TestHelper(TestCase):
@@ -90,6 +88,7 @@ class TestHelper(TestCase):
 
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
+
 
 class GradientStatsTests(TestCase):
     """Tests for the GradientStats class."""
@@ -255,6 +254,7 @@ class BioEnvTests(TestHelper):
         """Define some useful data to use in testing."""
         super(BioEnvTests, self).setUp()
         self.bioenv = BioEnv
+
 
 class DistanceBasedRdaTests(TestHelper):
     """Tests for the DistanceBasedRda class."""
@@ -552,6 +552,7 @@ class MantelCorrelogramTests(TestHelper):
         self.assertFloatEqual(obs_ax.get_yticks(),
             [0., 0.2, 0.4, 0.6, 0.8, 1.0])
 
+
 class MantelTests(TestHelper):
     """Tests for the Mantel class."""
     def setUp(self):
@@ -599,6 +600,7 @@ class MantelTests(TestHelper):
         """Test setting matrices using an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.mantel.setDistanceMatrices, [self.overview_dm])
         self.assertRaises(ValueError, self.mantel.setDistanceMatrices, [self.overview_dm, self.overview_dm, self.overview_dm])
+
 
 class PartialMantelTests(TestHelper):
     """Tests for the PartialMantel class."""

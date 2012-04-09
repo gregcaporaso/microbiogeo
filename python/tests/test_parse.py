@@ -15,8 +15,8 @@ __status__ = "Development"
 from numpy import array
 from cogent.util.unit_test import TestCase, main
 from biom.table import __version__ as __biom_version__, __url__ as __biom_url__
-from qiime.parse import parse_distmat, parse_mapping_file_to_dict, \
-    QiimeParseError
+from qiime.parse import (parse_distmat, parse_mapping_file_to_dict,
+                         QiimeParseError)
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class DistanceMatrixTests(TestCase):
