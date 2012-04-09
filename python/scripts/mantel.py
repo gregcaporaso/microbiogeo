@@ -112,13 +112,8 @@ def main():
 
     output_f.write(resultsDict['DM1_file_name'])
     output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
 
     output_f.write(resultsDict['DM2_file_name'])
-    output_f.write("\t")
-    output_f.write("\t")
     output_f.write("\t")
 
     #fixes space issues for formatting
@@ -130,20 +125,8 @@ def main():
     output_f.write(str(resultsDict['sample_size']))
     output_f.write(third_word_spaces)
     output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
-    output_f.write("\t")
 
-    output_f.write(str(resultsDict['p_value']))
+    output_f.write(p_str)
 
     output_f.write("\n")
     output_f.close()
