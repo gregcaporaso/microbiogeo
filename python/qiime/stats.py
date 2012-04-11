@@ -208,24 +208,25 @@ class BioEnv(CategoryStats):
 
         cats = self.getCategories()
         dm = self.getDistanceMatrices()[0]
-        print dm
         dm_flat = dm.flatten()
 
         row_count = dm.getSize()
         col_count = len(cats)
         sum = 0 
+        stats = []
         for i in range(col_count+1):
             combo = list(combinate([j for j in range(0,col_count)], i))[1:]
-            # print len(combo)
 
             for c in range(len(combo)):
-                # print combo[c]
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
-                # print cat_dm
-                stat = pearson(dm_flat, cat_dm.flatten())
-                #print stat
+                # stats.append(pearson(dm_flat, cat_dm.flatten()))
+                stats.append(self._spearman_correlation(
+                                 dm_flat, cat_dm.flatten()))
 
+        sset = sorted(list(set(stats)))
+        for s in sset:
+            print s
         # print (2**col_count - 1)/2
        
 
@@ -244,7 +245,8 @@ class BioEnv(CategoryStats):
     
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors"""
-        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in zip(vec1,vec2)]))
+        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in 
+                            zip(vec1,vec2)]))
 
 
     def _make_cat_mat(self, cats, combo):
@@ -260,16 +262,72 @@ class BioEnv(CategoryStats):
 
         return zip(*res)
 
+    def _get_rank(self, data):
+        """Ranks the elements of a list. Used in Spearman
+        correlation
+        """
+        indices = range(len(data))
+        ranks = range(1,len(data)+1)
+        ranks.sort(key=lambda index:data[index-1])
+        indices.sort(key=lambda index:data[index])
+        data_len = len(data)
+        i = 0
+        while i < data_len: 
+            j = i + 1
+            val = data[indices[i]]
+            while j < data_len and data[indices[j]] == val: 
+                j += 1
 
-#if __name__ == '__main__':
-#    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-#    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
-#
-#
+            dup_ranks = j - i
+            val = float(ranks[indices[i]]) + (dup_ranks-1)/2.0
+            for k in range(i, i+dup_ranks):
+                ranks[indices[k]] = val
+            i += dup_ranks
+
+        return ranks
+
+    def _spearman_correlation(self, vec1, vec2):
+        """Calculates the the Spearman distance of two vectors"""
+        rank1 = self._get_rank(vec1)
+        rank2 = self._get_rank(vec2)
+
+        res = 0.0
+        denom1 = 0.0
+        denom2 = 0.0
+
+        n = len(vec1)
+        avg_rank = 0.5*(n-1)
+        for i in range(n):
+            res += rank1[i] * rank2[i]
+            denom1 += rank1[i]**2
+            denom2 += rank2[i]**2
+
+        res = (res/n) - avg_rank**2
+        denom1 = (denom1/n) - avg_rank**2
+        denom2 = (denom2/n) - avg_rank**2
+
+        if denom1 <= 0 or denom2 <= 0: 
+            return 1.0
+
+        res = 1.0 - (res/sqrt(denom1*denom2))
+
+        return res
+
+
+# if __name__ == '__main__':
+#    dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
+#    md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
+#    # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+#    # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+
+
 #    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
-#
+
 #    bioenv = BioEnv(dm, md_map, cats)
-#    bioenv.runAnalysis()
+#    # bioenv.runAnalysis()
+#    a = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4)
+#    b = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13)
+#    print bioenv._spearman_correlation(a,b)
 
 
 
