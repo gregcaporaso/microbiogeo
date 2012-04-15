@@ -909,10 +909,10 @@ class Mantel(CorrelationStats):
         The p-value is based on a two-sided test.
     
         This function is retained for backwards-compatibility. Please use
-        mantel_test() for more control over how the test is performed.
+        mantelTest() for more control over how the test is performed.
         """
 
-        results = self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
+        results = self.mantelTest(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
 
         resultsDict = {}
         resultsDict['method_name'] = "mantel"
@@ -926,7 +926,7 @@ class Mantel(CorrelationStats):
 
         return resultsDict
 
-    def mantel_test(self, m1, m2, n, alt="two-sided"):
+    def mantelTest(self, m1, m2, n, alt="two-sided"):
         """Runs a Mantel test on two distance matrices.
     
         Returns the p-value, Mantel correlation statistic, and a list of Mantel
