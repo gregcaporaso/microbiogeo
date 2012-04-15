@@ -915,11 +915,13 @@ class Mantel(CorrelationStats):
         results = self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
 
         resultsDict = {}
+        resultsDict['method_name'] = "mantel"
         resultsDict['Results'] = results 
         resultsDict['DM1'] = self.getDistanceMatrices()[0]
         resultsDict['DM2'] = self.getDistanceMatrices()[1]
         resultsDict['number_of_permutations'] = self.getNumPermutations() 
         resultsDict['p_value'] = results[0]
+        resultsDict['r_value'] = results[1]
         resultsDict['tail_type_used'] = self.getTailType()
 
         return resultsDict

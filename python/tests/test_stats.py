@@ -564,11 +564,11 @@ class MantelTests(TestHelper):
         self.mantel = Mantel(self.overview_dm, self.overview_dm, self.defaultPermutations)
 
         #not sure what these values should be.....
-        smpl_ids = ['s1', 's2', 's3']
-        self.small_mantel = Mantel(
-            DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
-            999)
+        #smpl_ids = ['s1', 's2', 's3']
+        #self.small_mantel = Mantel(
+            #DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+            #DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
+            #999)
 
     def test_initialGetNumPermutations(self):
         """Test retrieval of the intial permutations value passed into the constructor of a Mantel object."""
@@ -600,6 +600,48 @@ class MantelTests(TestHelper):
         """Test setting matrices using an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.mantel.setDistanceMatrices, [self.overview_dm])
         self.assertRaises(ValueError, self.mantel.setDistanceMatrices, [self.overview_dm, self.overview_dm, self.overview_dm])
+
+    def test_runAnalysis_on_overview_distance_matrix(self):
+        """
+        This is a test that performs mantel on the qiime overview distance matrice when compared to itself.
+
+        Expected R output:
+            Mantel statistic r:     1
+                Significance: 0.001
+
+        Empirical upper confidence limits of r:
+            90%   95% 97.5%   99%
+            0.244 0.329 0.414 0.502
+
+        Based on 999 permutations
+        """
+        #make_compatible_distance_matrices
+        expected_method_name = "mantel"
+        expected_p_value = 0.001
+        expected_number_of_permutations = 999
+        expected_tail_type = "greater"
+
+        overview_mantel = Mantel(self.overview_dm, self.overview_dm, 999, "greater")
+        overview_mantel_output = overview_mantel.runAnalysis()
+
+        mantel_method_name = overview_mantel_output['method_name']
+        mantel_number_of_permutations = overview_mantel_output['number_of_permutations']
+        mantel_pvalue = overview_mantel_output['p_value']
+        mantel_rvalue = overview_mantel_output['r_value']
+        mantel_tail_type = overview_mantel_output['tail_type_used']
+
+        # compares method name returned
+        self.assertEqual(expected_method_name, mantel_method_name,"The expected mantel method name of \"%s\" was not returned, instead the method name \"%s\" was returned." % (expected_method_name, mantel_method_name))
+
+        # compares p-value
+        self.assertEqual(expected_p_value, mantel_pvalue, "The p-value output was %s, which was not the expected value of %s" % (str(mantel_pvalue), str(expected_p_value)))
+
+        # compares the number of permutations being used
+        self.assertEqual(expected_number_of_permutations, mantel_number_of_permutations, "The actual amount of permutations was different than the expected amount of permutations. \nExpected: %d \nActual: %d" % (expected_number_of_permutations, mantel_number_of_permutations))
+
+        # compares tail-type used
+        self.assertEqual(expected_tail_type, mantel_tail_type, "The expected tail type of \"%s\" was not used and instead the tail type of \"%s\" was used." % (expected_tail_type, mantel_tail_type))
+        
 
 
 class PartialMantelTests(TestHelper):
