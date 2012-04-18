@@ -690,6 +690,7 @@ class MantelTests(TestHelper):
         ##not related -- should not be significant
         #m = mantel(a,c,1000)
         #self.assertTrue(m > 0.1)
+        pass
 
     def test_mantel_test_one_sided_greater(self):
         """Test one-sided mantel test (greater)."""
