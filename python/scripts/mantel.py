@@ -1,6 +1,6 @@
 from qiime.util import make_option
 from qiime.parse import parse_distmat
-from python.qiime.parse import DistanceMatrix
+from parse import DistanceMatrix
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
@@ -9,7 +9,7 @@ from qiime.util import (parse_command_line_parameters,
 from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
-from python.qiime.stats import Mantel
+from stats import Mantel
 from cogent.util.dict2d import Dict2D
 
 __author__ = "Greg Caporaso"
@@ -101,6 +101,15 @@ def main():
 
             #This takes in a distance matrix object for the dm1 and dm2 of Mantel
             m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations, opts.tail_type)
+    
+    #print "dm1 size: %d" % len(dm1)
+    #print "dm1_labels size: %d" % len(dm1_labels)
+    #print "dm2 size: %d" % len(dm2)
+    #print "dm2_labels size: %d" % len(dm2_labels)
+    #print dm1
+    #print dm2
+    #print dm1_labels
+    #print dm2_labels
 
     resultsDict = {}
     resultsDict = m.runAnalysis()

@@ -34,7 +34,7 @@ from numpy import min as np_min, max as np_max, sqrt as np_sqrt, sum as np_sum
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
+from parse import DistanceMatrix, MetadataMap
 
 class GradientStats(object):
     """Top-level, abstract base class for gradient statistical analyses.
@@ -946,11 +946,26 @@ class Mantel(CorrelationStats):
         if alt not in ("two-sided", "greater", "less"):
             raise ValueError("Unrecognized alternative hypothesis. Must be either "
                              "'two-sided', 'greater', or 'less'.")
+        if isinstance(m1, DistanceMatrix) == False: 
+            if isinstance(m2, DistanceMatrix) == False:
+                raise TypeError("Both of the distance matrix arguments passed into the mantelTest method are not DistanceMatrix objects.")
+            else:
+                raise TypeError("The first distance matrix passed in as an argument for  the mantelTest method is not a DistanceMatrix Object.")
+        else:
+            if isinstance(m2, DistanceMatrix) == False:
+                raise TypeError("The second distance matrix passed in as an argument for  the mantelTest method is not a DistanceMatrix Object.")
+        
+
+        #print m1._data
+        #m1, m2 = asarray(m1), asarray(m2)
         m1, m2 = asarray(m1._data), asarray(m2._data)
+        #m1, m2 = m1._data, m2._data
+        #print m1
 
         #Jai's code did a sanity check based on shape, but shape doesn't apply and instead the size should be checked -04/04/2012 LK
         #if m1.shape != m2.shape:
 
+        #if m1.getSize() != m2.getSize():
         if m1.size != m2.size:
             raise ValueError("Both matrices must be the same size.")
         if n < 1:
@@ -960,17 +975,20 @@ class Mantel(CorrelationStats):
         #I can't get the _flatten_lower_triangle to work at all, talked to Michael and he stated that the normal flatten should resolve this as is.
         #It primarily doesn't work because it can't identify based on shape, and instead size should be used
         #m1_flat, m2_flat = self._flatten_lower_triangle(m1), self._flatten_lower_triangle(m2)
-        m1_flat, m2_flat = m1.flatten(), m2.flatten()
+        m1_flat, m2_flat = m1.flatten(True), m2.flatten(True)
+        #print m1_flat
 
         orig_stat = self.pearson(m1_flat, m2_flat)
     
         # Run our permutation tests so we can calculate a p-value for the test.
         size = len(m1)
+        #size = len(m1)
         better = 0
         perm_stats = []
         for i in range(n):
             perm = permute_2d(m1, permutation(size))
-            perm_flat = perm.flatten()
+            #perm = permute_2d(m1_flat, permutation(size))
+            perm_flat = perm.flatten(True)
             r = pearson(perm_flat, m2_flat)
     
             if alt == 'two-sided':
