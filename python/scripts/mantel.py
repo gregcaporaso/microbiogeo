@@ -1,6 +1,6 @@
 from qiime.util import make_option
 from qiime.parse import parse_distmat
-from parse import DistanceMatrix
+from python.qiime.parse import DistanceMatrix
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
@@ -9,7 +9,7 @@ from qiime.util import (parse_command_line_parameters,
 from numpy import array, asarray, ravel, sqrt
 from numpy.random import permutation
 
-from stats import Mantel
+from python.qiime.stats import Mantel
 from cogent.util.dict2d import Dict2D
 
 __author__ = "Greg Caporaso"

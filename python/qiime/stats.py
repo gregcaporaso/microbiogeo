@@ -34,7 +34,7 @@ from numpy import min as np_min, max as np_max, sqrt as np_sqrt, sum as np_sum
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
 
-from parse import DistanceMatrix, MetadataMap
+from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class GradientStats(object):
     """Top-level, abstract base class for gradient statistical analyses.

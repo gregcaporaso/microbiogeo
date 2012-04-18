@@ -16,11 +16,11 @@ __status__ = "Development"
 from numpy import array, matrix, reshape, arange
 from math import sqrt
 
-from cogent.util.unit_test import TestCase, main
+from python.qiime.cogent.util.unit_test import TestCase, main
 from stats import (BioEnv, CategoryStats, CorrelationStats,
     DistanceBasedRda, DistanceMatrixStats, GradientStats, MantelCorrelogram,
     Mantel, PartialMantel)
-from parse import DistanceMatrix, MetadataMap
+from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
