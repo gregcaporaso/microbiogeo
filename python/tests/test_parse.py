@@ -80,6 +80,14 @@ class DistanceMatrixTests(TestCase):
         self.assertEqual(self.dm.getMax(), 6)
         self.assertFloatEqual(self.overview_dm.getMax(), 0.8)
 
+    def test_getDataMatrix(self):
+        """Test returning of dm's internal matrix of distances."""
+        self.assertEqual(self.single_ele_dm.getDataMatrix(), array([[0]]))
+        self.assertEqual(self.dm.getDataMatrix(),
+            array([[0, 2, 4], [1, 2, 3], [4, 5, 6]]))
+        self.assertFloatEqual(self.overview_dm.getDataMatrix(),
+            self.overview_dm._data)
+
     def test_flatten(self):
         """Test flattening various dms."""
         self.assertEqual(self.single_ele_dm.flatten(), [])

@@ -16,8 +16,8 @@ __status__ = "Development"
 from numpy import array, matrix, reshape, arange
 from math import sqrt
 
-from python.qiime.cogent.util.unit_test import TestCase, main
-from stats import (BioEnv, CategoryStats, CorrelationStats,
+from cogent.util.unit_test import TestCase, main
+from python.qiime.stats import (BioEnv, CategoryStats, CorrelationStats,
     DistanceBasedRda, DistanceMatrixStats, GradientStats, MantelCorrelogram,
     Mantel, PartialMantel)
 from python.qiime.parse import DistanceMatrix, MetadataMap
@@ -558,38 +558,27 @@ class MantelCorrelogramTests(TestHelper):
 
 class MantelTests(TestHelper):
     """Tests for the Mantel class."""
+
     def setUp(self):
         """Set up Mantel instances for use in tests."""
         super(MantelTests, self).setUp()
 
-        #used to test that the constuctor sets the default permutations correctly
+        # Used to test that the constuctor sets the default permutations
+        # correctly.
         self.defaultPermutations = 999
-        self.overview_mantel = Mantel(self.overview_dm, self.overview_dm, self.defaultPermutations, "greater")
+        self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
+            self.defaultPermutations, 'greater')
 
-        #These are the three arrays made by numpy unit tests that are made into distance matrices below
-        #There is a possibility for the distance matrices below I'm not translating the information correctl
-        #m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
-        #m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        #m3 = array([[0, 0.5, 0.25], [0.5, 0, 0.1], [0.25, 0.1, 0]])
+        # Create three small test distance matrices. These match the ones used
+        # in PyCogent's mantel unit tests.
+        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
+        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
+        m3 = array([[0, 0.5, 0.25], [0.5, 0, 0.1], [0.25, 0.1, 0]])
+        sample_ids = ["S1", "S2", "S3"]
 
-        self.m1_str = ["\tm1Sample1\tm1Sample2\tm1Sample3",
-                  "m1Sample1\t0\t1\t2",
-                  "m1Sample2\t1\t0\t3",
-                  "m1Sample3\t2\t3\t0"]
-        self.dmM1 = DistanceMatrix.parseDistanceMatrix(self.m1_str)
-
-        self.m2_str = ["\tm2Sample1\tm2Sample2\tm2Sample3",
-                  "m2Sample1\t0\t2\t7",
-                  "m2Sample2\t2\t0\t6",
-                  "m2Sample3\t7\t6\t0"]
-        self.dmM2 = DistanceMatrix.parseDistanceMatrix(self.m2_str)
-
-
-        self.m3_str = ["\tm3Sample1\tm3Sample2\tm3Sample3",
-                  "m3Sample1\t0\t0.5\t0.25",
-                  "m3Sample2\t0.5\t0\t0.1",
-                  "m3Sample3\t0.25\t0.1\t0"]
-        self.dmM3 = DistanceMatrix.parseDistanceMatrix(self.m3_str)
+        self.m1_dm = DistanceMatrix(m1, sample_ids, sample_ids)
+        self.m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
+        self.m3_dm = DistanceMatrix(m3, sample_ids, sample_ids)
 
     def test_initialGetNumPermutations(self):
         """Test retrieval of the intial permutations value passed into the constructor of a Mantel object."""
@@ -622,135 +611,88 @@ class MantelTests(TestHelper):
         self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices, [self.overview_dm])
         self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices, [self.overview_dm, self.overview_dm, self.overview_dm])
     
-    def test_mantelTest(self):
-        pass
-        
-
-    def test_runAnalysis_on_overview_distance_matrix(self):
-        """
-        This is a test that performs mantel on the qiime overview distance matrice when compared to itself.
+    def test_runAnalysis(self):
+        """Runs mantel test on the overview dm when compared to itself.
 
         Expected R output:
             Mantel statistic r:     1
                 Significance: 0.001
 
-        Empirical upper confidence limits of r:
-            90%   95% 97.5%   99%
-            0.244 0.329 0.414 0.502
-
         Based on 999 permutations
         """
-        #make_compatible_distance_matrices
         expected_method_name = "mantel"
         expected_p_value = 0.001
         expected_r_value = 1.0
         expected_number_of_permutations = 999
         expected_tail_type = "greater"
 
-        overview_mantel = Mantel(self.overview_dm, self.overview_dm, 999, "greater")
+        overview_mantel = Mantel(self.overview_dm, self.overview_dm, 999,
+                                 'greater')
         overview_mantel_output = overview_mantel.runAnalysis()
 
-        mantel_method_name = overview_mantel_output['method_name']
-        mantel_number_of_permutations = overview_mantel_output['number_of_permutations']
-        mantel_pvalue = overview_mantel_output['p_value']
-        mantel_rvalue = overview_mantel_output['r_value']
-        mantel_tail_type = overview_mantel_output['tail_type_used']
+        obs_method_name = overview_mantel_output['method_name']
+        obs_num_permutations = overview_mantel_output['number_of_permutations']
+        obs_p_value = overview_mantel_output['p_value']
+        obs_r_value = overview_mantel_output['r_value']
+        obs_tail_type = overview_mantel_output['tail_type_used']
 
         # compares method name returned
-        self.assertEqual(expected_method_name, mantel_method_name,"The expected mantel method name of \"%s\" was not returned, instead the method name \"%s\" was returned." % (expected_method_name, mantel_method_name))
+        self.assertEqual(expected_method_name, obs_method_name)
 
         # compares p-value
-        self.assertFloatEqual(expected_p_value, mantel_pvalue, "The p-value output was %s, which was not the expected value of %f" % (mantel_pvalue, expected_p_value))
+        self.assertFloatEqual(expected_p_value, obs_p_value)
 
         # compares r-value
-        # TO DO: ask why this fails even though the vaulues are the same...
-        self.assertFloatEqual(expected_r_value, mantel_rvalue, "The r-value output was %f, which was not the expected value of %f." % (mantel_rvalue, expected_r_value))
+        self.assertFloatEqual(expected_r_value, obs_r_value)
 
         # compares the number of permutations being used
-        self.assertEqual(expected_number_of_permutations, mantel_number_of_permutations, "The actual amount of permutations was different than the expected amount of permutations. \nExpected: %d \nActual: %d" % (expected_number_of_permutations, mantel_number_of_permutations))
+        self.assertEqual(expected_number_of_permutations, obs_num_permutations)
 
         # compares tail-type used
-        self.assertEqual(expected_tail_type, mantel_tail_type, "The expected tail type of \"%s\" was not used and instead the tail type of \"%s\" was used." % (expected_tail_type, mantel_tail_type))
+        self.assertEqual(expected_tail_type, obs_tail_type)
         
-
-#-------------------------------------------------------------------------------
-# PYCOGENT METHOD ADDON STARTS HERE
-#-------------------------------------------------------------------------------
-# These tests were grabbed from the pycogent library from the source directory
-
-    def test_mantel(self):
-        #"""mantel should be significant for same matrix, not for random"""
-        #a = reshape(arange(25), (5,5))
-        #b = a.copy()
-        #m = Mantel(a, b, 1000)
-        ##closely related -- should be significant
-        #self.assertTrue(m < 0.05)
-        #c = reshape(ones(25), (5,5))
-        #c[1, 0] = 3.0
-        ##not related -- should not be significant
-        #m = mantel(a,c,1000)
-        #self.assertTrue(m > 0.1)
-        pass
-
+    # The remaining tests in this class were grabbed from PyCogent's mantel
+    # unit tests. They should be removed once we start using PyCogent's version
+    # of mantel in a future release. They have only been modified slightly to
+    # use the new interface provided in the Mantel class, but the inputs and
+    # outputs should all be the same.
     def test_mantel_test_one_sided_greater(self):
         """Test one-sided mantel test (greater)."""
         # This test output was verified by R (their mantel function does a
         # one-sided greater test).
-        #These are the array
-        #m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
-        #m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
+        mantel = Mantel(self.m1_dm, self.m1_dm, 999, 'greater')
+        p, stat, perms = mantel._mantel_test()
 
-        m2StrAlt = ["\tm1Sample1\tm1Sample2\tm1Sample3",
-                  "m1Sample1\t0\t2\t7",
-                  "m1Sample2\t2\t0\t6",
-                  "m1Sample3\t7\t6\t0"]
-        dmM2Alt = DistanceMatrix.parseDistanceMatrix(m2StrAlt)
-
-        m1Mantel = Mantel(self.dmM1, self.dmM1, 999, 'less')
-        p, stat, perms = m1Mantel.mantelTest(self.dmM1, self.dmM1, 999, alt='greater')
         self.assertTrue(p > 0.09 and p < 0.25)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
-        m2Mantel = Mantel(self.dmM1, dmM2Alt, 999, 'less')
-        p, stat, perms = m2Mantel.mantelTest(self.dmM1, dmM2Alt, 999, alt='greater')
+        mantel = Mantel(self.m1_dm, self.m2_dm, 999, 'greater')
+        p, stat, perms = mantel._mantel_test()
+
         self.assertTrue(p > 0.2 and p < 0.5)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
     def test_mantel_test_one_sided_less(self):
-        #"""Test one-sided mantel test (less)."""
+        """Test one-sided mantel test (less)."""
         # This test output was verified by R (their mantel function does a
         # one-sided greater test, but I modified their output to do a one-sided
         # less test).
-        m1Mantel = Mantel(self.dmM1, self.dmM1, 999, 'less')
-        p, stat, perms = m1Mantel.mantelTest(self.dmM1, self.dmM1, 999, alt='less')
+        mantel = Mantel(self.m1_dm, self.m1_dm, 999, 'less')
+        p, stat, perms = mantel._mantel_test()
         self.assertFloatEqual(p, 1.0)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
-        #this is used because it says all sample ids to match and the initially declared objects don't account for that
-        m2StrAlt = ["\tm1Sample1\tm1Sample2\tm1Sample3",
-                  "m1Sample1\t0\t2\t7",
-                  "m1Sample2\t2\t0\t6",
-                  "m1Sample3\t7\t6\t0"]
-        dmM2Alt = DistanceMatrix.parseDistanceMatrix(m2StrAlt)
-
-        m2Mantel = Mantel(self.dmM1, dmM2Alt, 999, 'less')
-        p, stat, perms = m2Mantel.mantelTest(self.dmM1, dmM2Alt, 999, alt='less')
+        mantel = Mantel(self.m1_dm, self.m2_dm, 999, 'less')
+        p, stat, perms = mantel._mantel_test()
         self.assertTrue(p > 0.6 and p < 1.0)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
-        #this is used because it says all sample ids to match and the initially declared objects don't account for that
-        m3StrAlt = ["\tm1Sample1\tm1Sample2\tm1Sample3",
-                  "m1Sample1\t0\t2\t7",
-                  "m1Sample2\t2\t0\t6",
-                  "m1Sample3\t7\t6\t0"]
-        dmM3Alt = DistanceMatrix.parseDistanceMatrix(m3StrAlt)
-
-        m3Mantel = Mantel(self.dmM1, dmM3Alt, 999, 'less')
-        p, stat, perms = m3Mantel.mantelTest(self.dmM1, dmM3Alt, 999, alt='less')
+        mantel = Mantel(self.m1_dm, self.m3_dm, 999, 'less')
+        p, stat, perms = mantel._mantel_test()
         self.assertTrue(p > 0.1 and p < 2.5)
         self.assertFloatEqual(stat, -0.989743318611)
         self.assertEqual(len(perms), 999)
@@ -760,47 +702,23 @@ class MantelTests(TestHelper):
         # This test output was verified by R (their mantel function does a
         # one-sided greater test, but I modified their output to do a two-sided
         # test).
-
-        #print "length of m1_labels: %d" % len(m1_labels)
-        #print "length of m2_labels: %d" % len(m2_labels)
-        #print "length of m3_labels: %d" % len(m3_labels)
-        #print "length of m1: %d" % len(m1)
-        #print "length of m2: %d" % len(m2)
-        #print "length of m3: %d" % len(m3)
-
-        m1Mantel = Mantel(self.dmM1, self.dmM1, 999, 'two-sided')
-        p, stat, perms = m1Mantel.mantelTest(self.dmM1, self.dmM1, 999, alt='two-sided')
-        self.assertTrue(p > 0.20 and p < 0.45, "The pvalue was %f" % p)
+        mantel = Mantel(self.m1_dm, self.m1_dm, 999, 'two sided')
+        p, stat, perms = mantel._mantel_test()
+        self.assertTrue(p > 0.20 and p < 0.45)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
-        m2Mantel = Mantel(self.dmM1, self.dmM2, 999, 'two-sided')
-        p, stat, perms = m2Mantel.mantelTest(self.dmM1, self.dmM2, 999, alt='two-sided')
+        mantel = Mantel(self.m1_dm, self.m2_dm, 999, 'two sided')
+        p, stat, perms = mantel._mantel_test()
         self.assertTrue(p > 0.6 and p < 0.75)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
-        m2Mantel = Mantel(self.dmM1, self.dmM3, 999, 'two-sided')
-        p, stat, perms = m2Mantel.mantelTest(self.dmM1, self.dmM3, 999, alt='two-sided')
+        mantel = Mantel(self.m1_dm, self.m3_dm, 999, 'two sided')
+        p, stat, perms = mantel._mantel_test()
         self.assertTrue(p > 0.2 and p < 0.45)
         self.assertFloatEqual(stat, -0.989743318611)
         self.assertEqual(len(perms), 999)
-
-    def test_mantel_test_invalid_input(self):
-        """Test mantel test with invalid input."""
-        self.assertRaises(ValueError, self.overview_mantel.mantelTest, array([[1]]), array([[1]]), 999, alt='foo')
-        self.assertRaises(TypeError, self.overview_mantel.mantelTest, array([[1]]), array([[1, 2], [3, 4]]), 999)
-        self.assertRaises(TypeError, self.overview_mantel.mantelTest, [[1]], [[1, 2], [3, 4]], 999)
-        self.assertRaises(TypeError, self.overview_mantel.mantelTest, array([[1]]), array([[1]]), 0)
-        self.assertRaises(TypeError, self.overview_mantel.mantelTest, array([[1]]), array([[1]]), -1)
-
-    def test_pearson(self):
-        """Test pearson correlation method on valid data."""
-        # This test output was verified by R.
-        self.assertFloatEqual(self.overview_mantel.pearson([1, 2], [1, 2]), 1.0)
-        self.assertFloatEqual(self.overview_mantel.pearson([1, 2, 3], [1, 2, 3]), 1.0)
-        self.assertFloatEqual(self.overview_mantel.pearson([1, 2, 3], [1, 2, 4]), 0.9819805)
-#-------------------------------------------------------------------------------
 
 
 class PartialMantelTests(TestHelper):

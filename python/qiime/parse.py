@@ -18,8 +18,9 @@ native QIIME data files into in-memory data structures that allow access to and
 manipulation of the data.
 """
 
-from cogent.util.misc import combinate
 from biom.table import DenseTable
+from cogent.util.misc import combinate
+from numpy import asmatrix
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 
 class DistanceMatrix(DenseTable):
@@ -100,6 +101,13 @@ class DistanceMatrix(DenseTable):
 
     def getSampleIds(self):
         return self.SampleIds
+
+    def getDataMatrix(self):
+        """Returns the matrix of distances as a numpy matrix.
+        
+        The returned matrix is not a copy of the matrix stored in this object.
+        """
+        return asmatrix(self._data)
 
     def flatten(self, lower=True):
         """Returns a list containing the flattened distance matrix.
