@@ -616,9 +616,10 @@ class MantelTests(TestHelper):
 
         Based on 999 permutations
         """
-        expected_method_name = "mantel"
+        expected_method_name = "Mantel"
         expected_p_value = 0.001
         expected_r_value = 1.0
+        expected_perm_stats_len = 999
         expected_number_of_permutations = 999
         expected_tail_type = "greater"
 
@@ -627,9 +628,10 @@ class MantelTests(TestHelper):
         overview_mantel_output = overview_mantel.runAnalysis()
 
         obs_method_name = overview_mantel_output['method_name']
-        obs_num_permutations = overview_mantel_output['number_of_permutations']
+        obs_num_permutations = overview_mantel_output['num_perms']
         obs_p_value = overview_mantel_output['p_value']
         obs_r_value = overview_mantel_output['r_value']
+        obs_perm_stats_len = len(overview_mantel_output['perm_stats'])
         obs_tail_type = overview_mantel_output['tail_type']
 
         # compares method name returned
@@ -640,6 +642,9 @@ class MantelTests(TestHelper):
 
         # compares r-value
         self.assertFloatEqual(expected_r_value, obs_r_value)
+
+        # compares the number of r values of the permutations
+        self.assertFloatEqual(expected_perm_stats_len, obs_perm_stats_len)
 
         # compares the number of permutations being used
         self.assertEqual(expected_number_of_permutations, obs_num_permutations)

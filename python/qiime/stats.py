@@ -703,8 +703,13 @@ class MantelCorrelogram(CorrelationStats):
                 # (i.e. the sample doesn't have any distances that fall in the
                 # current class).
                 if not (class_num > ((num_classes // 2) - 1) and has_zero_sum):
-                    p_val, orig_stat, perm_stats = self._mantel(
-                        model_matrix, eco_dm, self.getNumPermutations())
+                    mantel_test = Mantel(model_matrix, eco_dm,
+                            self.getNumPermutations(), tail_type='greater')
+                    mantel_test_results = mantel_test.runAnalysis()
+                    p_val, orig_stat, perm_stats = (
+                            mantel_test_results['p_value'],
+                            mantel_test_results['r_value'],
+                            mantel_test_results['perm_stats'])
                     results['mantel_r'].append(-orig_stat)
 
                     # The mantel function produces a one-tailed p-value
@@ -844,78 +849,41 @@ class MantelCorrelogram(CorrelationStats):
         ax.set_ylabel("Mantel correlation statistic")
         return fig
 
-    def _mantel(self, dm1, dm2, num_perms):
-        """Runs a Mantel test over the supplied distance matrices.
-
-        Returns a tuple containing the p-value, Mantel r statistic, and the
-        Mantel r statistic for each permutation.
-
-        The first distance matrix is the one that is permuted when calculating
-        the p-value. The p-value is based on a one-tailed test (H1: r>0). The
-        Mantel r statistic is computed using Pearson's correlation method.
-
-        This code is based on R's vegan::mantel function.
-
-        Arguments:
-            dm1 - the first DistanceMatrix object.
-            dm2 - the second DistanceMatrix object.
-            num_perms - the number of permutations, must be >= 0.
-        """
-        # Get a vector of lower triangular (excluding the diagonal) distances
-        # in column-major order.
-        dm1_flat, dm2_flat = dm1.flatten(), dm2.flatten()
-        orig_stat = pearson(dm1_flat, dm2_flat)
-
-        better = 0
-        perm_stats = []
-        for i in range(num_perms):
-            dm1_data_perm = permute_2d(dm1, permutation(dm1.getSize()))
-            dm1_perm = DistanceMatrix(dm1_data_perm, dm1.SampleIds,
-                                      dm1.SampleIds)
-            dm1_perm_flat = dm1_perm.flatten()
-            r = pearson(dm1_perm_flat, dm2_flat)
-            perm_stats.append(r)
-            if r >= orig_stat:
-                better += 1
-        return (better + 1) / (num_perms + 1), orig_stat, perm_stats
-
 
 class Mantel(CorrelationStats):
-    """Class for the Mantel statistical method.
+    """Class for the Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a Mantel analysis on two
     distance matrices.
     
     TODO: Put plain english explanation here, have Damien explain it.
     """
-    def __init__(self, initialDistanceMatrix1, initialDistanceMatrix2, permutations, tailType="two-sided"):
-        """
-        Constructs a new Mantel instance.
+    def __init__(self, dm1, dm2, permutations, tail_type="two sided"):
+        """Constructs a new Mantel instance.
 
         Arguments:
-            initalDistanceMatrix1 - This is a distance matrix object representing one of the distance matrices being compared
-
-            initalDistanceMatrix2 - This is a distance matrix object representing one of the distance matrices being compared
-
-            permutations - This is the number of times to iterate when permuting and calculating the pearson value
-
-            tailType - This is the type of Mantel test to perform, variations can be "two sided"[default], "lesser", "greater"
+            dm1 - first DistanceMatrix object to be compared
+            dm2 - second DistanceMatrix object to be compared
+            permutations - the number of times to permute the distance matrix
+                while calculating the p-value
+            tail_type - the type of Mantel test to perform (i.e. hypothesis
+                test). Can be "two sided", "less", or "greater"
         """
-        super(Mantel, self).__init__(
-            [initialDistanceMatrix1, initialDistanceMatrix2])
+        super(Mantel, self).__init__([dm1, dm2])
         self.setNumPermutations(permutations)
-        self.setTailType(tailType)
+        self.setTailType(tail_type)
 
     def runAnalysis(self):
         results = self._mantel_test()
 
         resultsDict = {}
-        resultsDict['method_name'] = "mantel"
-        resultsDict['DM1'] = self.getDistanceMatrices()[0]
-        resultsDict['DM2'] = self.getDistanceMatrices()[1]
-        resultsDict['number_of_permutations'] = self.getNumPermutations() 
+        resultsDict['method_name'] = "Mantel"
+        resultsDict['dm1'] = self.getDistanceMatrices()[0]
+        resultsDict['dm2'] = self.getDistanceMatrices()[1]
+        resultsDict['num_perms'] = self.getNumPermutations() 
         resultsDict['p_value'] = results[0]
         resultsDict['r_value'] = results[1]
+        resultsDict['perm_stats'] = results[2]
         resultsDict['tail_type'] = self.getTailType()
 
         return resultsDict
@@ -973,7 +941,7 @@ class Mantel(CorrelationStats):
     def setTailType(self, tail_type):
         """Sets the tail type that will be used for the Mantel test.
         
-        Valid types are 'two-sided', 'lesser', or 'greater'.
+        Valid types are 'two sided', 'less', or 'greater'.
         """
         if tail_type not in ("two sided", "greater", "less"):
             raise ValueError("Unrecognized alternative hypothesis (tail "
