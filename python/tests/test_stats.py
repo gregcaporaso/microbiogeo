@@ -245,10 +245,6 @@ class CategoryStatsTests(TestHelper):
         observed = self.cs_overview.getCategories()
         self.assertEqual(expected, observed)
 
-    def runAnalysis(self):
-        """runAnalysis() not implemented in abstract base CategoryStats."""
-        raise NotImplementedError("Method not implemented by abstract base.")
-
 
 class BioEnvTests(TestHelper):
     """Tests for the DistanceBasedRda class."""
@@ -582,19 +578,19 @@ class MantelTests(TestHelper):
 
     def test_initialGetNumPermutations(self):
         """Test retrieval of the intial permutations value passed into the constructor of a Mantel object."""
-        self.assertEqual(self.overview_mantel.getNumPermutations(), self.defaultPermutations, "The default value for the permutations is not the same as the value that was used to initialize it.")
+        self.assertEqual(self.overview_mantel.getNumPermutations(), self.defaultPermutations)
 
     def test_setNumPermutations(self):
         """Test setting of the number of permutations."""
         permutations = 10
         self.overview_mantel.setNumPermutations(permutations)
-        self.assertEqual(self.overview_mantel.getNumPermutations(), permutations, "The expected permutations of %d was not returned" % permutations)
+        self.assertEqual(self.overview_mantel.getNumPermutations(), permutations)
 
     def test_getNumPermutations(self):
         """Test retrieval of the number of permutations."""
         test_perms = 200
         self.overview_mantel.setNumPermutations(test_perms)
-        self.assertEqual(self.overview_mantel.getNumPermutations(), test_perms, "The default value for the permutations is not the same as the value that it was set to.")
+        self.assertEqual(self.overview_mantel.getNumPermutations(), test_perms)
 
     def test_setNumPermutations_invalid(self):
         """Test setting of the number of permutations using a negative(invalid) number."""
@@ -634,7 +630,7 @@ class MantelTests(TestHelper):
         obs_num_permutations = overview_mantel_output['number_of_permutations']
         obs_p_value = overview_mantel_output['p_value']
         obs_r_value = overview_mantel_output['r_value']
-        obs_tail_type = overview_mantel_output['tail_type_used']
+        obs_tail_type = overview_mantel_output['tail_type']
 
         # compares method name returned
         self.assertEqual(expected_method_name, obs_method_name)
