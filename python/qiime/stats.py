@@ -381,7 +381,8 @@ class DistanceBasedRda(CategoryStats):
         else:
             adjust = sqrt(k)
 
-        points, eigs = principal_coordinates_analysis(dm._data)
+        points, eigs = principal_coordinates_analysis(
+                asarray(dm.getDataMatrix()))
 
         # Order the axes in descending order based on eigenvalue. This code is
         # taken from QIIME's principal_coordinates.py library.

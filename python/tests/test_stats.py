@@ -563,7 +563,7 @@ class MantelTests(TestHelper):
         # correctly.
         self.defaultPermutations = 999
         self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
-            self.defaultPermutations, 'greater')
+                self.defaultPermutations, 'greater')
 
         # Create three small test distance matrices. These match the ones used
         # in PyCogent's mantel unit tests.
@@ -727,7 +727,6 @@ class PartialMantelTests(TestHelper):
 
     def setUp(self):
         """Set up PartialMantel instances for use in tests."""
-
         super(PartialMantelTests, self).setUp()
 
         # Test partial Mantel using the unifrac dm from the overview tutorial as
@@ -750,30 +749,25 @@ class PartialMantelTests(TestHelper):
     
     def test_getNumPermutations(self):
         """Test retrieval of the number of permutations."""
-
         self.assertEqual(self.pm.getNumPermutations(), 999)
 
     def test_setNumPermutations(self):
         """Test setting of the number of permutations."""
-
         self.pm.setNumPermutations(7)
         self.assertEqual(self.pm.getNumPermutations(), 7)
 
     def test_setNumPermutations_invalid(self):
         """Test setting of the number of permutations using a negative(invalid) number."""
-
         self.assertRaises(ValueError, self.pm.setNumPermutations, -22)
 
     def test_setDistanceMatrices(self):
         """Test setting matrices using a valid number of distance matrices."""
-
         dms = [self.overview_dm, self.overview_dm, self.overview_dm]
         self.pm.setDistanceMatrices(dms)
         self.assertEqual(self.pm.getDistanceMatrices(), dms)
 
     def test_setDistanceMatrices_wrong_number(self):
         """Test setting matrices using an invalid number of distance matrices."""
-
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
             [self.overview_dm, self.overview_dm])
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
@@ -781,7 +775,6 @@ class PartialMantelTests(TestHelper):
 
     def test_runAnalysis(self):
         """Test running partial Mantel analysis on valid input."""
-
         obs = self.pm.runAnalysis()
         exp_method_name = 'partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
@@ -794,7 +787,6 @@ class PartialMantelTests(TestHelper):
 
     def test_runAnalysis_small(self):
         """Test the correct running of partial Mantel analysis on small, controlled input."""
-
         obs = self.small_pm.runAnalysis()
         exp_method_name = 'partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
@@ -805,7 +797,6 @@ class PartialMantelTests(TestHelper):
 
 
         obs = self.small_pm_diff.runAnalysis()
-        #print obs
         exp_method_name = 'partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
