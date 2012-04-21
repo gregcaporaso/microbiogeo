@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# File created on 11 Mar 2012
 from __future__ import division
 
 __author__ = "Michael Dwan"
@@ -13,14 +12,13 @@ __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""
  
-from numpy import array, matrix, reshape, arange
-from math import sqrt
-
 from cogent.util.unit_test import TestCase, main
+from numpy import array, matrix
+
+from python.qiime.parse import DistanceMatrix, MetadataMap
 from python.qiime.stats import (BioEnv, CategoryStats, CorrelationStats,
     DistanceBasedRda, DistanceMatrixStats, GradientStats, MantelCorrelogram,
     Mantel, PartialMantel)
-from python.qiime.parse import DistanceMatrix, MetadataMap
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -88,17 +86,15 @@ class TestHelper(TestCase):
 
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
-        
-        #This is a variable added from pycogent unit tests in order to test mantel
-        a = array([[1,2,3,4,5],[5,1,2,3,4],[4,5,1,2,3],[3,4,5,1,2],[2,3,4,5,1]])
 
 
 class GradientStatsTests(TestCase):
     """Tests for the GradientStats class."""
 
     def setUp(self):
+        """Create instances that will be used in the unit tests."""
         self.test_inst = GradientStats()
-  
+
     def test_runAnalysis_no_instantiate(self):
         """GradientStats is non-instantiable, cannot call runAnalysis()."""
         self.assertRaises(NotImplementedError, self.test_inst.runAnalysis)
@@ -114,15 +110,15 @@ class DistanceMatrixStatsTests(TestHelper):
         self.empty_dms = DistanceMatrixStats([])
         self.single_dms = DistanceMatrixStats([self.overview_dm])
         self.double_dms = DistanceMatrixStats(
-            [self.overview_dm, self.single_ele_dm])
-    
+                [self.overview_dm, self.single_ele_dm])
+
     def test_getDistanceMatrices(self):
         """Test getter for distmats."""
         self.assertEqual(self.empty_dms.getDistanceMatrices(), [])
         self.assertEqual(self.single_dms.getDistanceMatrices(),
-            [self.overview_dm])
+                [self.overview_dm])
         self.assertEqual(self.double_dms.getDistanceMatrices(),
-            [self.overview_dm, self.single_ele_dm])
+                [self.overview_dm, self.single_ele_dm])
 
     def test_setDistanceMatrices(self):
         """Test setter for dms on valid input data."""
@@ -147,6 +143,7 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, {})
         self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices,
             self.overview_dm)
+        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, [1])
 
         # Test constructor as well.
         self.assertRaises(TypeError, DistanceMatrixStats, None)
@@ -155,6 +152,7 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, "foo")
         self.assertRaises(TypeError, DistanceMatrixStats, {})
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
+        self.assertRaises(TypeError, DistanceMatrixStats, [1])
 
 
 class CorrelationStatsTests(TestHelper):
@@ -247,7 +245,7 @@ class CategoryStatsTests(TestHelper):
 
 
 class BioEnvTests(TestHelper):
-    """Tests for the DistanceBasedRda class."""
+    """Tests for the BioEnv class."""
 
     def setUp(self):
         """Define some useful data to use in testing."""
@@ -341,7 +339,7 @@ class MantelCorrelogramTests(TestHelper):
             DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids, ids),
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids, ids),
             999)
-    
+
     def test_getNumPermutations(self):
         """Test retrieving the number of permutations."""
         self.assertEqual(self.mc.getNumPermutations(), 999)
@@ -577,14 +575,16 @@ class MantelTests(TestHelper):
         self.m3_dm = DistanceMatrix(m3, sample_ids, sample_ids)
 
     def test_initialGetNumPermutations(self):
-        """Test retrieval of the intial permutations value passed into the constructor of a Mantel object."""
-        self.assertEqual(self.overview_mantel.getNumPermutations(), self.defaultPermutations)
+        """Test retrieval of the intial permutations value."""
+        self.assertEqual(self.overview_mantel.getNumPermutations(),
+                         self.defaultPermutations)
 
     def test_setNumPermutations(self):
         """Test setting of the number of permutations."""
         permutations = 10
         self.overview_mantel.setNumPermutations(permutations)
-        self.assertEqual(self.overview_mantel.getNumPermutations(), permutations)
+        self.assertEqual(self.overview_mantel.getNumPermutations(),
+                         permutations)
 
     def test_getNumPermutations(self):
         """Test retrieval of the number of permutations."""
@@ -593,8 +593,9 @@ class MantelTests(TestHelper):
         self.assertEqual(self.overview_mantel.getNumPermutations(), test_perms)
 
     def test_setNumPermutations_invalid(self):
-        """Test setting of the number of permutations using a negative(invalid) number."""
-        self.assertRaises(ValueError, self.overview_mantel.setNumPermutations, -22)
+        """Test setting of the permutations using a negative number."""
+        self.assertRaises(ValueError, self.overview_mantel.setNumPermutations,
+                          -22)
 
     def test_setDistanceMatrices(self):
         """Test setting matrices using a valid number of distance matrices."""
@@ -603,10 +604,13 @@ class MantelTests(TestHelper):
         self.assertEqual(self.overview_mantel.getDistanceMatrices(), dms)
 
     def test_setDistanceMatrices_wrong_number_of_distance_matrices(self):
-        """Test setting matrices using an invalid number of distance matrices."""
-        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices, [self.overview_dm])
-        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices, [self.overview_dm, self.overview_dm, self.overview_dm])
-    
+        """Test setting matrices using an invalid number of distmats."""
+        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
+                          [self.overview_dm])
+        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
+                          [self.overview_dm, self.overview_dm,
+                           self.overview_dm])
+
     def test_runAnalysis(self):
         """Runs mantel test on the overview dm when compared to itself.
 
@@ -634,24 +638,13 @@ class MantelTests(TestHelper):
         obs_perm_stats_len = len(overview_mantel_output['perm_stats'])
         obs_tail_type = overview_mantel_output['tail_type']
 
-        # compares method name returned
         self.assertEqual(expected_method_name, obs_method_name)
-
-        # compares p-value
         self.assertFloatEqual(expected_p_value, obs_p_value)
-
-        # compares r-value
         self.assertFloatEqual(expected_r_value, obs_r_value)
-
-        # compares the number of r values of the permutations
         self.assertFloatEqual(expected_perm_stats_len, obs_perm_stats_len)
-
-        # compares the number of permutations being used
         self.assertEqual(expected_number_of_permutations, obs_num_permutations)
-
-        # compares tail-type used
         self.assertEqual(expected_tail_type, obs_tail_type)
-        
+
     # The remaining tests in this class were grabbed from PyCogent's mantel
     # unit tests. They should be removed once we start using PyCogent's version
     # of mantel in a future release. They have only been modified slightly to
@@ -729,24 +722,25 @@ class PartialMantelTests(TestHelper):
         """Set up PartialMantel instances for use in tests."""
         super(PartialMantelTests, self).setUp()
 
-        # Test partial Mantel using the unifrac dm from the overview tutorial as
-        # all three inputs(should be a small value).
-        self.pm = PartialMantel(self.overview_dm, self.overview_dm, self.overview_dm, 999)
+        # Test partial Mantel using the unifrac dm from the overview tutorial
+        # as all three inputs (should be a small value).
+        self.pm = PartialMantel(self.overview_dm, self.overview_dm,
+                                self.overview_dm, 999)
 
-        # Justa small matrix that is easy to edit and observe.
+        # Just a small matrix that is easy to edit and observe.
         smpl_ids = ['s1', 's2', 's3']
-        self.small_pm = PartialMantel(
-            DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[10, 7, 13], [9, 7, 0], [10, 2, 8]]), smpl_ids, smpl_ids),
-            999)
+        self.small_pm = PartialMantel(DistanceMatrix(array([[1, 3, 2],
+            [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids,
+            smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
+            [10, 2, 8]]), smpl_ids, smpl_ids), 999)
 
-        self.small_pm_diff = PartialMantel(
-            DistanceMatrix(array([[1, 3, 2], [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[100, 25, 53], [20, 30, 87], [51, 888, 0]]), smpl_ids, smpl_ids),
-            DistanceMatrix(array([[10, 7, 13], [9, 7, 0], [10, 2, 8]]), smpl_ids, smpl_ids),
-            999)
-    
+        self.small_pm_diff = PartialMantel(DistanceMatrix(array([[1, 3, 2],
+            [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[100, 25, 53], [20, 30, 87], [51, 888, 0]]),
+            smpl_ids, smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
+            [10, 2, 8]]), smpl_ids, smpl_ids), 999)
+
     def test_getNumPermutations(self):
         """Test retrieval of the number of permutations."""
         self.assertEqual(self.pm.getNumPermutations(), 999)
@@ -757,7 +751,7 @@ class PartialMantelTests(TestHelper):
         self.assertEqual(self.pm.getNumPermutations(), 7)
 
     def test_setNumPermutations_invalid(self):
-        """Test setting of the number of permutations using a negative(invalid) number."""
+        """Test setting of the permutations using a negative number."""
         self.assertRaises(ValueError, self.pm.setNumPermutations, -22)
 
     def test_setDistanceMatrices(self):
@@ -767,42 +761,40 @@ class PartialMantelTests(TestHelper):
         self.assertEqual(self.pm.getDistanceMatrices(), dms)
 
     def test_setDistanceMatrices_wrong_number(self):
-        """Test setting matrices using an invalid number of distance matrices."""
+        """Test setting matrices using an invalid number of dms."""
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
             [self.overview_dm, self.overview_dm])
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
-            [self.overview_dm, self.overview_dm, self.overview_dm, self.overview_dm])
+            [self.overview_dm, self.overview_dm, self.overview_dm,
+            self.overview_dm])
 
     def test_runAnalysis(self):
         """Test running partial Mantel analysis on valid input."""
         obs = self.pm.runAnalysis()
-        exp_method_name = 'partial Mantel'
-        self.assertEqual(obs['method_name'], exp_method_name)
-
+        exp_method_name = 'Partial Mantel'
         exp_mantel_r = 0.49999999999999989
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
 
+        self.assertEqual(obs['method_name'], exp_method_name)
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
         self.assertTrue(obs['mantel_p'] >= 0.001 and obs['mantel_p'] < 0.01)
 
-
     def test_runAnalysis_small(self):
-        """Test the correct running of partial Mantel analysis on small, controlled input."""
+        """Test the running of partial Mantel analysis on small input."""
         obs = self.small_pm.runAnalysis()
-        exp_method_name = 'partial Mantel'
+        exp_method_name = 'Partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_mantel_r = 0.99999999999999944
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
         self.assertTrue(obs['mantel_p'] > 0.46 and obs['mantel_p'] < 0.54)
 
-
         obs = self.small_pm_diff.runAnalysis()
-        exp_method_name = 'partial Mantel'
+        exp_method_name = 'Partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_mantel_r = 0.99999999999999734
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.29 and obs['mantel_p'] < 0.37)
+        self.assertTrue(obs['mantel_p'] > 0.25 and obs['mantel_p'] < 0.4)
 
 
 if __name__ == "__main__":
