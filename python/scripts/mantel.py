@@ -38,8 +38,10 @@ make_option('-o','--output_fp',help='the output filepath'),\
 script_info['optional_options'] = [
 make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int'),\
 make_option('-s','--sample_id_map_fp', help='Map of original sample ids to new sample ids [default: %default]', default=None),\
-make_option('-t','--tail_type',help='the type of tailed test to perform(1, or 2 tailed)'),\
+make_option('-t','--tail_type',help='the type of tailed test to perform(1, or 2 tailed'
+                                    '[default:%default]', default='two sided'),
 ]
+
 script_info['version'] = __version__
 
 comment = """# Number of entries refers to the number of rows (or cols) 
