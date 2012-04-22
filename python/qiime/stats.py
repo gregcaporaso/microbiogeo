@@ -29,24 +29,70 @@ from cogent.util.misc import combinate
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import asarray, asmatrix, dot, empty, finfo, matrix, std, zeros,\
-                    array
+from numpy import asarray, asmatrix, dot, empty, finfo, matrix, std, zeros
 from numpy import min as np_min, max as np_max
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
 
-class GradientStats(object):
-    """Top-level, abstract base class for gradient statistical analyses.
 
-    It exists to allow for extension to non-matrix based analyses. Subclasses
-    should implement the runAnalysis() method.
+class DistanceMatrixStats(object):
+    """Base class for distance matrix-based statistical methods.
+
+    This class provides an interface to setting and accessing an arbitrary
+    number of distance matrices. Users of this class can optionally specify the
+    number of allowable distance matrices and their minimum allowable size (the
+    default is no restrictions on either of these).
+
+    It is the parent class of CorrelationStats and CategoryStats.
     """
 
-    def __init__(self):
-        """Empty constructor (none currently needed)."""
-        pass
+    def __init__(self, distmats, num_dms=-1, min_dm_size=-1):
+        """Default constructor.
+        
+        Initializes an instance with the provided list of distance matrices.
+
+        Arguments:
+          distmats - a list of DistanceMatrix objects
+          num_dms - the exact number of allowable distance matrices. If -1 (the
+              default), there is no restriction on how many distance matrices
+              the user can set
+          min_dm_size - the minimum size that all distance matrices must have
+              that are stored by this instance. If -1, no size restriction
+        """
+        self._num_dms = num_dms
+        self._min_dm_size = min_dm_size
+        self.setDistanceMatrices(distmats)
+
+    def getDistanceMatrices(self):
+        """Returns the list of distance matrices."""
+        return self._distmats
+  
+    def setDistanceMatrices(self, distmats):
+        """Sets the list of distance matrices to the supplied list.
+
+        Arguments:
+          distmats - the new list of distance matrices being assigned
+        """
+        if not isinstance(distmats, ListType):
+            raise TypeError("The item passed in as the new list was not a "
+                            "list data type.")
+        if self._num_dms >= 0 and len(distmats) != self._num_dms:
+            raise ValueError("Cannot set %d distance matrices. Must provide "
+                             "exactly %d distance matrices." % (len(distmats),
+                             self._num_dms))
+        for dm in distmats:
+            if not isinstance(dm, DistanceMatrix):
+                raise TypeError('Invalid type: %s; expected DistanceMatrix' %
+                                dm.__class__.__name__)
+            elif self._min_dm_size >= 0 and dm.getSize() < self._min_dm_size:
+                raise ValueError("Distance matrix of size %dx%d is smaller "
+                                 "than the minimum allowable distance matrix "
+                                 "size of %dx%d for this analysis." %
+                                 (dm.getSize(), dm.getSize(),
+                                  self._min_dm_size, self._min_dm_size))
+        self._distmats = distmats
 
     def runAnalysis(self):
         """Runs the statistical method and returns relevant results.
@@ -63,44 +109,57 @@ class GradientStats(object):
         raise NotImplementedError("Method not implemented by abstract base.")
 
 
-class DistanceMatrixStats(GradientStats):
-    """Base class for distance matrix-based statistical methods.
+class PermutationStats(object):
+    """Base class for permutation-based statistical methods.
 
-    This class provides an interface to setting and accessing an arbitrary
-    number of distance matrices.
-
-    It is the parent class of CorrelationStats and CategoryStats.
+    This generic class should be inherited from if the statistical method is
+    permutation-based (e.g. Mantel permutes a number of times to compute a
+    p-value).
     """
 
-    def __init__(self, distmats):
-        """Default constructor.
-        
-        Initializes an instance with the provided list of distance matrices.
+    def __init__(self, num_perms):
+        """Default constructor creates an instance with the number of perms.
 
         Arguments:
-          distmats - a list of DistanceMatrix objects
+            num_perms - the number of permutations. This value must be greater
+                than or equal to zero
         """
-        super(DistanceMatrixStats, self).__init__()
-        self.setDistanceMatrices(distmats)
+        self.setNumPermutations(num_perms)
 
-    def getDistanceMatrices(self):
-        """Returns the list of distance matrices."""
-        return self._distmats
-  
-    def setDistanceMatrices(self, distmats):
-        """Sets the list of distance matrices to the supplied list.
+    def getNumPermutations(self):
+        """Returns the number of permutations to use."""
+        return self._num_perms
+
+    def setNumPermutations(self, num_perms):
+        """Sets the number of permutations to use.
 
         Arguments:
-          distmats - the new list of distance matrices being assigned
+            num_perms - the number of permutations. This value must be greater
+                than or equal to zero
         """
-        if not isinstance(distmats, ListType):
-            raise TypeError("The item passed in as the new list was not a "
-                            "list data type.")
-        for dm in distmats:
-            if not isinstance(dm, DistanceMatrix):
-                raise TypeError('Invalid type: %s; expected DistanceMatrix' %
-                                dm.__class__.__name__)
-        self._distmats = distmats
+        try :
+            num_perms = int(num_perms)
+        except:
+            raise TypeError("The number of permutations supplied must be an "
+                            "integer.")
+        if num_perms >= 0:
+            self._num_perms = num_perms
+        else:
+            raise ValueError("The number of permutations cannot be negative.")
+
+    def runAnalysis(self):
+        """Runs the statistical method and returns relevant results.
+
+        The return value of this method is a python dictionary with arbitrary
+        key/value pairs of results, since each statistical method returns
+        different results.
+
+        This method is not implemented and should be implemented by subclasses.
+        It is a good idea to call the parent class' runAnalysis() method first
+        to obtain any results from the parent and then add more results to the
+        dict that is obtained from the parent.
+        """
+        raise NotImplementedError("Method not implemented by abstract base.")
 
 
 class CorrelationStats(DistanceMatrixStats):
@@ -115,17 +174,26 @@ class CorrelationStats(DistanceMatrixStats):
     the accidental comparison on two distance matrices that have sample IDs in
     different orders. Essentially, all of the distance matrices must be
     "compatible".
+
+    Users of this class can optionally specify the number of allowable distance
+    matrices and their minimum allowable size (the default is no restrictions
+    on either of these).
     """
 
-    def __init__(self, distmats):
+    def __init__(self, distmats, num_dms=-1, min_dm_size=-1):
         """Default constructor.
 
         Creates a new instance with the provided list of distance matrices.
 
         Arguments:
           distmats - a list of DistanceMatrix objects
+          num_dms - the exact number of allowable distance matrices. If -1 (the
+              default), there is no restriction on how many distance matrices
+              the user can set
+          min_dm_size - the minimum size that all distance matrices must have
+              that are stored by this instance. If -1, no size restriction
         """
-        super(CorrelationStats, self).__init__(distmats)
+        super(CorrelationStats, self).__init__(distmats, num_dms, min_dm_size)
 
     def setDistanceMatrices(self, distmats):
         """Sets the list of distance matrices to the supplied list.
@@ -137,6 +205,7 @@ class CorrelationStats(DistanceMatrixStats):
         Arguments:
           distmats - the new list of distance matrices being assigned
         """
+        super(CorrelationStats, self).setDistanceMatrices(distmats)
         if len(distmats) < 1:
             raise ValueError("Must provide at least one distance matrix.")
 
@@ -149,7 +218,6 @@ class CorrelationStats(DistanceMatrixStats):
             if dm.SampleIds != sample_ids:
                 raise ValueError("All distance matrices must have matching "
                                  "sample IDs.")
-        super(CorrelationStats, self).setDistanceMatrices(distmats)
 
 
 class CategoryStats(DistanceMatrixStats):
@@ -178,7 +246,7 @@ class CategoryStats(DistanceMatrixStats):
           cats - a list of strings denoting categories in the metadata map that
             will be used by this analysis (i.e. the grouping variable(s))
         """
-        super(CategoryStats, self).__init__([dm])
+        super(CategoryStats, self).__init__([dm], 1)
         self.setData(mdmap, dm)
         self.setCategories(cats)
 
@@ -375,30 +443,21 @@ class BioEnv(CategoryStats):
 
         return res
 
-    def _spearman2(self, vec1, vec2):
-        rank1 = self._get_rank(vec1)
-        rank2 = self._get_rank(vec2)
 
-        n = len(vec1)
-
-        return 1 - (6*sum([(x-y)**2 for x,y in zip(rank1, rank2)])/(n*(n**2-1)))
-
-
-if __name__ == '__main__':
-   dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
-   md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
-   # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-   # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+# if __name__ == '__main__':
+#    dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
+#    md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
+#    # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+#    # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
 
 
-   cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
+#    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
 
-   bioenv = BioEnv(dm, md_map, cats)
-   # bioenv.runAnalysis()
-   a = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4)
-   b = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13)
-   print bioenv._spearman2(a,b)
-   print bioenv._spearman_correlation(a,b)
+#    bioenv = BioEnv(dm, md_map, cats)
+#    # bioenv.runAnalysis()
+#    a = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4)
+#    b = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13)
+#    print bioenv._spearman_correlation(a,b)
 
 
 
@@ -434,7 +493,7 @@ class DistanceBasedRda(CategoryStats):
 
         Returns a dict containing the results. The following keys are set:
             method_name - name of the statistical method
-        
+
         Note: This code is heavily based on the implementation of capscale/rda
         in R's vegan package.
         """
@@ -452,7 +511,8 @@ class DistanceBasedRda(CategoryStats):
         else:
             adjust = sqrt(k)
 
-        points, eigs = principal_coordinates_analysis(dm._data)
+        points, eigs = principal_coordinates_analysis(
+                asarray(dm.getDataMatrix()))
 
         # Order the axes in descending order based on eigenvalue. This code is
         # taken from QIIME's principal_coordinates.py library.
@@ -535,9 +595,14 @@ class DistanceBasedRda(CategoryStats):
         q, r = qr(factor_r)
         rank = matrix_rank(factor_r, tol=zero)
         qrank = rank
+#        print "Q: "
+#        print q
+#        print "R: "
+#        print r
 
         y = dot(q.T, points_bar)
         xQR = solve(r, y)
+        #print xQR
         #print "points_bar: "
         #print points_bar
         #print "Q: "
@@ -615,7 +680,7 @@ class DistanceBasedRda(CategoryStats):
         return matrix(factor).T
 
 
-class MantelCorrelogram(CorrelationStats):
+class MantelCorrelogram(CorrelationStats, PermutationStats):
     """Class for the Mantel correlogram statistical method.
 
     This class provides the functionality to run a Mantel correlogram analysis
@@ -643,25 +708,10 @@ class MantelCorrelogram(CorrelationStats):
             alpha - the alpha value to use when marking the Mantel
                 correlogram plot for significance
         """
-        super(MantelCorrelogram, self).__init__([eco_dm, geo_dm])
-        self.setNumPermutations(num_perms)
+        # Can't call super because the two parents take different arguments.
+        CorrelationStats.__init__(self, [eco_dm, geo_dm], 2, 3)
+        PermutationStats.__init__(self, num_perms)
         self.setAlpha(alpha)
-
-    def getNumPermutations(self):
-        """Returns the number of permutations to use in the Mantel tests."""
-        return self._num_perms
-
-    def setNumPermutations(self, num_perms):
-        """Sets the number of permutations to use in the Mantel tests.
-
-        Arguments:
-            num_perms - the number of permutations. This value must be greater
-                than or equal to zero
-        """
-        if num_perms >= 0:
-            self._num_perms = num_perms
-        else:
-            raise ValueError("The number of permutations cannot be negative.")
 
     def getAlpha(self):
         """Returns the alpha value."""
@@ -677,22 +727,6 @@ class MantelCorrelogram(CorrelationStats):
             self._alpha = alpha
         else:
             raise ValueError("Alpha must be between 0 and 1.")
-
-    def setDistanceMatrices(self, matrices):
-        """Sets the distance matrices to use in the Mantel correlogram test.
-
-        This method overrides its parent. Only two distance matrices may be
-        set, and the smallest allowable size is 3x3 (for Pearson correlation).
-
-        Arguments:
-            matrices - list of exactly two DistanceMatrix objects
-        """
-        if len(matrices) != 2:
-            raise ValueError("Can only set exactly two distance matrices for "
-                             "a Mantel correlogram analysis.")
-        if matrices[0].getSize() < 3 or matrices[1].getSize() < 3:
-            raise ValueError("Both distance matrices must be at least 3x3.")
-        super(MantelCorrelogram, self).setDistanceMatrices(matrices)
 
     def runAnalysis(self):
         """Runs a Mantel correlogram test over the current distance matrices.
@@ -769,8 +803,13 @@ class MantelCorrelogram(CorrelationStats):
                 # (i.e. the sample doesn't have any distances that fall in the
                 # current class).
                 if not (class_num > ((num_classes // 2) - 1) and has_zero_sum):
-                    p_val, orig_stat, perm_stats = self._mantel(
-                        model_matrix, eco_dm, self.getNumPermutations())
+                    mantel_test = Mantel(model_matrix, eco_dm,
+                            self.getNumPermutations(), tail_type='greater')
+                    mantel_test_results = mantel_test.runAnalysis()
+                    p_val, orig_stat, perm_stats = (
+                            mantel_test_results['p_value'],
+                            mantel_test_results['r_value'],
+                            mantel_test_results['perm_stats'])
 
                     # Negate the Mantel r statistic because we are using
                     # distance matrices, not similarity matrices (this is a
@@ -914,67 +953,28 @@ class MantelCorrelogram(CorrelationStats):
         ax.set_ylabel("Mantel correlation statistic")
         return fig
 
-    def _mantel(self, dm1, dm2, num_perms):
-        """Runs a Mantel test over the supplied distance matrices.
 
-        Returns a tuple containing the p-value, Mantel r statistic, and the
-        Mantel r statistic for each permutation.
-
-        The first distance matrix is the one that is permuted when calculating
-        the p-value. The p-value is based on a one-tailed test (H1: r>0). The
-        Mantel r statistic is computed using Pearson's correlation method.
-
-        This code is based on R's vegan::mantel function.
-
-        Arguments:
-            dm1 - the first DistanceMatrix object.
-            dm2 - the second DistanceMatrix object.
-            num_perms - the number of permutations, must be >= 0.
-        """
-        # Get a vector of lower triangular (excluding the diagonal) distances
-        # in column-major order.
-        dm1_flat, dm2_flat = dm1.flatten(), dm2.flatten()
-        orig_stat = pearson(dm1_flat, dm2_flat)
-
-        better = 0
-        perm_stats = []
-        for i in range(num_perms):
-            dm1_data_perm = permute_2d(dm1, permutation(dm1.getSize()))
-            dm1_perm = DistanceMatrix(dm1_data_perm, dm1.SampleIds,
-                                      dm1.SampleIds)
-            dm1_perm_flat = dm1_perm.flatten()
-            r = pearson(dm1_perm_flat, dm2_flat)
-            perm_stats.append(r)
-            if r >= orig_stat:
-                better += 1
-        return (better + 1) / (num_perms + 1), orig_stat, perm_stats
-
-
-class Mantel(CorrelationStats):
-    """
-    Class for the Mantel statistical method.
+class Mantel(CorrelationStats, PermutationStats):
+    """Class for the Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a Mantel analysis on two
     distance matrices. A Mantel test essentially computes the Pearson
     correlation between the two distance matrices.
     """
-    def __init__(self, dm1, dm2, permutations, tail_type='two sided'):
+
+    def __init__(self, dm1, dm2, num_perms, tail_type='two sided'):
         """Constructs a new Mantel instance.
 
         Arguments:
-            initalDistanceMatrix1 - This is a distance matrix object representing one of the distance matrices being compared
-
-            initalDistanceMatrix2 - This is a distance matrix object representing one of the distance matrices being compared
-
-            permutations - This is the number of times to iterate when permuting and calculating the pearson value
-
-            tailType - This is the type of Mantel test to perform, variations can be "two-sided"[default], "lesser", "greater"
+            dm1 - first DistanceMatrix object to be compared
+            dm2 - second DistanceMatrix object to be compared
+            num_perms - the number of times to permute the distance matrix
+                while calculating the p-value
+            tail_type - the type of Mantel test to perform (i.e. hypothesis
+                test). Can be "two sided", "less", or "greater"
         """
-        parameterMatrices = [dm1, dm2]
-        super(Mantel, self).__init__(parameterMatrices)
-        super(Mantel, self).setDistanceMatrices(parameterMatrices)
-
-        self.setNumPermutations(permutations)
+        CorrelationStats.__init__(self, [dm1, dm2], 2, 3)
+        PermutationStats.__init__(self, num_perms)
         self.setTailType(tail_type)
 
     def runAnalysis(self):
@@ -995,66 +995,57 @@ class Mantel(CorrelationStats):
         'greater'), so the p-values may differ from R unless you explicitly
         specify the tail type of 'greater'.
         """
-        results = self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
+        results = self._mantel_test()
 
         resultsDict = {}
-        resultsDict['Results'] = results 
-        resultsDict['DM1'] = self.getDistanceMatrices()[0]
-        resultsDict['DM2'] = self.getDistanceMatrices()[1]
-        resultsDict['number_of_permutations'] = self.getNumPermutations() 
+        resultsDict['method_name'] = "Mantel"
+        resultsDict['dm1'] = self.getDistanceMatrices()[0]
+        resultsDict['dm2'] = self.getDistanceMatrices()[1]
+        resultsDict['num_perms'] = self.getNumPermutations() 
         resultsDict['p_value'] = results[0]
-        resultsDict['tail_type_used'] = self.getTailType()
+        resultsDict['r_value'] = results[1]
+        resultsDict['perm_stats'] = results[2]
+        resultsDict['tail_type'] = self.getTailType()
 
         return resultsDict
 
-    def mantel_test(self, m1, m2, n, alt="two-sided"):
-        """Runs a Mantel test on two distance matrices.
+    def _mantel_test(self):
+        """Runs a Mantel test on the current distance matrices.
     
         Returns the p-value, Mantel correlation statistic, and a list of Mantel
-        correlation statistics for each permutation test.
-    
-        Arguments:
-            m1  - the first distance matrix to use in the test (should be a numpy
-                array or convertible to a numpy array)
-            m2  - the second distance matrix to use in the test (should be a numpy
-                array or convertible to a numpy array)
-            n   - the number of permutations to test when calculating the p-value
-            alt - the type of alternative hypothesis to test (can be either
-                'two-sided' for a two-sided test, 'greater' or 'less' for one-sided
-                tests)
+        correlation statistics for each permutation test. The currently set
+        tail type and number of permutations will be used to run the test.
+
+        Note: this method was taken from the development version of PyCogent as
+        we needed access to different tail types and the currently released
+        version of PyCogent does not support this. Once this functionality is
+        available in the version of PyCogent supported by QIIME, we should
+        remove this method and use the one in PyCogent instead. This method
+        isn't exactly the same as the PyCogent implementation because it has
+        been adapted to use the class members and DistanceMatrix objects, but
+        in essence it is the same implementation.
         """
-        # Perform some sanity checks on our input.
-        if alt not in ("two-sided", "greater", "less"):
-            raise ValueError("Unrecognized alternative hypothesis. Must be either "
-                             "'two-sided', 'greater', or 'less'.")
-        m1, m2 = asarray(m1._data), asarray(m2._data)
+        m1, m2 = self.getDistanceMatrices()
+        n = self.getNumPermutations()
+        alt = self.getTailType()
 
-        #Jai's code did a sanity check based on shape, but shape doesn't apply and instead the size should be checked -04/04/2012 LK
-        #if m1.shape != m2.shape:
+        # Get a flattened list of lower-triangular matrix elements (excluding
+        # the diagonal) in column-major order. Use these values to calculate
+        # the correlation statistic.
+        m1_flat, m2_flat = m1.flatten(True), m2.flatten(True)
+        orig_stat = pearson(m1_flat, m2_flat)
 
-        if m1.size != m2.size:
-            raise ValueError("Both matrices must be the same size.")
-        if n < 1:
-            raise ValueError("The number of permutations must be greater than or "
-                             "equal to one.")
-
-        #I can't get the _flatten_lower_triangle to work at all, talked to Michael and he stated that the normal flatten should resolve this as is.
-        #It primarily doesn't work because it can't identify based on shape, and instead size should be used
-        #m1_flat, m2_flat = self._flatten_lower_triangle(m1), self._flatten_lower_triangle(m2)
-        m1_flat, m2_flat = m1.flatten(), m2.flatten()
-
-        orig_stat = self.pearson(m1_flat, m2_flat)
-    
         # Run our permutation tests so we can calculate a p-value for the test.
-        size = len(m1)
         better = 0
         perm_stats = []
         for i in range(n):
-            perm = permute_2d(m1, permutation(size))
-            perm_flat = perm.flatten()
-            r = pearson(perm_flat, m2_flat)
-    
-            if alt == 'two-sided':
+            m1_perm_data = permute_2d(m1, permutation(m1.getSize()))
+            m1_perm = DistanceMatrix(m1_perm_data, m1.getSampleIds(),
+                m1.getSampleIds())
+            m1_perm_flat = m1_perm.flatten()
+            r = pearson(m1_perm_flat, m2_flat)
+
+            if alt == 'two sided':
                 if abs(r) >= abs(orig_stat):
                     better += 1
             else:
@@ -1064,36 +1055,8 @@ class Mantel(CorrelationStats):
             perm_stats.append(r)
         return (better + 1) / (n + 1), orig_stat, perm_stats
 
-    def pearson(self, x_items, y_items):
-        """Returns Pearson correlation coefficient between x and y."""
-        x_items, y_items = array(x_items), array(y_items)
-        sum_x = sum(x_items)
-        sum_y = sum(y_items)
-        sum_x_sq = sum(x_items*x_items)
-        sum_y_sq = sum(y_items*y_items)
-        sum_xy = sum(x_items*y_items)
-        n = len(x_items)
-        try:
-            r = 1.0 * ((n * sum_xy) - (sum_x * sum_y)) / \
-               (sqrt((n * sum_x_sq)-(sum_x*sum_x))*sqrt((n*sum_y_sq)-(sum_y*sum_y)))
-        except (ZeroDivisionError, ValueError, FloatingPointError): #no variation
-            r = 0.0
-        #check we didn't get a naughty value for r due to rounding error
-        if r > 1.0:
-            r = 1.0
-        elif r < -1.0:
-            r = -1.0
-        return r
-      
-    #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
-    #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
-    #More specifically it was grabbed from the file called "test.py"
-    def permute_2d(self, m, p):
-        """Performs 2D permutation of matrix m according to p."""
-        return m[p][:, p]
-
     def getTailType(self):
-        """This returns the tail type being used for the current Mantel object """
+        """Returns the tail type being used for the Mantel test."""
         return self._tail_type
 
     def setTailType(self, tail_type):
@@ -1109,41 +1072,8 @@ class Mantel(CorrelationStats):
                              "or 'less'.")
         self._tail_type = tail_type
 
-    def getNumPermutations(self):
-        """
-        Returns the number of iterations used
-        """
-        return self._num_perms
 
-    def setNumPermutations(self, num_perms):
-        """Sets the number of permutations to use in the Mantel test.
-
-        Arguments:
-            num_perms - the number of permutations. This value must be greater
-                than or equal to zero
-        """
-        if num_perms >= 0:
-            self._num_perms = num_perms
-        else:
-            raise ValueError("The number of permutations cannot be a negative value.")
-
-    #Grabbed from mantel correlelogram, alt signature to use for the setter
-    def setDistanceMatrices(self, matrices):
-        """Sets the distance matrices to use in the Mantel test.
-
-        This method overrides its parent. Only two distance matrices may be
-        set, and the smallest allowable size is 3x3 (for Pearson correlation).
-
-        Arguments:
-            matrices - list of exactly two DistanceMatrix objects
-        """
-        if len(matrices) != 2:
-            raise ValueError("Can only set exactly two distance matrices for a Mantel analysis.")
-        if matrices[0].getSize() < 3 or matrices[1].getSize() < 3:
-            raise ValueError("Both distance matrices must be at least 3x3.")
-        super(Mantel, self).setDistanceMatrices(matrices)
-
-class PartialMantel(CorrelationStats):
+class PartialMantel(CorrelationStats, PermutationStats):
     """Class for the partial Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a partial Mantel analysis on
@@ -1162,43 +1092,8 @@ class PartialMantel(CorrelationStats):
             num_perms - the number of times to permute while calculating the
                 p-value
         """
-        super(PartialMantel, self).__init__([dm1, dm2, cdm])
-        self.setNumPermutations(num_perms)
-
-    def getNumPermutations(self):
-        """Returns the number of permutations used."""
-        return self._num_perms
-
-    def setNumPermutations(self, num_perms):
-        """Sets the number of permutations to use in the partial Mantel test.
-
-        Arguments:
-            num_perms - the number of permutations. This value must be greater
-                than or equal to zero
-        """
-        if num_perms >= 0:
-            self._num_perms = num_perms
-        else:
-            raise ValueError("The number of permutations cannot be a"
-                             "negative value.")
-
-    def setDistanceMatrices(self, matrices):
-        """Sets the distance matrices to use in the partial Mantel test.
-
-        This method overrides its parent. Only three distance matrices may be
-        set, and the smallest allowable size is 3x3 (for Pearson correlation).
-
-        Arguments:
-            matrices - list of exactly three DistanceMatrix objects
-        """
-        if len(matrices) != 3:
-            raise ValueError("Partial Mantel analysis requires two distance "
-                             "matrices and a third control matrix.")
-        if (matrices[0].getSize() < 3 or matrices[1].getSize() < 3 or
-            matrices[2].getSize() < 3):
-            raise ValueError("All three distance matrices must be at least "
-                             "3x3.")
-        super(PartialMantel, self).setDistanceMatrices(matrices)
+        CorrelationStats.__init__(self, [dm1, dm2, cdm], 3, 3)
+        PermutationStats.__init__(self, num_perms)
 
     def runAnalysis(self):
         """Runs a partial Mantel test on the current distance matrices.
@@ -1212,9 +1107,8 @@ class PartialMantel(CorrelationStats):
         R's vegan package.
         """
         # Calculate the correlation statistic.
-        corr = lambda rxy, rxz, ryz: (rxy - rxz*ryz)/(sqrt(1 - rxz**2)*sqrt(1
-                                                      - ryz**2))
-
+        corr = lambda rxy, rxz, ryz: (rxy - rxz*ryz)/(sqrt(1 -
+                                      rxz**2)*sqrt(1 - ryz**2))
         # Load initial/placeholder values in the results dictionary.
         res = {}
         res['method_name'] = 'Partial Mantel'
@@ -1258,7 +1152,6 @@ class PartialMantel(CorrelationStats):
             # statistic.
             if perm_stats[-1] >= orig_stat:
               numerator += perm_stats[-1]
-
         # Load the final statistics into the result dictionary.
         res['mantel_r'] = orig_stat
         res['mantel_p'] = (numerator + 1) / (perm_num + 1)

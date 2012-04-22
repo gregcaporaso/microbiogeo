@@ -17,8 +17,8 @@ from numpy import array, matrix
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
 from python.qiime.stats import (BioEnv, CategoryStats, CorrelationStats,
-    DistanceBasedRda, DistanceMatrixStats, GradientStats, MantelCorrelogram,
-    Mantel, PartialMantel)
+    DistanceBasedRda, DistanceMatrixStats, MantelCorrelogram, Mantel,
+    PartialMantel, PermutationStats)
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -88,18 +88,6 @@ class TestHelper(TestCase):
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
 
 
-class GradientStatsTests(TestCase):
-    """Tests for the GradientStats class."""
-
-    def setUp(self):
-        """Create instances that will be used in the unit tests."""
-        self.test_inst = GradientStats()
-
-    def test_runAnalysis_no_instantiate(self):
-        """GradientStats is non-instantiable, cannot call runAnalysis()."""
-        self.assertRaises(NotImplementedError, self.test_inst.runAnalysis)
-
-
 class DistanceMatrixStatsTests(TestHelper):
     """Tests for the DistanceMatrixStats class."""
 
@@ -111,6 +99,13 @@ class DistanceMatrixStatsTests(TestHelper):
         self.single_dms = DistanceMatrixStats([self.overview_dm])
         self.double_dms = DistanceMatrixStats(
                 [self.overview_dm, self.single_ele_dm])
+        # For testing the requirement that two distance matrices are set.
+        self.two_dms = DistanceMatrixStats(
+                [self.overview_dm, self.single_ele_dm], 2)
+        # For testing the requirement that the distance matrices meet the
+        # minimum size requirements.
+        self.size_dms = DistanceMatrixStats(
+                [self.overview_dm, self.overview_dm], 2, 4)
 
     def test_getDistanceMatrices(self):
         """Test getter for distmats."""
@@ -153,6 +148,67 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, {})
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
+        
+    def test_setDistanceMatrices_wrong_number(self):
+        """Test setting an invalid number of distance matrices."""
+        self.assertRaises(ValueError, self.two_dms.setDistanceMatrices,
+                [self.overview_dm])
+        self.assertRaises(ValueError, self.two_dms.setDistanceMatrices,
+                [self.overview_dm, self.overview_dm, self.overview_dm])
+
+    def test_setDistanceMatrices_too_small(self):
+        """Test setting distance matrices that are too small."""
+        self.assertRaises(ValueError, self.size_dms.setDistanceMatrices,
+                [self.single_ele_dm, self.single_ele_dm])
+
+    def test_runAnalysis(self):
+        """Test runAnalysis() is not implemented."""
+        self.assertRaises(NotImplementedError, self.single_dms.runAnalysis)
+
+
+class PermutationStatsTests(TestHelper):
+    """Tests for the PermutationStats class."""
+
+    def setUp(self):
+        """Define some perm stats instances that will be used by the tests."""
+        super(PermutationStatsTests, self).setUp()
+        self.ps = PermutationStats(10)
+
+    def test_getNumPermutations(self):
+        """Test getter for number of permutations."""
+        self.assertEqual(self.ps.getNumPermutations(), 10)
+
+    def test_setNumPermutations(self):
+        """Test setter for number of permutations."""
+        self.assertEqual(self.ps.getNumPermutations(), 10)
+        self.ps.setNumPermutations(999)
+        self.assertEqual(self.ps.getNumPermutations(), 999)
+
+        self.ps.setNumPermutations(0)
+        self.assertEqual(self.ps.getNumPermutations(), 0)
+
+    def test_setNumPermutations_invalid(self):
+        """Test setter for invalid number of permutations."""
+        self.assertRaises(TypeError, self.ps.setNumPermutations, None)
+        self.assertRaises(TypeError, self.ps.setNumPermutations, "foo")
+        self.assertRaises(TypeError, self.ps.setNumPermutations, {})
+        self.assertRaises(TypeError, self.ps.setNumPermutations, [])
+        self.assertRaises(TypeError, self.ps.setNumPermutations, [1])
+        self.assertRaises(TypeError, self.ps.setNumPermutations, ())
+        self.assertRaises(ValueError, self.ps.setNumPermutations, -1)
+
+        # Test constructor as well.
+        self.assertRaises(TypeError, PermutationStats, None)
+        self.assertRaises(TypeError, PermutationStats, "foo")
+        self.assertRaises(TypeError, PermutationStats, {})
+        self.assertRaises(TypeError, PermutationStats, [])
+        self.assertRaises(TypeError, PermutationStats, [1])
+        self.assertRaises(TypeError, PermutationStats, ())
+        self.assertRaises(ValueError, PermutationStats, -1)
+        
+    def test_runAnalysis(self):
+        """Test runAnalysis() is not implemented."""
+        self.assertRaises(NotImplementedError, self.ps.runAnalysis)
 
 
 class CorrelationStatsTests(TestHelper):
@@ -173,11 +229,14 @@ class CorrelationStatsTests(TestHelper):
         self.cs.setDistanceMatrices(dms)
         self.assertEqual(self.cs.getDistanceMatrices(), dms)
 
-    def test_setDistanceMatrices_too_few(self):
-        """Test setting dms with not enough of them."""
-        self.assertRaises(ValueError, self.cs.setDistanceMatrices, [])
+    def test_setDistanceMatrices_mismatched_labels(self):
+        """Test setting dms with mismatching sample ID labels."""
+        mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
+        self.assertRaises(ValueError, self.cs.setDistanceMatrices,
+            [self.single_ele_dm, mismatch])
         # Also test that constructor raises this error.
-        self.assertRaises(ValueError, CorrelationStats, [])
+        self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
+                          mismatch])
 
     def test_setDistanceMatrices_wrong_dims(self):
         """Test setting dms with mismatching dimensions."""
@@ -187,14 +246,11 @@ class CorrelationStatsTests(TestHelper):
         self.assertRaises(ValueError, CorrelationStats, [self.overview_dm,
                           self.single_ele_dm])
 
-    def test_setDistanceMatrices_mismatched_labels(self):
-        """Test setting dms with mismatching sample ID labels."""
-        mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
-        self.assertRaises(ValueError, self.cs.setDistanceMatrices,
-            [self.single_ele_dm, mismatch])
+    def test_setDistanceMatrices_too_few(self):
+        """Test setting dms with not enough of them."""
+        self.assertRaises(ValueError, self.cs.setDistanceMatrices, [])
         # Also test that constructor raises this error.
-        self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
-                          mismatch])
+        self.assertRaises(ValueError, CorrelationStats, [])
 
     def test_runAnalysis(self):
         """Test runAnalysis() is not implemented in CorrelationStats"""
@@ -217,6 +273,12 @@ class CategoryStatsTests(TestHelper):
             self.overview_dm, self.overview_map)
         self.assertRaises(ValueError, self.cs_overview.setData,
             self.overview_map, self.single_ele_dm)
+
+    def test_setDistanceMatrices_wrong_number(self):
+        """Test setting an invalid number of distance matrices."""
+        self.assertRaises(ValueError, self.cs_overview.setDistanceMatrices, [])
+        self.assertRaises(ValueError, self.cs_overview.setDistanceMatrices,
+                          [self.overview_dm, self.overview_dm])
 
     def test_getMetadataMap(self):
         """Test valid return of getMetadataMap method."""
@@ -603,13 +665,17 @@ class MantelTests(TestHelper):
         self.overview_mantel.setDistanceMatrices(dms)
         self.assertEqual(self.overview_mantel.getDistanceMatrices(), dms)
 
-    def test_setDistanceMatrices_wrong_number_of_distance_matrices(self):
-        """Test setting matrices using an invalid number of distmats."""
+    def test_setDistanceMatrices_wrong_number(self):
+        """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
-                          [self.overview_dm])
+            [self.overview_dm])
         self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
-                          [self.overview_dm, self.overview_dm,
-                           self.overview_dm])
+            [self.overview_dm, self.overview_dm, self.overview_dm])
+
+    def test_setDistanceMatrices_too_small(self):
+        """Test setting distance matrices that are too small."""
+        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
+            [self.single_ele_dm, self.single_ele_dm])
 
     def test_runAnalysis(self):
         """Runs mantel test on the overview dm when compared to itself.
@@ -761,12 +827,16 @@ class PartialMantelTests(TestHelper):
         self.assertEqual(self.pm.getDistanceMatrices(), dms)
 
     def test_setDistanceMatrices_wrong_number(self):
-        """Test setting matrices using an invalid number of dms."""
+        """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
-            [self.overview_dm, self.overview_dm])
+                [self.overview_dm])
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
-            [self.overview_dm, self.overview_dm, self.overview_dm,
-            self.overview_dm])
+                [self.overview_dm, self.overview_dm])
+
+    def test_setDistanceMatrices_too_small(self):
+        """Test setting distance matrices that are too small."""
+        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
+                [self.single_ele_dm, self.single_ele_dm, self.single_ele_dm])
 
     def test_runAnalysis(self):
         """Test running partial Mantel analysis on valid input."""

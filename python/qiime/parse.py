@@ -5,10 +5,9 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Logan Knecht", "Michael Dwan"]
 __license__ = "GPL"
-
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jai Ram Rideout"
-__email__ = "jr378@nau.edu"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 """Provides functionality for parsing and manipulating QIIME data files.
@@ -19,12 +18,12 @@ manipulation of the data.
 """
 
 from biom.table import DenseTable
-from cogent.util.misc import combinate
 from numpy import asmatrix
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 
 class DistanceMatrix(DenseTable):
     """This class represents a QIIME distance matrix."""
+
     _biom_type = "Distance matrix"
 
     @staticmethod
@@ -37,7 +36,7 @@ class DistanceMatrix(DenseTable):
 
         Arguments:
             lines - a list of strings representing the file contents of a QIIME
-                distance matrix.
+                distance matrix
         """
         sample_ids, matrix_data = parse_distmat(lines)
         return DistanceMatrix(matrix_data, sample_ids, sample_ids)
@@ -55,7 +54,7 @@ class DistanceMatrix(DenseTable):
         first argument) is expected to be a numpy array.
         
         We have to match the parent class constructor exactly in this case due
-        to how many of the parent class methods are implemented (they assume
+        to how several of the parent class methods are implemented (they assume
         all subclasses have the same constructor signature). Otherwise, I would
         have just made a simple constructor that took the matrix data and a
         single list of sample IDs (because the row/col IDs are the same for a
@@ -100,6 +99,7 @@ class DistanceMatrix(DenseTable):
         return max_val
 
     def getSampleIds(self):
+        """Returns the list of sample IDs associated with the matrix."""
         return self.SampleIds
 
     def getDataMatrix(self):
@@ -114,9 +114,11 @@ class DistanceMatrix(DenseTable):
 
         The returned list will contain the elements in column-major order
         (i.e. from leftmost to rightmost column, starting from the first row).
-        Only the lower triangular elements will be included if lower is True
-        (the diagonal will not be included). If lower is False, all elements
-        (including the diagonal) will be included.
+
+        Arguments:
+            lower - If True, only the lower triangular elements will be
+                included (the diagonal will not be included). If False, all
+                elements (including the diagonal) will be included
         """
         flattened = []
         for col_num in range(self.getSize()):
@@ -127,7 +129,7 @@ class DistanceMatrix(DenseTable):
                 else:
                     flattened.append(self[row_num][col_num])
         return flattened
-        
+
 
 class MetadataMap():
     """This class represents a QIIME metadata mapping file."""
@@ -135,29 +137,29 @@ class MetadataMap():
     @staticmethod
     def parseMetadataMap(lines):
         """Parses a QIIME metadata mapping file into a MetadataMap object.
-        
+
         This static method is basically a factory that reads in the given
         metadata mapping file contents and returns a MetadataMap instance. This
         method is provided for convenience.
 
         Arguments:
             lines - a list of strings representing the file contents of a QIIME
-                metadata mapping file.
+                metadata mapping file
         """
         return MetadataMap(*parse_mapping_file_to_dict(lines))
 
     def __init__(self, sample_metadata, comments):
         """Instantiates a MetadataMap object.
-        
+
         Arguments:
             sample_metadata - the output of parse_mapping_file_to_dict(). It
                 expects a python dict of dicts, where the top-level key is
                 sample ID, and the inner dict maps category name to category
                 value. This can be an empty dict altogether or the inner dict
-                can be empty.
+                can be empty
             comments - the output of parse_mapping_file_to_dict(). It expects a
                 list of strings for the comments in the mapping file. Can be an
-                empty list.
+                empty list
         """
         self._metadata = sample_metadata
         self._comments = comments
@@ -198,7 +200,7 @@ class MetadataMap():
         category value.
 
         Arguments:
-            sampleId - the sample ID (string) to retrieve metadata for.
+            sampleId - the sample ID (string) to retrieve metadata for
         """
         return self._metadata[sampleId]
 
@@ -209,8 +211,8 @@ class MetadataMap():
 
         Arguments:
             sampleId - the sample ID (string) to retrieve category information
-                for.
-            category - the category name whose value will be returned.
+                for
+            category - the category name whose value will be returned
         """
         return self._metadata[sampleId][category]
 
@@ -221,8 +223,8 @@ class MetadataMap():
 
         Arguments:
             sample_ids - An ordered list of sample IDs (i.e., from a distance
-                                                        matrix)
-            category - the category name whose values will be returned.
+                matrix)
+            category - the category name whose values will be returned
         """
 
         return [self._metadata[sid][category] for sid in sample_ids] 
@@ -242,5 +244,3 @@ class MetadataMap():
         """
         return sorted(self.getSampleMetadata(self.getSampleIds()[0]).keys()) \
             if len(self.getSampleIds()) > 0 else []
-
-
