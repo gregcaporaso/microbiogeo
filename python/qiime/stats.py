@@ -29,7 +29,8 @@ from cogent.util.misc import combinate
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import asarray, asmatrix, dot, empty, finfo, matrix, std, zeros
+from numpy import asarray, asmatrix, dot, empty, finfo, matrix, std, zeros,\
+                    array
 from numpy import min as np_min, max as np_max
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
@@ -374,21 +375,30 @@ class BioEnv(CategoryStats):
 
         return res
 
+    def _spearman2(self, vec1, vec2):
+        rank1 = self._get_rank(vec1)
+        rank2 = self._get_rank(vec2)
 
-# if __name__ == '__main__':
-#    dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
-#    md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
-#    # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-#    # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+        n = len(vec1)
+
+        return 1 - (6*sum([(x-y)**2 for x,y in zip(rank1, rank2)])/(n*(n**2-1)))
 
 
-#    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
+if __name__ == '__main__':
+   dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
+   md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
+   # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+   # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
 
-#    bioenv = BioEnv(dm, md_map, cats)
-#    # bioenv.runAnalysis()
-#    a = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4)
-#    b = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13)
-#    print bioenv._spearman_correlation(a,b)
+
+   cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
+
+   bioenv = BioEnv(dm, md_map, cats)
+   # bioenv.runAnalysis()
+   a = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4)
+   b = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13)
+   print bioenv._spearman2(a,b)
+   print bioenv._spearman_correlation(a,b)
 
 
 
@@ -442,8 +452,7 @@ class DistanceBasedRda(CategoryStats):
         else:
             adjust = sqrt(k)
 
-        points, eigs = principal_coordinates_analysis(
-                asarray(dm.getDataMatrix()))
+        points, eigs = principal_coordinates_analysis(dm._data)
 
         # Order the axes in descending order based on eigenvalue. This code is
         # taken from QIIME's principal_coordinates.py library.
@@ -526,14 +535,9 @@ class DistanceBasedRda(CategoryStats):
         q, r = qr(factor_r)
         rank = matrix_rank(factor_r, tol=zero)
         qrank = rank
-#        print "Q: "
-#        print q
-#        print "R: "
-#        print r
 
         y = dot(q.T, points_bar)
         xQR = solve(r, y)
-        #print xQR
         #print "points_bar: "
         #print points_bar
         #print "Q: "
@@ -765,13 +769,8 @@ class MantelCorrelogram(CorrelationStats):
                 # (i.e. the sample doesn't have any distances that fall in the
                 # current class).
                 if not (class_num > ((num_classes // 2) - 1) and has_zero_sum):
-                    mantel_test = Mantel(model_matrix, eco_dm,
-                            self.getNumPermutations(), tail_type='greater')
-                    mantel_test_results = mantel_test.runAnalysis()
-                    p_val, orig_stat, perm_stats = (
-                            mantel_test_results['p_value'],
-                            mantel_test_results['r_value'],
-                            mantel_test_results['perm_stats'])
+                    p_val, orig_stat, perm_stats = self._mantel(
+                        model_matrix, eco_dm, self.getNumPermutations())
 
                     # Negate the Mantel r statistic because we are using
                     # distance matrices, not similarity matrices (this is a
@@ -915,27 +914,66 @@ class MantelCorrelogram(CorrelationStats):
         ax.set_ylabel("Mantel correlation statistic")
         return fig
 
+    def _mantel(self, dm1, dm2, num_perms):
+        """Runs a Mantel test over the supplied distance matrices.
+
+        Returns a tuple containing the p-value, Mantel r statistic, and the
+        Mantel r statistic for each permutation.
+
+        The first distance matrix is the one that is permuted when calculating
+        the p-value. The p-value is based on a one-tailed test (H1: r>0). The
+        Mantel r statistic is computed using Pearson's correlation method.
+
+        This code is based on R's vegan::mantel function.
+
+        Arguments:
+            dm1 - the first DistanceMatrix object.
+            dm2 - the second DistanceMatrix object.
+            num_perms - the number of permutations, must be >= 0.
+        """
+        # Get a vector of lower triangular (excluding the diagonal) distances
+        # in column-major order.
+        dm1_flat, dm2_flat = dm1.flatten(), dm2.flatten()
+        orig_stat = pearson(dm1_flat, dm2_flat)
+
+        better = 0
+        perm_stats = []
+        for i in range(num_perms):
+            dm1_data_perm = permute_2d(dm1, permutation(dm1.getSize()))
+            dm1_perm = DistanceMatrix(dm1_data_perm, dm1.SampleIds,
+                                      dm1.SampleIds)
+            dm1_perm_flat = dm1_perm.flatten()
+            r = pearson(dm1_perm_flat, dm2_flat)
+            perm_stats.append(r)
+            if r >= orig_stat:
+                better += 1
+        return (better + 1) / (num_perms + 1), orig_stat, perm_stats
+
 
 class Mantel(CorrelationStats):
-    """Class for the Mantel matrix correlation statistical method.
+    """
+    Class for the Mantel statistical method.
 
     This class provides the functionality to run a Mantel analysis on two
     distance matrices. A Mantel test essentially computes the Pearson
     correlation between the two distance matrices.
     """
-
     def __init__(self, dm1, dm2, permutations, tail_type='two sided'):
         """Constructs a new Mantel instance.
 
         Arguments:
-            dm1 - first DistanceMatrix object to be compared
-            dm2 - second DistanceMatrix object to be compared
-            permutations - the number of times to permute the distance matrix
-                while calculating the p-value
-            tail_type - the type of Mantel test to perform (i.e. hypothesis
-                test). Can be "two sided", "less", or "greater"
+            initalDistanceMatrix1 - This is a distance matrix object representing one of the distance matrices being compared
+
+            initalDistanceMatrix2 - This is a distance matrix object representing one of the distance matrices being compared
+
+            permutations - This is the number of times to iterate when permuting and calculating the pearson value
+
+            tailType - This is the type of Mantel test to perform, variations can be "two-sided"[default], "lesser", "greater"
         """
-        super(Mantel, self).__init__([dm1, dm2])
+        parameterMatrices = [dm1, dm2]
+        super(Mantel, self).__init__(parameterMatrices)
+        super(Mantel, self).setDistanceMatrices(parameterMatrices)
+
         self.setNumPermutations(permutations)
         self.setTailType(tail_type)
 
@@ -957,57 +995,66 @@ class Mantel(CorrelationStats):
         'greater'), so the p-values may differ from R unless you explicitly
         specify the tail type of 'greater'.
         """
-        results = self._mantel_test()
+        results = self.mantel_test(self.getDistanceMatrices()[0], self.getDistanceMatrices()[1], self.getNumPermutations())
 
         resultsDict = {}
-        resultsDict['method_name'] = "Mantel"
-        resultsDict['dm1'] = self.getDistanceMatrices()[0]
-        resultsDict['dm2'] = self.getDistanceMatrices()[1]
-        resultsDict['num_perms'] = self.getNumPermutations() 
+        resultsDict['Results'] = results 
+        resultsDict['DM1'] = self.getDistanceMatrices()[0]
+        resultsDict['DM2'] = self.getDistanceMatrices()[1]
+        resultsDict['number_of_permutations'] = self.getNumPermutations() 
         resultsDict['p_value'] = results[0]
-        resultsDict['r_value'] = results[1]
-        resultsDict['perm_stats'] = results[2]
-        resultsDict['tail_type'] = self.getTailType()
+        resultsDict['tail_type_used'] = self.getTailType()
 
         return resultsDict
 
-    def _mantel_test(self):
-        """Runs a Mantel test on the current distance matrices.
+    def mantel_test(self, m1, m2, n, alt="two-sided"):
+        """Runs a Mantel test on two distance matrices.
     
         Returns the p-value, Mantel correlation statistic, and a list of Mantel
-        correlation statistics for each permutation test. The currently set
-        tail type and number of permutations will be used to run the test.
-
-        Note: this method was taken from the development version of PyCogent as
-        we needed access to different tail types and the currently released
-        version of PyCogent does not support this. Once this functionality is
-        available in the version of PyCogent supported by QIIME, we should
-        remove this method and use the one in PyCogent instead. This method
-        isn't exactly the same as the PyCogent implementation because it has
-        been adapted to use the class members and DistanceMatrix objects, but
-        in essence it is the same implementation.
+        correlation statistics for each permutation test.
+    
+        Arguments:
+            m1  - the first distance matrix to use in the test (should be a numpy
+                array or convertible to a numpy array)
+            m2  - the second distance matrix to use in the test (should be a numpy
+                array or convertible to a numpy array)
+            n   - the number of permutations to test when calculating the p-value
+            alt - the type of alternative hypothesis to test (can be either
+                'two-sided' for a two-sided test, 'greater' or 'less' for one-sided
+                tests)
         """
-        m1, m2 = self.getDistanceMatrices()
-        n = self.getNumPermutations()
-        alt = self.getTailType()
+        # Perform some sanity checks on our input.
+        if alt not in ("two-sided", "greater", "less"):
+            raise ValueError("Unrecognized alternative hypothesis. Must be either "
+                             "'two-sided', 'greater', or 'less'.")
+        m1, m2 = asarray(m1._data), asarray(m2._data)
 
-        # Get a flattened list of lower-triangular matrix elements (excluding
-        # the diagonal) in column-major order. Use these values to calculate
-        # the correlation statistic.
-        m1_flat, m2_flat = m1.flatten(True), m2.flatten(True)
-        orig_stat = pearson(m1_flat, m2_flat)
+        #Jai's code did a sanity check based on shape, but shape doesn't apply and instead the size should be checked -04/04/2012 LK
+        #if m1.shape != m2.shape:
 
+        if m1.size != m2.size:
+            raise ValueError("Both matrices must be the same size.")
+        if n < 1:
+            raise ValueError("The number of permutations must be greater than or "
+                             "equal to one.")
+
+        #I can't get the _flatten_lower_triangle to work at all, talked to Michael and he stated that the normal flatten should resolve this as is.
+        #It primarily doesn't work because it can't identify based on shape, and instead size should be used
+        #m1_flat, m2_flat = self._flatten_lower_triangle(m1), self._flatten_lower_triangle(m2)
+        m1_flat, m2_flat = m1.flatten(), m2.flatten()
+
+        orig_stat = self.pearson(m1_flat, m2_flat)
+    
         # Run our permutation tests so we can calculate a p-value for the test.
+        size = len(m1)
         better = 0
         perm_stats = []
         for i in range(n):
-            m1_perm_data = permute_2d(m1, permutation(m1.getSize()))
-            m1_perm = DistanceMatrix(m1_perm_data, m1.getSampleIds(),
-                m1.getSampleIds())
-            m1_perm_flat = m1_perm.flatten()
-            r = pearson(m1_perm_flat, m2_flat)
-
-            if alt == 'two sided':
+            perm = permute_2d(m1, permutation(size))
+            perm_flat = perm.flatten()
+            r = pearson(perm_flat, m2_flat)
+    
+            if alt == 'two-sided':
                 if abs(r) >= abs(orig_stat):
                     better += 1
             else:
@@ -1017,8 +1064,36 @@ class Mantel(CorrelationStats):
             perm_stats.append(r)
         return (better + 1) / (n + 1), orig_stat, perm_stats
 
+    def pearson(self, x_items, y_items):
+        """Returns Pearson correlation coefficient between x and y."""
+        x_items, y_items = array(x_items), array(y_items)
+        sum_x = sum(x_items)
+        sum_y = sum(y_items)
+        sum_x_sq = sum(x_items*x_items)
+        sum_y_sq = sum(y_items*y_items)
+        sum_xy = sum(x_items*y_items)
+        n = len(x_items)
+        try:
+            r = 1.0 * ((n * sum_xy) - (sum_x * sum_y)) / \
+               (sqrt((n * sum_x_sq)-(sum_x*sum_x))*sqrt((n*sum_y_sq)-(sum_y*sum_y)))
+        except (ZeroDivisionError, ValueError, FloatingPointError): #no variation
+            r = 0.0
+        #check we didn't get a naughty value for r due to rounding error
+        if r > 1.0:
+            r = 1.0
+        elif r < -1.0:
+            r = -1.0
+        return r
+      
+    #This is a method was retrieved from the QIIME 1.4.0 release version, using amazon web services
+    #Grabbed from the dir: /software/pycogent-1.5.1-release/lib/python2.7/site-packages/cogent/maths/stats
+    #More specifically it was grabbed from the file called "test.py"
+    def permute_2d(self, m, p):
+        """Performs 2D permutation of matrix m according to p."""
+        return m[p][:, p]
+
     def getTailType(self):
-        """Returns the tail type being used for the Mantel test."""
+        """This returns the tail type being used for the current Mantel object """
         return self._tail_type
 
     def setTailType(self, tail_type):
@@ -1035,7 +1110,9 @@ class Mantel(CorrelationStats):
         self._tail_type = tail_type
 
     def getNumPermutations(self):
-        """Returns the number of permutations used."""
+        """
+        Returns the number of iterations used
+        """
         return self._num_perms
 
     def setNumPermutations(self, num_perms):
@@ -1048,9 +1125,9 @@ class Mantel(CorrelationStats):
         if num_perms >= 0:
             self._num_perms = num_perms
         else:
-            raise ValueError("The number of permutations cannot be a negative "
-                             "value.")
+            raise ValueError("The number of permutations cannot be a negative value.")
 
+    #Grabbed from mantel correlelogram, alt signature to use for the setter
     def setDistanceMatrices(self, matrices):
         """Sets the distance matrices to use in the Mantel test.
 
@@ -1061,12 +1138,10 @@ class Mantel(CorrelationStats):
             matrices - list of exactly two DistanceMatrix objects
         """
         if len(matrices) != 2:
-            raise ValueError("Can only set exactly two distance matrices for "
-                             "a Mantel test.")
+            raise ValueError("Can only set exactly two distance matrices for a Mantel analysis.")
         if matrices[0].getSize() < 3 or matrices[1].getSize() < 3:
             raise ValueError("Both distance matrices must be at least 3x3.")
         super(Mantel, self).setDistanceMatrices(matrices)
-
 
 class PartialMantel(CorrelationStats):
     """Class for the partial Mantel matrix correlation statistical method.
