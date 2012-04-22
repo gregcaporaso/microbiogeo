@@ -348,16 +348,60 @@ class CategoryStats(object):
 
 
 class Anosim(CategoryStats, PermutationStats):
-    """Class for ANOSIM categorical statistical analysis.
+    """Class for the ANOSIM categorical statistical analysis.
+
+    Briefly, ANOSIM tests whether two or more groups of samples are
+    significantly different. The user of the class specifies a category in the
+    metadata map to group samples by.
 
     This code is heavily based on Andrew Cochran's original procedural version.
     """
 
-    def __init__(self, mdmap, dm, cat, num_perms):
+    def __init__(self, mdmap, dm, cat, num_perms, random_fn=permutation):
+        """Initializes an instance with the specified analysis parameters.
+
+        Arguments:
+            mdmap - the MetadataMap instance to obtain grouping info from
+            dm - the DistanceMatrix instance to obtain distances from
+            cat - the category string to group samples by (must be in the
+                metadata map)
+            num_perms - the number of permutations to use when calculating the
+                p-value. If zero, the p-value will not be calculated. Must be
+                greater than or equal to zero
+            random_fn - the function to use when randomizing the grouping
+                during calculation of the p-value. It must return a value and
+                must be callable
+        """
         CategoryStats.__init__(self, mdmap, dm, [cat])
         PermutationStats.__init__(self, num_perms)
+        self.setRandomFunction(random_fn)
+
+    def getRandomFunction(self):
+        """Returns the randomization function used in p-value calculations."""
+        return self._random_fn
+
+    def setRandomFunction(self, random_fn):
+        """Setter for the randomization function used in p-value calcs.
+
+        Arguments:
+            random_fn - the function to use when randomizing the grouping
+                during calculation of the p-value. It must return a value and
+                must be callable
+        """
+        if hasattr(random_fn, '__call__'):
+            self._random_fn = random_fn
+        else:
+            raise TypeError("The supplied function reference is not callable.")
 
     def runAnalysis(self):
+        """Runs ANOSIM on the current distance matrix and sample grouping.
+
+        Returns a dict containing the results. The following keys are set:
+            method_name - name of the statistical method
+            r_value - the ANOSIM R statistic computed by the test
+            p_value - the p-value computed by the test, or 'NA' if the number
+                of permutations was zero
+        """
         ntrials = self.getNumPermutations()
         category = self.getCategories()[0]
         samples = self.getDistanceMatrix().getSampleIds()
@@ -380,7 +424,7 @@ class Anosim(CategoryStats, PermutationStats):
             grouping_random = []
             for sample in samples:
                 grouping_random.append(group_hash[sample])
-            grouping_random = permutation(grouping_random)
+            grouping_random = self.getRandomFunction()(grouping_random)
 
             for j, sample in enumerate(samples):
                 group_hash[sample] = grouping_random[j]
@@ -390,11 +434,14 @@ class Anosim(CategoryStats, PermutationStats):
         # Calculate the p-value and return
         p_value = (sum(r_value_permunations >= r_value) + 1) / (ntrials + 1)
 
+        if ntrials == 0:
+            p_value = 'NA'
+
         return {'method_name': 'ANOSIM', 'r_value': r_value,
                 'p_value': p_value}
 
     def _anosim(self, samples, distmtx, group_hash):
-        """Computes ANOSIM on the current data, returning the R value.
+        """Computes ANOSIM on the supplied data, returning the R value.
 
         The R value is between -1 and 1 and indicates the strength of the
         grouping.
@@ -476,7 +523,7 @@ class Anosim(CategoryStats, PermutationStats):
                 else:
                     tie_list.append(rank_val)
                     last_tie_index = i
-                    result = _populate_adjusted_vals(tie_list, first_tie_index, \
+                    result = self._populate_adjusted_vals(tie_list, first_tie_index, \
                         last_tie_index, result)
                     tie_flag = 0
                     tie_count = 0
@@ -487,7 +534,7 @@ class Anosim(CategoryStats, PermutationStats):
         if tie_flag == 1:
             tie_list.append(ranks[i+1])
             last_tie_index = i + 1
-            result = _populate_adjusted_vals(tie_list, first_tie_index, \
+            result = self._populate_adjusted_vals(tie_list, first_tie_index, \
                 last_tie_index, result)
         else:
             result.append(ranks[i+1])

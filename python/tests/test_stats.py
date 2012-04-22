@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout"]
+__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout",
+               "Andrew Cochran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
@@ -13,7 +14,8 @@ __status__ = "Development"
 """Test suite for classes, methods and functions of the stats module."""
  
 from cogent.util.unit_test import TestCase, main
-from numpy import array, matrix
+from numpy import array, matrix, roll
+from numpy.random import permutation
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
 from python.qiime.stats import (Anosim, BioEnv, CategoryStats,
@@ -86,6 +88,34 @@ class TestHelper(TestCase):
 
         # A 1x1 dm.
         self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
+
+
+class NonRandomShuffler(object):
+    """Helper class for testing p-values that are calculated by permutations.
+
+    Since p-values rely on randomness, it may be useful to use a non-random
+    function (such as that provided by this class) to generate permutations
+    so that p-values can be accurately tested.
+
+    This code is heavily based on Andrew Cochran's original version.
+    """
+
+    def __init__(self):
+        """Default constructor initializes the number of calls to zero."""
+        self.num_calls = 0
+
+    def permutation(self, x):
+        """Non-random permutation function to test p-test code.
+
+        Returns the 'permuted' version of x.
+
+        Arguments:
+            x - the array to be 'permuted'
+        """
+        x = array(x)
+        x = roll(x, self.num_calls)
+        self.num_calls += 1
+        return x
 
 
 class DistanceMatrixStatsTests(TestHelper):
@@ -320,15 +350,83 @@ class CategoryStatsTests(TestHelper):
 
 
 class AnosimTests(TestHelper):
-    """Tests for the Anosim class."""
+    """Tests for the Anosim class.
+    
+    This testing code is heavily based on Andrew Cochran's original suite of
+    unit tests for ANOSIM.
+    """
 
     def setUp(self):
         """Define some useful data to use in testing."""
         super(AnosimTests, self).setUp()
-        self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
-                                      "Treatment", 999)
 
-    def test_runAnalysis(self):
+        # Define two small dms for easy testing. One has ties in the ranks.
+        self.small_dm_str = ["\tsam1\tsam2\tsam3\tsam4",
+                             "sam1\t0\t1\t5\t4",
+                             "sam2\t1\t0\t3\t2",
+                             "sam3\t5\t3\t0\t3",
+                             "sam4\t4\t2\t3\t0"]
+        self.small_dm = DistanceMatrix.parseDistanceMatrix(self.small_dm_str)
+
+        self.small_dm_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
+                                 "sam1\t0\t1\t1\t4",
+                                 "sam2\t1\t0\t3\t2",
+                                 "sam3\t1\t3\t0\t3",
+                                 "sam4\t4\t2\t3\t0"]
+        self.small_dm_tie = DistanceMatrix.parseDistanceMatrix(
+                self.small_dm_tie_str)
+
+        self.small_map_str = ["#SampleID\tBarcodeSequence\
+                              \tLinkerPrimerSequence\tTreatment\tDOB\
+                              \tDescription",
+                              "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\
+                              \tControl\t20061218\tControl_mouse_I.D._354",
+                              "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\
+                              \tControl\t20061218\tControl_mouse_I.D._355",
+                              "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\
+                              \tFast\t20061126\tControl_mouse_I.D._356",
+                              "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\
+                              \tFast\t20070314\tControl_mouse_I.D._481"]
+        self.small_map = MetadataMap.parseMetadataMap(self.small_map_str)
+
+        # Create three Anosim instances: one for the small dm, one for the
+        # small dm with ties, and one for the overview tutorial dataset.
+        self.anosim_small = Anosim(self.small_map, self.small_dm, 'Treatment',
+                                   999)
+        self.anosim_small_tie = Anosim(self.small_map, self.small_dm_tie,
+                                       'Treatment', 999)
+        self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
+                                      'Treatment', 999)
+
+    def test_getRandomFunction(self):
+        """Test retrieval of a random function reference."""
+        self.assertEqual(self.anosim_small.getRandomFunction(), permutation)
+        self.assertEqual(self.anosim_small_tie.getRandomFunction(),
+                         permutation)
+        self.assertEqual(self.anosim_overview.getRandomFunction(),
+                         permutation)
+
+    def test_setRandomFunction(self):
+        """Test setter for the random function to use in p-value calc."""
+        self.assertEqual(self.anosim_small.getRandomFunction(), permutation)
+
+        nrs = NonRandomShuffler()
+        self.anosim_small.setRandomFunction(nrs.permutation)
+
+        self.assertEqual(self.anosim_small.getRandomFunction(),
+                         nrs.permutation)
+
+    def test_setRandomFunction_invalid_input(self):
+        """Test setter for the random function with non-callable input."""
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, 42)
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, 42.0)
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, "j")
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, None)
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, [])
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, ())
+        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, {})
+
+    def test_runAnalysis_overview(self):
         """Test runAnalysis() on overview data with Treatment category."""
         # These results were verified with R.
         exp = {'method_name': 'ANOSIM', 'p_value': 0.0080000000000000002,
@@ -338,6 +436,91 @@ class AnosimTests(TestHelper):
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertTrue(obs['p_value'] > 0 and obs['p_value'] < 0.02)
+
+    def test_runAnalysis_small(self):
+        """Test runAnalysis() on small dm."""
+        # These results were verified with R.
+        exp = {'method_name': 'ANOSIM', 'p_value': 0.31, 'r_value': 0.625}
+        obs = self.anosim_small.runAnalysis()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertTrue(obs['p_value'] > 0.28 and obs['p_value'] < 0.42)
+
+    def test_runAnalysis_small_ties(self):
+        """Test runAnalysis() on small dm with ties in ranks."""
+        # These results were verified with R.
+        exp = {'method_name': 'ANOSIM', 'p_value': 0.67600000000000005,
+               'r_value': 0.25}
+        obs = self.anosim_small_tie.runAnalysis()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertTrue(obs['p_value'] > 0.56 and obs['p_value'] < 0.75)
+
+    def test_runAnalysis_no_perms(self):
+        """Test runAnalysis() on small dm with no permutations."""
+        # These results were verified with R.
+        exp = {'method_name': 'ANOSIM', 'p_value': 'NA', 'r_value': 0.625}
+        self.anosim_small.setNumPermutations(0)
+        obs = self.anosim_small.runAnalysis()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertEqual(obs['p_value'], exp['p_value'])
+
+    def test_remove_ties1(self):
+        """Test removal of ties. Should return [1.5,1.5]."""
+        result = self.anosim_small._remove_ties([1,1],[1,2])
+        self.assertEqual(result, [1.5,1.5])
+
+    def test_remove_ties2(self):
+        """Should return [3.5,3.5,3.5,3.5,3.5,3.5]."""
+        result = self.anosim_small._remove_ties([1,1,1,1,1,1],[1,2,3,4,5,6])
+        self.assertEqual(result, [3.5,3.5,3.5,3.5,3.5,3.5])
+
+    def test_remove_ties3(self):
+        """Should return [1,3.5,3.5,3.5,3.5,6]."""
+        result = self.anosim_small._remove_ties([1,3,3,3,3,8],[1,2,3,4,5,6])
+        self.assertEqual(result, [1,3.5,3.5,3.5,3.5,6])
+
+    def test_remove_ties4(self):
+        """Should return [1,2,3,4]."""
+        result = self.anosim_small._remove_ties([1,2,3,4],[1,2,3,4])
+        self.assertEqual(result, [1,2,3,4])
+
+    def test_remove_ties5(self):
+        """Should return [1,3,3,3,5.5,5.5,7]."""
+        result = self.anosim_small._remove_ties([1,2,2,2,3,3,5],
+                                                [1,2,3,4,5,6,7])
+        self.assertEqual(result, [1,3,3,3,5.5,5.5,7])
+
+    def test_remove_ties6(self):
+        """Should return [1.5,1.5,3.5,3.5]."""
+        result = self.anosim_small._remove_ties([1,1,2,2],[1,2,3,4])
+        self.assertEqual(result,[1.5,1.5,3.5,3.5])
+
+    def test_compute_r1(self):
+        """Should return .625 for the R statistic on the small dm."""
+        sorted_rank = [1.0,2.0,3.5,3.5,5.0,6.0]
+        sorted_group = [1.0,0.0,0.0,1.0,0.0,0.0]
+        sorted_rank = array(sorted_rank)
+        sorted_group = array(sorted_group)
+        result = self.anosim_small._compute_r_value(sorted_rank,sorted_group,4)
+        self.assertEqual(result, .625)
+
+    def test_anosim_p_test(self):
+        """p-value should be .5 for this test."""
+        nrs = NonRandomShuffler()
+        self.anosim_small.setNumPermutations(3)
+        self.anosim_small.setRandomFunction(nrs.permutation)
+
+        exp = {'method_name': 'ANOSIM', 'p_value': 0.5, 'r_value': 0.625}
+        obs = self.anosim_small.runAnalysis()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertFloatEqual(obs['p_value'], exp['p_value'])
 
 
 class BioEnvTests(TestHelper):
@@ -739,7 +922,7 @@ class MantelTests(TestHelper):
         obs_tail_type = overview_mantel_output['tail_type']
 
         self.assertEqual(expected_method_name, obs_method_name)
-        self.assertFloatEqual(expected_p_value, obs_p_value)
+        self.assertTrue(obs_p_value > 0 and obs_p_value < 0.004)
         self.assertFloatEqual(expected_r_value, obs_r_value)
         self.assertFloatEqual(expected_perm_stats_len, obs_perm_stats_len)
         self.assertEqual(expected_number_of_permutations, obs_num_permutations)
