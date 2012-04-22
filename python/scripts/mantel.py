@@ -111,33 +111,33 @@ def main():
     #print dm1_labels
     #print dm2_labels
 
-    resultsDict = {}
-    resultsDict = m.runAnalysis()
-    resultsDict['DM1_file_name'] = input_dm_fps[0] 
-    resultsDict['DM2_file_name'] = input_dm_fps[1] 
-    resultsDict['sample_size'] = len(dm1_labels)
+            resultsDict = {}
+            resultsDict = m.runAnalysis()
+            resultsDict['DM1_file_name'] = input_dm_fps[0] 
+            resultsDict['DM2_file_name'] = input_dm_fps[1] 
+            resultsDict['sample_size'] = len(dm1_labels)
 
-    p_str = format_p_value_for_num_iters(resultsDict['p_value'],num_iterations)
+            p_str = format_p_value_for_num_iters(resultsDict['p_value'],num_iterations)
 
-    output_f.write(resultsDict['DM1_file_name'])
-    output_f.write("\t")
+            output_f.write(resultsDict['DM1_file_name'])
+            output_f.write("\t")
 
-    output_f.write(resultsDict['DM2_file_name'])
-    output_f.write("\t")
+            output_f.write(resultsDict['DM2_file_name'])
+            output_f.write("\t")
 
-    #fixes space issues for formatting
-    third_word_spaces_needed = len("Number of entries") - len(dm1_labels)
-    third_word_spaces = "" 
-    while(third_word_spaces_needed > 0):
-        third_word_spaces_needed = third_word_spaces_needed - 1
-        third_word_spaces = third_word_spaces + " "
-    output_f.write(str(resultsDict['sample_size']))
-    output_f.write(third_word_spaces)
-    output_f.write("\t")
+            #fixes space issues for formatting
+            third_word_spaces_needed = len("Number of entries") - len(dm1_labels)
+            third_word_spaces = "" 
+            while(third_word_spaces_needed > 0):
+                third_word_spaces_needed = third_word_spaces_needed - 1
+                third_word_spaces = third_word_spaces + " "
+            output_f.write(str(resultsDict['sample_size']))
+            output_f.write(third_word_spaces)
+            output_f.write("\t")
 
-    output_f.write(p_str)
+            output_f.write(p_str)
 
-    output_f.write("\n")
+            output_f.write("\n")
     output_f.close()
 
 if __name__ == "__main__":

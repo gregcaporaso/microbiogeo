@@ -56,18 +56,18 @@ def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
 
+    sample_id_map_fp = opts.sample_id_map_fp
+    if sample_id_map_fp:
+        sample_id_map = dict([(k,v[0]) \
+        for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
+    else:
+        sample_id_map = None
+
+    input_dm_fps = opts.input_dms.split(',')
+
+
     if opts.method == 'mantel':
-        sample_id_map_fp = opts.sample_id_map_fp
-        if sample_id_map_fp:
-            sample_id_map = dict([(k,v[0]) \
-            for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
-        else:
-            sample_id_map = None
-
-        input_dm_fps = opts.input_dms.split(',')
-
         output_f = open(opts.output_fp,'w')
-
         #this is where the heading information is added, it accounts for the spacing between file names for the first two elements DM1 and DM2, but it doesn't fix the spacing between the actual number values
         output_f.write(comment)
         output_f.write('DM1')
@@ -108,43 +108,83 @@ def main():
                 #This takes in a distance matrix object for the dm1 and dm2 of Mantel
                 m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations, opts.tail_type)
         
-        #print "dm1 size: %d" % len(dm1)
-        #print "dm1_labels size: %d" % len(dm1_labels)
-        #print "dm2 size: %d" % len(dm2)
-        #print "dm2_labels size: %d" % len(dm2_labels)
-        #print dm1
-        #print dm2
-        #print dm1_labels
-        #print dm2_labels
+                resultsDict = {}
+                resultsDict = m.runAnalysis()
+                resultsDict['DM1_file_name'] = fp1
+                resultsDict['DM2_file_name'] = fp2
+                resultsDict['sample_size'] = len(dm1_labels)
 
-        resultsDict = {}
-        resultsDict = m.runAnalysis()
-        resultsDict['DM1_file_name'] = input_dm_fps[0] 
-        resultsDict['DM2_file_name'] = input_dm_fps[1] 
-        resultsDict['sample_size'] = len(dm1_labels)
+                p_str = format_p_value_for_num_iters(resultsDict['p_value'],num_iterations)
 
-        p_str = format_p_value_for_num_iters(resultsDict['p_value'],num_iterations)
+                output_f.write(resultsDict['DM1_file_name'])
+                output_f.write("\t")
 
-        output_f.write(resultsDict['DM1_file_name'])
-        output_f.write("\t")
+                output_f.write(resultsDict['DM2_file_name'])
+                output_f.write("\t")
 
-        output_f.write(resultsDict['DM2_file_name'])
-        output_f.write("\t")
+                #fixes space issues for formatting
+                third_word_spaces_needed = len("Number of entries") - len(dm1_labels)
+                third_word_spaces = "" 
+                while(third_word_spaces_needed > 0):
+                    third_word_spaces_needed = third_word_spaces_needed - 1
+                    third_word_spaces = third_word_spaces + " "
+                output_f.write(str(resultsDict['sample_size']))
+                output_f.write(third_word_spaces)
+                output_f.write("\t")
 
-        #fixes space issues for formatting
-        third_word_spaces_needed = len("Number of entries") - len(dm1_labels)
-        third_word_spaces = "" 
-        while(third_word_spaces_needed > 0):
-            third_word_spaces_needed = third_word_spaces_needed - 1
-            third_word_spaces = third_word_spaces + " "
-        output_f.write(str(resultsDict['sample_size']))
-        output_f.write(third_word_spaces)
-        output_f.write("\t")
+                output_f.write(p_str)
 
-        output_f.write(p_str)
-
-        output_f.write("\n")
+                output_f.write("\n")
         output_f.close()
+
+    elif method == 'partial_mantel':
+        num_perms = opts.num_permutations
+
+        # Try to creat the specified output dir (if not already in existence)
+        try:
+            create_dir(opts.output_dir)
+        except:
+            option_parser.error("Could not create directory specified with the -o output option.")
+
+        control_dm_fp = opts.control_dm
+        res_file = open(path.join(opts.output_dir, "mantel_partial_results.txt"), 'w')
+        res_file.write(comment)
+
+        sample_id_map_fp = opts.sample_id_map_fp
+        if sample_id_map_fp:
+            sample_id_map = dict([(k,v[0]) \
+             for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
+        else:
+            sample_id_map = None
+
+        (dm1_labels, dm1), (dm2_labels, dm2) = make_compatible_distance_matrices(
+            parse_distmat(open(input_dm_fps[0], 'U')),
+            parse_distmat(open(input_dm_fps[1], 'U')), lookup=sample_id_map)
+
+        (dm1_labels, dm1), (cdm_labels, cdm) = make_compatible_distance_matrices(
+            parse_distmat(open(input_dm_fps[0], 'U')),
+            parse_distmat(open(control_dm_fp, 'U')), lookup=sample_id_map)
+
+        # Output header to result file. 
+        res_file.write('\nDM1: %s\nDM2: %s\nCM: %s\npermutations: %d\n' % (input_dm_fps[0], input_dm_fps[1], control_dm_fp, num_perms))
+
+        # Construct a PartialMantel object.
+        pm = PartialMantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), 
+                            DistanceMatrix(dm2, dm2_labels, dm2_labels), 
+                            DistanceMatrix(cdm, cdm_labels, cdm_labels), num_perms)
+
+        # Run the analysis.
+        res = pm.runAnalysis()
+
+        # Output statistic to result file.
+        res_file.write('\nMantel stat(r-val)\tp-val\t')
+        res_file.write('\n%f\t%f' % (res['mantel_r'], res['mantel_p']))
+        res_file.close()
+
+    elif method == 'mantel_corr':
+        pass
+
+
 
 if __name__ == "__main__":
     main()
