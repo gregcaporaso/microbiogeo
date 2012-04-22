@@ -77,7 +77,24 @@ def main():
     elif opts.method == 'lsa':
         pass
     elif opts.method == 'morans_i':
-        pass
+        category = cats[0]
+        # verify that category is in mapping file
+        map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
+        if not category in map_list[1][1:]:
+            print "Category '%s' not found in mapping file columns:" %(category)
+            print map_list[1][1:]
+            exit(1)
+
+        distance_matrix = opts.input_dm
+        map_file = opts.mapping_file
+        category = category
+        output = opts.output_dir
+
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+
+        rex = RExecutor()
+        results = rex(command_args, "morans_i.r", output_dir=opts.output_dir, remove_tmp=True)
+
     elif opts.method == 'mrpp':
         pass
     elif opts.method == 'multicola':
