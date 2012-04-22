@@ -53,9 +53,6 @@ hypothesis.
 Source:
 http://cran.r-project.org/web/packages/ape/ape.pdf
 
-Example:
-python morans_i.py -i unweighted_unifrac_dm.txt -m map.txt -c PH -o moransIOutput
-
 This script requires that R be installed and in the search path. To install R \
 visit: http://www.r-project.org/. Once R is installed, run R from the \
 command-line by typing "R" and pressing enter. Then excecute the command \
@@ -65,8 +62,9 @@ script_info['script_usage']=[]
 
 script_info['script_usage'].append(("""Running a Moran's I calculation using PH as the selected category from map.txt""",""" """,""" python morans_i.py -i unweighted_unifrac_dm.txt -m map.txt -c PH -o moransIOutput """))
 
-script_info['output_description']="""Outputs a ranking of features (e.g. OTUs) by importance, an estimation of the generalization error of the classifier, and the predicted class labels and posterior class probabilities \
-according to the classifier."""
+script_info['output_description']="""Outputs a file that contains the values \
+ used to calculate the Moran's I index, as well as the Moran's I index itself.
+ """
 
 script_info['required_options'] = [\
     make_option('-i', '--input_data', help='This is the argument used for the \
@@ -80,9 +78,6 @@ from the mapping file in order to identify the spatial correlation based on \
 that category.'),
 ]
 
-#Not sure what this is about - LK
-#errortype_choices = ['oob','loo','cv5','cv10']
-
 script_info['optional_options']=[\
     make_option('-o','--output_dir',default='.',\
             help='the output directory [default: %default]'),
@@ -92,15 +87,6 @@ script_info['optional_options']=[\
         ' [default: %default]'),
     make_option('--ntree',type='int',default=500,\
         help='Number of trees in forest (more is better but slower) [default: %default]'),
-    #make_option('-e', '--errortype',type='choice',default='oob',
-        #choices = errortype_choices,
-        #help='type of error estimation. Valid choices are: ' +\
-            #', '.join(errortype_choices) + '. '+\
-            #'oob: out-of-bag, fastest, only builds one classifier, use for quick estimates; ' +\
-            #'cv5: 5-fold cross validation, provides mean and standard deviation of error, use for good estimates on very large data sets; ' +\
-            #'cv10: 10-fold cross validation, provides mean and standard deviation of error, use for best estimates; ' +\
-            #'loo: leave-one-out cross validation, use for small data sets (less than ~30-50 samples) ' +\
-            #'[default %default]')
 ]
 script_info['version'] = __version__
 
