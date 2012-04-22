@@ -202,11 +202,13 @@ class RExecutor(CommandLineApplication):
         """Returns the path to the qiime R source directory
         """
         current_file_path = abspath(__file__)
-        # Get the directory containing util.py
+
+        # Dwan ADDED the next two lines.
         current_dir_path = dirname(current_file_path)
-        # Return the directory containing the directory containing util.py
         script_dir = path.join(dirname(current_dir_path), '..', 'r')
 
+        # The next two lines were the originals that Dwan replaced.
+        
         # qiime_dir = get_qiime_project_dir()
         # script_dir = path.join(qiime_dir,'qiime','support_files','R')
         return script_dir
