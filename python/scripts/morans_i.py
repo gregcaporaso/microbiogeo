@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# File created on 09 Feb 2010
+# File created on 22 April 2012 by Logan Knecht
 from __future__ import division
 
 __author__ = "Logan Knecht"
-__copyright__ = "Copyright 2011, The QIIME MiCOS Project"
-__credits__ = ["Damien Coy, Logan Knecht"]
+__copyright__ = "Copyright 2012, The QIIME MiCOS Project"
+__credits__ = ["Damien Coy, Logan Knecht, Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.4.0"
 __maintainer__ = "Logan Knecht"
@@ -28,7 +28,8 @@ This function computes Moran.s I autocorrelation coefficient of x giving a \
 matrix of weights using the method described by Gittleman and Kot (1990).
 """
 script_info['script_description']="""
-This script performs a Moran's I calculation on a distance matrix and its \
+This script uses an R script in the background so that it can \
+perform a Moran's I calculation on a distance matrix and its \
 mapping file. The Moran's I calculation identifies the spatial correlation \
 of a set of data based on the category selected. This category must be a \
 column listed in the mapping file. Using that selection it then calculates \
