@@ -16,17 +16,16 @@ from os import path
 
 from cogent.util.misc import create_dir
 
-from qiime.util import make_option
 from qiime.parse import parse_distmat, fields_to_dict
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
-                        make_compatible_distance_matrices)
+                        make_compatible_distance_matrices,
+                        make_option)
 
 from python.qiime.parse import DistanceMatrix
 from python.qiime.stats import Mantel, MantelCorrelogram, \
                               PartialMantel
-from python.qiime.r_executor import RExecutor                              
 
 options_lookup = get_options_lookup()
 
@@ -36,7 +35,6 @@ script_info['script_description'] = ""
 script_info['script_usage'] = [("","Perform Mantel test on all pairs of four distance matrices, including 1000 Monte Carlo iterations. Write the output to mantel_out.txt.","%prog --method mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out.txt -n 1000")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
- # Example required option
  # All methods use these
 make_option('--method', help='Matrix Correletion method to be executed. Valid options: [mantel, partial_mantel, mantel_corr]'),
  make_option('-i','--input_dms',help='the input distance matrices, comma-separated'),\
@@ -70,7 +68,6 @@ comment_mantel_pmantel = """# Number of entries refers to the number of rows (or
 # to include only those samples that were in both distance matrices. 
 # p-value contains the correct number of significant digits.
 """
-
 
 comment_corr = """# Number of entries refers to the number of rows (or cols) 
 # retained in each distance matrix after filtering the distance matrices 
@@ -263,6 +260,8 @@ def main():
             results_f.write('%s\t%d\t%s\t%s\t%s\n' % (class_idx, num_dist, r, p,
                 p_corr))
         results_f.close()
+    else:
+        print "Method '%s' not recognized\n"%(opts.method)
 
 
 
