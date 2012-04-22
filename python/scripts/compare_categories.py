@@ -29,7 +29,7 @@ script_info['script_usage'] = [("","","")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # All methods use these
-make_option('--method', help='The category analysis method. Valid options: [adonis, anosim, anova, bioenv, NEED TO GRAB LIST OF METHODS]'),\
+make_option('--method', help='The category analysis method. Valid options: [adonis, anosim, bioenv, dfa, isa, lsa, morans_i, mrpp, multicola, permanova, permdisp, rda, rm_permanova]'),\
  make_option('-i','--input_dm',help='the input distance matrix'),\
  make_option('-o','--output_dir',help='the output directory [default: %default]', default='.'),\
  make_option('-s','--sample_id_map_fp',
@@ -61,7 +61,49 @@ def main():
     dm = DistanceMatrix(dm_temp, dm_labels, dm_labels)
     md_map = MetadataMap.parseMetadataMap(open(opts.sample_id_map_fp))
 
+    if 'adonis':
+      pass
+    elif opts.method == 'anosim':
+      pass
+    elif opts.method == 'best':
+      pass
+    elif opts.method == 'dfa':
+      pass
+    elif opts.method == 'isa':
+      pass
+    elif opts.method == 'lsa':
+      pass
+    elif opts.method == 'morans_i':
+      pass
+    elif opts.method == 'mrpp':
+      pass
+    elif opts.method == 'multicola':
+      pass
+    elif opts.method == 'permanova':
+      pass
+    elif opts.method == 'permdisp':
+      pass
+    elif opts.method == 'rda':
+      pass
+    elif opts.method == 'rm_permanova':
+      pass
+    else:
+      print "Method '%s' not recognized"
 
+
+    # 'adonis'
+    # 'anosim'
+    # 'best'
+    # 'dfa'
+    # 'isa'
+    # 'lsa'
+    # 'morans_i'
+    # 'mrpp'
+    # 'multicola'
+    # 'permanova'
+    # 'permdisp'
+    # 'rda'
+    # 'rm_permanova'
 
 
 if __name__ == "__main__":
