@@ -217,17 +217,16 @@ class MetadataMap():
         return self._metadata[sampleId][category]
 
     def getCategoryValues(self, sample_ids, category):
-        """Returns all the values of a given category 
+        """Returns all the values of a given category.
 
-        The return categories will be a list
+        The return categories will be a list.
 
         Arguments:
             sample_ids - An ordered list of sample IDs (i.e., from a distance
                 matrix)
             category - the category name whose values will be returned
         """
-
-        return [self._metadata[sid][category] for sid in sample_ids] 
+        return [self._metadata[sid][category] for sid in sample_ids]
 
     def getSampleIds(self):
         """Returns the IDs of all samples in the metadata map.

@@ -3,7 +3,8 @@ from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout"]
+__credits__ = ["Michael Dwan", "Logan Knecht", "Jai Ram Rideout",
+               "Andrew Cochran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
@@ -29,7 +30,8 @@ from cogent.util.misc import combinate
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import asarray, asmatrix, dot, empty, finfo, matrix, std, zeros
+from numpy import (arange, argsort, array, asarray, asmatrix, dot, empty,
+                   finfo, matrix, mean, std, tri, zeros)
 from numpy import min as np_min, max as np_max
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
@@ -54,12 +56,12 @@ class DistanceMatrixStats(object):
         Initializes an instance with the provided list of distance matrices.
 
         Arguments:
-          distmats - a list of DistanceMatrix objects
-          num_dms - the exact number of allowable distance matrices. If -1 (the
-              default), there is no restriction on how many distance matrices
-              the user can set
-          min_dm_size - the minimum size that all distance matrices must have
-              that are stored by this instance. If -1, no size restriction
+            distmats - a list of DistanceMatrix objects
+            num_dms - the exact number of allowable distance matrices. If -1
+                (the default), there is no restriction on how many distance
+                matrices the user can set
+            min_dm_size - the minimum size that all distance matrices must have
+                that are stored by this instance. If -1, no size restriction
         """
         self._num_dms = num_dms
         self._min_dm_size = min_dm_size
@@ -73,7 +75,7 @@ class DistanceMatrixStats(object):
         """Sets the list of distance matrices to the supplied list.
 
         Arguments:
-          distmats - the new list of distance matrices being assigned
+            distmats - the new list of distance matrices being assigned
         """
         if not isinstance(distmats, ListType):
             raise TypeError("The item passed in as the new list was not a "
@@ -186,12 +188,12 @@ class CorrelationStats(DistanceMatrixStats):
         Creates a new instance with the provided list of distance matrices.
 
         Arguments:
-          distmats - a list of DistanceMatrix objects
-          num_dms - the exact number of allowable distance matrices. If -1 (the
-              default), there is no restriction on how many distance matrices
-              the user can set
-          min_dm_size - the minimum size that all distance matrices must have
-              that are stored by this instance. If -1, no size restriction
+            distmats - a list of DistanceMatrix objects
+            num_dms - the exact number of allowable distance matrices. If -1
+                (the default), there is no restriction on how many distance
+                matrices the user can set
+            min_dm_size - the minimum size that all distance matrices must have
+                that are stored by this instance. If -1, no size restriction
         """
         super(CorrelationStats, self).__init__(distmats, num_dms, min_dm_size)
 
@@ -203,7 +205,7 @@ class CorrelationStats(DistanceMatrixStats):
         the distance matrices are compatible.
 
         Arguments:
-          distmats - the new list of distance matrices being assigned
+            distmats - the new list of distance matrices being assigned
         """
         super(CorrelationStats, self).setDistanceMatrices(distmats)
         if len(distmats) < 1:
@@ -220,7 +222,7 @@ class CorrelationStats(DistanceMatrixStats):
                                  "sample IDs.")
 
 
-class CategoryStats(DistanceMatrixStats):
+class CategoryStats(object):
     """Base class for categorical statistical analyses.
 
     It is subclassed by categorical statistical methods such as DB-RDA or BEST.
@@ -241,16 +243,16 @@ class CategoryStats(DistanceMatrixStats):
         and list of categories.
 
         Arguments:
-          mdmap - a MetadataMap instance
-          dm - a DistanceMatrix instance
-          cats - a list of strings denoting categories in the metadata map that
-            will be used by this analysis (i.e. the grouping variable(s))
+            mdmap - a MetadataMap instance
+            dm - a DistanceMatrix instance
+            cats - a list of strings denoting categories in the metadata map
+                that will be used by this analysis (i.e. the grouping
+                variable(s))
         """
-        super(CategoryStats, self).__init__([dm], 1)
         self.setData(mdmap, dm)
         self.setCategories(cats)
 
-    def setData(self, new_map, new_dm):
+    def setData(self, new_mdmap, new_dm):
         """Sets the instance's metadata map and distance matrix.
 
         Separate setter methods for the map and distance matrix are not
@@ -260,20 +262,20 @@ class CategoryStats(DistanceMatrixStats):
         metadata map also should be changed at the same time.
 
         Arguments:
-          new_map - A MetadataMap object instance
-          new_dm - A DistanceMatrix object instance
+            new_mdmap - A MetadataMap object instance
+            new_dm - A DistanceMatrix object instance
         """
-        if not isinstance(new_map, MetadataMap):
+        if not isinstance(new_mdmap, MetadataMap):
             raise TypeError('Invalid type: %s; not MetadataMap' %
-                            new_map.__class__.__name__)
+                            new_mdmap.__class__.__name__)
         if not isinstance(new_dm, DistanceMatrix):
             raise TypeError('Invalid type: %s; not DistanceMatrix' %
                             new_dm.__class__.__name__)
-        if sorted(new_map.getSampleIds()) != sorted(new_dm.SampleIds):
+        if not self.compatibleSampleIds(new_dm, new_mdmap):
             raise ValueError("The metadata map and distance matrix must have "
                              "the same sample IDs.")
-        self._metadata_map = new_map
-        self.setDistanceMatrices([new_dm])
+        self._metadata_map = new_mdmap
+        self._dm = new_dm
 
     def getMetadataMap(self):
         """Returns the instance's metadata map.
@@ -286,19 +288,19 @@ class CategoryStats(DistanceMatrixStats):
         """Gets the instance's distance matrix.
 
         The distance matrix is returned as a DistanceMatrix class instance.
-        This method is provided as a convenience method instead calling
-        getDistanceMatrices() and retrieving the first item in the list
-        (CategoryStats can only have a single distance matrix).
         """
-        return self.getDistanceMatrices()[0]
+        return self._dm
 
     def setCategories(self, new_categories):
         """Sets the instance's list of categories.
 
         Arguments:
-          new_categories - A list of category name strings. These must be
-            present in the current metadata map
+            new_categories - A list of category name strings. These must be
+                present in the current metadata map
         """
+        if not isinstance(new_categories, ListType):
+            raise TypeError("The supplied categories must be a list of "
+                            "strings.")
         for new_cat in new_categories:
             if not isinstance(new_cat, str):
                 raise TypeError("Invalid category: not of type 'string'")
@@ -313,6 +315,228 @@ class CategoryStats(DistanceMatrixStats):
         Returns a list of mapping file category name strings.
         """
         return self._categories
+
+    def compatibleSampleIds(self, dm, mdmap):
+        """Returns True if the sample IDs are the same in both structures.
+
+        This method will return True if the sample IDs in the distance matrix
+        are exactly the same as the sample IDs in the metadata map. Ordering of
+        samples is not taken into account.
+
+        Arguments:
+            dm - the DistanceMatrix instance to compare
+            mdmap - the MetadataMap instance to compare
+        """
+        same = False
+        if sorted(dm.getSampleIds()) == sorted(mdmap.getSampleIds()):
+            same = True
+        return same
+
+    def runAnalysis(self):
+        """Runs the statistical method and returns relevant results.
+
+        The return value of this method is a python dictionary with arbitrary
+        key/value pairs of results, since each statistical method returns
+        different results.
+
+        This method is not implemented and should be implemented by subclasses.
+        It is a good idea to call the parent class' runAnalysis() method first
+        to obtain any results from the parent and then add more results to the
+        dict that is obtained from the parent.
+        """
+        raise NotImplementedError("Method not implemented by abstract base.")
+
+
+class Anosim(CategoryStats, PermutationStats):
+    """Class for ANOSIM categorical statistical analysis.
+
+    This code is heavily based on Andrew Cochran's original procedural version.
+    """
+
+    def __init__(self, mdmap, dm, cat, num_perms):
+        CategoryStats.__init__(self, mdmap, dm, [cat])
+        PermutationStats.__init__(self, num_perms)
+
+    def runAnalysis(self):
+        ntrials = self.getNumPermutations()
+        category = self.getCategories()[0]
+        samples = self.getDistanceMatrix().getSampleIds()
+        distmtx = self.getDistanceMatrix().getDataMatrix()
+
+        # Array to hold value of p-tests
+        r_value_permunations = zeros(ntrials)
+
+        group_hash = {}
+        for samp_id in samples:
+            group_hash[samp_id] = self.getMetadataMap().getCategoryValue(
+                    samp_id, category)
+
+        # Calculate the R value
+        r_value = self._anosim(samples, distmtx, group_hash)
+
+        # Main loop to run the p-tests
+        for i in xrange(ntrials):
+            # Randomize grouping
+            grouping_random = []
+            for sample in samples:
+                grouping_random.append(group_hash[sample])
+            grouping_random = permutation(grouping_random)
+
+            for j, sample in enumerate(samples):
+                group_hash[sample] = grouping_random[j]
+            r_value_permunations[i] = self._anosim(samples, distmtx,
+                                                   group_hash)
+
+        # Calculate the p-value and return
+        p_value = (sum(r_value_permunations >= r_value) + 1) / (ntrials + 1)
+
+        return {'method_name': 'ANOSIM', 'r_value': r_value,
+                'p_value': p_value}
+
+    def _anosim(self, samples, distmtx, group_hash):
+        """Computes ANOSIM on the current data, returning the R value.
+
+        The R value is between -1 and 1 and indicates the strength of the
+        grouping.
+        """
+        distmtx = asarray(distmtx)
+        # Local Variable
+        matrix_size = len(distmtx)
+
+        # Create grouping matrix
+        with_between = zeros(distmtx.shape)
+        for i, i_sample in enumerate(samples):
+            group_list_i_sample = group_hash[i_sample]
+            for j, j_sample in enumerate(samples):
+                if group_list_i_sample == group_hash[j_sample]:
+                    with_between[i][j] = 1
+        
+        # Extract upper triangle
+        differences = distmtx[tri(len(distmtx)) == 0]
+        grouping = with_between[tri(len(with_between)) == 0]
+        
+        # Sort extracted data
+        sorted_differences = []
+        sorted_grouping = []
+        for idx in argsort(differences):
+             sorted_differences.append(differences[idx])
+             sorted_grouping.append(grouping[idx])
+        sorted_differences = array(sorted_differences)
+        sorted_grouping = array(sorted_grouping)
+        
+        # Account for rank ties, then compute r value
+        rank_list = arange(1,len(sorted_differences) + 1)
+        adjusted_rank_list = self._remove_ties(sorted_differences, rank_list)
+        result = self._compute_r_value(adjusted_rank_list, sorted_grouping,
+                                       matrix_size)
+        return result
+
+    def _remove_ties(self, sorted_diffs, ranks):
+        """
+        Replaces repeat values with the average of them
+        
+            PARAMETERS
+            sorted_diffs: array of the sorted differences
+            ranks: array containing the ranks of each of the differences
+            
+            RETURNS
+            result: array of the adjusted ranks
+        """
+        # Local Variables
+        result = []
+        tie_list = []
+        tie_count = 0
+        tie_flag = 0
+        
+        # Main Loop
+        for i in range(len(sorted_diffs)-1):
+            # Store state information
+            curr = sorted_diffs[i]
+            next = sorted_diffs[i+1]
+            rank_val = ranks[i]
+            
+            # A tie has not occured yet
+            if tie_flag == 0:
+                # Check for a tie
+                if curr == next:
+                    tie_count = tie_count + 1
+                    tie_list.append(rank_val)
+                    first_tie_index = i
+                    tie_flag = 1
+                # If no tie, fill in the list
+                else:
+                    result.append(rank_val)
+            # A tie has occured
+            else:
+                # If another tie occurs
+                if curr == next:
+                    tie_count = tie_count + 1
+                    tie_list.append(rank_val)
+                # No more ties, average their values and attach to adjusted list
+                else:
+                    tie_list.append(rank_val)
+                    last_tie_index = i
+                    result = _populate_adjusted_vals(tie_list, first_tie_index, \
+                        last_tie_index, result)
+                    tie_flag = 0
+                    tie_count = 0
+                    tie_list = []
+        
+        # If there is a tie that extends to the final position, out of main loop
+        # to avoid out of list bounds errors
+        if tie_flag == 1:
+            tie_list.append(ranks[i+1])
+            last_tie_index = i + 1
+            result = _populate_adjusted_vals(tie_list, first_tie_index, \
+                last_tie_index, result)
+        else:
+            result.append(ranks[i+1])
+            
+        return array(result)
+
+    def _populate_adjusted_vals(self, tie_list, first_tie_index, last_tie_index, result):
+        """
+        Helper function to _remove_ties. Consolidates repeated code
+        """
+        tie_list = array(tie_list)
+        adjusted_value = tie_list.mean()
+        while first_tie_index <= last_tie_index:
+            result.append(adjusted_value)
+            first_tie_index = first_tie_index + 1
+        return result
+
+    def _compute_r_value(self, adjusted_ranks, sorted_groups, number_samples):
+        """
+        Code that performs the actual math involved in solving anosim
+        
+            PARAMETERS
+            adjusted_rank_list: list of the ranks, adjusted for ties
+            sorted_group_list: list associating differences to groups
+            number_samples: how many total samples
+            
+            RETURNS
+            r: R value computed by anosim
+        """
+        
+        # Compute r_W and r_B
+        r_W = mean(adjusted_ranks[sorted_groups==1])
+        r_B = mean(adjusted_ranks[sorted_groups==0])
+        
+        n = number_samples
+        divisor = float(n*((n-1)/4))
+        r = (r_B - r_W) / divisor 
+        return r
+
+    def _format_anosim_results(self, input_path, r_value, p_value='NA'):
+        """
+        Formats the results of the script for the output file
+        
+            Line 1: header ("Input filepath ANOSIM_R_VALUE  p_value")
+            Line 2: data 
+        """
+        result = ['Input_filepath\tANOSIM_R_value\tp_value']
+        result.append('{0}\t{1}\t{2}'.format(input_path,r_value,p_value))
+        return result
 
 
 class BioEnv(CategoryStats):

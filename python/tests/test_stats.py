@@ -16,9 +16,9 @@ from cogent.util.unit_test import TestCase, main
 from numpy import array, matrix
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.stats import (BioEnv, CategoryStats, CorrelationStats,
-    DistanceBasedRda, DistanceMatrixStats, MantelCorrelogram, Mantel,
-    PartialMantel, PermutationStats)
+from python.qiime.stats import (Anosim, BioEnv, CategoryStats,
+    CorrelationStats, DistanceBasedRda, DistanceMatrixStats, MantelCorrelogram,
+    Mantel, PartialMantel, PermutationStats)
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -253,7 +253,7 @@ class CorrelationStatsTests(TestHelper):
         self.assertRaises(ValueError, CorrelationStats, [])
 
     def test_runAnalysis(self):
-        """Test runAnalysis() is not implemented in CorrelationStats"""
+        """Test runAnalysis() is not implemented in CorrelationStats."""
         self.assertRaises(NotImplementedError, self.cs.runAnalysis)
 
 
@@ -266,19 +266,21 @@ class CategoryStatsTests(TestHelper):
         self.cs_overview = CategoryStats(self.overview_map, self.overview_dm,
             ["Treatment", "DOB"])
 
+    def test_setData(self):
+        """setData() should set the dm and mdmap properties."""
+        self.cs_overview.setData(self.overview_map, self.overview_dm)
+        self.assertEqual(self.cs_overview.getDistanceMatrix(),
+                         self.overview_dm)
+        self.assertEqual(self.cs_overview.getMetadataMap(),
+                         self.overview_map)
+
     def test_setData_invalid_input(self):
-        """setData() must receive the correct object types."""
+        """setData() must receive the correct and compatible object types."""
         self.assertRaises(TypeError, self.cs_overview.setData, "Hello!", "foo")
         self.assertRaises(TypeError, self.cs_overview.setData,
             self.overview_dm, self.overview_map)
         self.assertRaises(ValueError, self.cs_overview.setData,
             self.overview_map, self.single_ele_dm)
-
-    def test_setDistanceMatrices_wrong_number(self):
-        """Test setting an invalid number of distance matrices."""
-        self.assertRaises(ValueError, self.cs_overview.setDistanceMatrices, [])
-        self.assertRaises(ValueError, self.cs_overview.setDistanceMatrices,
-                          [self.overview_dm, self.overview_dm])
 
     def test_getMetadataMap(self):
         """Test valid return of getMetadataMap method."""
@@ -292,7 +294,7 @@ class CategoryStatsTests(TestHelper):
 
     def test_setCategories_invalid_input(self):
         """Must receive a list of strings that are in the mapping file."""
-        self.assertRaises(ValueError, self.cs_overview.setCategories, "Hello!")
+        self.assertRaises(TypeError, self.cs_overview.setCategories, "Hello!")
         self.assertRaises(TypeError, self.cs_overview.setCategories,
             self.overview_dm)
         self.assertRaises(ValueError, self.cs_overview.setCategories,
@@ -304,6 +306,38 @@ class CategoryStatsTests(TestHelper):
         expected = ['Treatment', 'DOB']
         observed = self.cs_overview.getCategories()
         self.assertEqual(expected, observed)
+
+    def test_compatibleSampleIds(self):
+        """Test for compatible sample IDs between dm and mdmap."""
+        self.assertEqual(self.cs_overview.compatibleSampleIds(
+                self.overview_dm, self.overview_map), True)
+        self.assertEqual(self.cs_overview.compatibleSampleIds(
+                self.single_ele_dm, self.overview_map), False)
+
+    def test_runAnalysis(self):
+        """Test runAnalysis() is not implemented in CategoryStats."""
+        self.assertRaises(NotImplementedError, self.cs_overview.runAnalysis)
+
+
+class AnosimTests(TestHelper):
+    """Tests for the Anosim class."""
+
+    def setUp(self):
+        """Define some useful data to use in testing."""
+        super(AnosimTests, self).setUp()
+        self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
+                                      "Treatment", 999)
+
+    def test_runAnalysis(self):
+        """Test runAnalysis() on overview data with Treatment category."""
+        # These results were verified with R.
+        exp = {'method_name': 'ANOSIM', 'p_value': 0.0080000000000000002,
+               'r_value': 0.8125}
+        obs = self.anosim_overview.runAnalysis()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertTrue(obs['p_value'] > 0 and obs['p_value'] < 0.02)
 
 
 class BioEnvTests(TestHelper):
