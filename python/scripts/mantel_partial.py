@@ -12,6 +12,7 @@ __status__ = "Development"
 
 from os import path
 from cogent.util.misc import create_dir
+from qiime.format import format_p_value_for_num_iters
 from qiime.parse import parse_distmat, fields_to_dict
 from qiime.util import (get_options_lookup, make_compatible_distance_matrices,
                         make_option, parse_command_line_parameters)
@@ -52,7 +53,11 @@ script_info['optional_options'] = [
 ]
 script_info['version'] = __version__
 
-comment = """# p-value contains the correct number of significant digits."""
+comment = """# Number of entries refers to the number of rows (or cols) 
+# retained in each distance matrix after filtering the distance matrices 
+# to include only those samples that were in both distance matrices. 
+# p-value contains the correct number of significant digits.
+"""
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -88,10 +93,7 @@ def main():
         parse_distmat(open(control_dm_fp, 'U')), lookup=sample_id_map)
 
     # Output header to result file. 
-    res_file.write('\nDM1: %s\nDM2: %s\nCM: %s\npermutations: %d\n' % (input_dm_fps[0], 
-                                                                     input_dm_fps[1],
-                                                                     control_dm_fp,
-                                                                      num_perms))
+    res_file.write('\nDM1: %s\nDM2: %s\nCM: %s\nNumber of entries: %s\npermutations: %d\n' % (input_dm_fps[0], input_dm_fps[1], control_dm_fp, len(dm1_labels), num_perms))
 
     # Construct a PartialMantel object.
     pm = PartialMantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), 
@@ -100,10 +102,11 @@ def main():
 
     # Run the analysis.
     res = pm.runAnalysis()
+    #res['mantel_p'] = format_p_value_for_num_iters(res['mantel_p'], num_perms)
 
     # Output statistic to result file.
     res_file.write('\nMantel stat(r-val)\tp-val\t')
-    res_file.write('\n%f\t%f' % (res['mantel_r'], res['mantel_p']))
+    res_file.write('\n%f\t%s' % (res['mantel_r'], res['mantel_p']))
     res_file.close()
 
 
