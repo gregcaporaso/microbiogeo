@@ -85,8 +85,6 @@ script_info['optional_options']=[\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
         ' [default: %default]'),
-    make_option('--ntree',type='int',default=500,\
-        help='Number of trees in forest (more is better but slower) [default: %default]'),
 ]
 script_info['version'] = __version__
 
