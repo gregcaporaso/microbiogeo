@@ -201,9 +201,9 @@ class RExecutor(CommandLineApplication):
     def _get_R_script_dir(self):
         """Returns the path to the qiime R source directory
         """
-        current_file_path = abspath(__file__)
 
-        # Dwan ADDED the next two lines.
+        # Dwan ADDED the next three lines.
+        current_file_path = abspath(__file__)
         current_dir_path = dirname(current_file_path)
         script_dir = path.join(dirname(current_dir_path), '..', 'r')
 

@@ -10,7 +10,7 @@ __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
 __email__ = "mdwan.tgen@gmail.com"
 __status__ = "Development"
- 
+
 
 from os import path, makedirs, listdir
 
@@ -119,10 +119,25 @@ def main():
 
         rex = RExecutor()
         results = rex(command_args, "betadisper.r", output_dir=opts.output_dir, remove_tmp=True)
-        print results
 
     elif opts.method == 'rda':
-        pass
+        category = cats[0]
+        # verify that category is in mapping file
+        map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
+        if not category in map_list[1][1:]:
+            print "Category '%s' not found in mapping file columns:" %(category)
+            print map_list[1][1:]
+            exit(1)
+
+        distance_matrix = opts.input_dm
+        map_file = opts.mapping_file
+        output = opts.output_dir
+
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+
+        rex = RExecutor()
+        results = rex(command_args, "rda.r", output_dir=opts.output_dir, remove_tmp=True)
+
     elif opts.method == 'rm_permanova':
         pass
     else:

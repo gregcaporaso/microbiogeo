@@ -2,7 +2,7 @@
 #
 # Usage:
 # R --slave --args -d distance_matrix.txt -m mapping_file.txt -c Treatment < r/rda.r
-# 
+#
 # Print help string:
 # R --slave --args -h < r/rda.r
 #
@@ -21,7 +21,7 @@ if (is.element('QIIME_DIR', names(envvars))) {
 
 # Make option list and parse command line.
 option_list <- list(
-    make_option(c("-d", "--distmat"), type="character",
+    make_option(c("-i", "--distmat"), type="character",
         help="Input distance matrix [required]."),
     make_option(c("-m", "--mapfile"), type="character",
         help="Input metadata mapping file [required]."),

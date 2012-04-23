@@ -10,7 +10,7 @@ __version__ = "1.4.0"
 __maintainer__ = "Damien Coy"
 __email__ = "damien.coy@nau.edu"
 __status__ = "Release"
- 
+
 from qiime.util import make_option
 from os import makedirs, listdir
 from os.path import join
@@ -73,6 +73,6 @@ def main():
 
     rex = RExecutor()
     results = rex(command_args, "betadisper.r", output_dir=opts.output_dir, remove_tmp=True)
-        
+
 if __name__ == "__main__":
     main()
