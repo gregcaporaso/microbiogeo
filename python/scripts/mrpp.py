@@ -20,14 +20,14 @@ from qiime.r_executor import RExecutor
 options_lookup = get_options_lookup()
 
 script_info={}
-script_info['brief_description']="""Run PERMDISP (betadisper) on given distance matrix using map and category."""
+script_info['brief_description']="""Run MRPP on given distance matrix using map and category."""
 script_info['script_description']="""This script utilizes the r_executor class to call the/
- r implementation of PERMDISP (betadisper) using the specified distance matrix, otu table, category, and/
+ r implementation of MRPP using the specified distance matrix, otu table, category, and/
  output file provided. The results are then written to the specified file."""
 
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Simple example""","""""","""permdisp.py -i distance_matrix.txt -m map.txt -c Category -o result"""))
-script_info['output_description']="""Outputs the results of the PERMDISP (betadisper)"""
+script_info['script_usage'].append(("""Simple example""","""""","""mrpp.py -i distance_matrix.txt -m map.txt -c Category -o result"""))
+script_info['output_description']="""Outputs the results of the MRPP"""
 script_info['required_options'] = [\
     make_option('-i', '--input_data', help='The input data file containing the distance matrix'),
     make_option('-m', '--mapping_file', help='The mapping file that corresponds to the distance matrix'),
@@ -72,7 +72,7 @@ def main():
     command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
 
     rex = RExecutor()
-    results = rex(command_args, "betadisper.r", output_dir=opts.output_dir, remove_tmp=True)
+    results = rex(command_args, "mrpp.r", output_dir=opts.output_dir, remove_tmp=True)
         
 if __name__ == "__main__":
     main()
