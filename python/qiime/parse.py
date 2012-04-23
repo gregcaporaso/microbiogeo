@@ -18,7 +18,7 @@ manipulation of the data.
 """
 
 from biom.table import DenseTable
-from numpy import asmatrix
+from numpy import asarray
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 
 class DistanceMatrix(DenseTable):
@@ -103,11 +103,11 @@ class DistanceMatrix(DenseTable):
         return self.SampleIds
 
     def getDataMatrix(self):
-        """Returns the matrix of distances as a numpy matrix.
+        """Returns the matrix of distances as a numpy array.
         
         The returned matrix is not a copy of the matrix stored in this object.
         """
-        return asmatrix(self._data)
+        return asarray(self._data)
 
     def flatten(self, lower=True):
         """Returns a list containing the flattened distance matrix.

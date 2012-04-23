@@ -389,6 +389,16 @@ class AnosimTests(TestHelper):
                               \tFast\t20070314\tControl_mouse_I.D._481"]
         self.small_map = MetadataMap.parseMetadataMap(self.small_map_str)
 
+        # Create a group map, which maps sample ID to category value (e.g.
+        # sample 1 to 'control' and sample 2 to 'fast'). This comes in handy
+        # for testing some of the private methods in the Anosim class. This
+        # group map can be used for testing both the small dm data and the
+        # small dm with ties data.
+        self.small_group_map = {}
+        for samp_id in self.small_dm.getSampleIds():
+            self.small_group_map[samp_id] = self.small_map.getCategoryValue(
+                    samp_id, 'Treatment')
+
         # Create three Anosim instances: one for the small dm, one for the
         # small dm with ties, and one for the overview tutorial dataset.
         self.anosim_small = Anosim(self.small_map, self.small_dm, 'Treatment',
@@ -469,6 +479,20 @@ class AnosimTests(TestHelper):
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertEqual(obs['p_value'], exp['p_value'])
 
+    def test_anosim_small(self):
+        """Test _anosim() on small dm."""
+        # These results were verified with R.
+        exp = 0.625
+        obs = self.anosim_small._anosim(self.small_group_map)
+        self.assertFloatEqual(obs, exp)
+
+    def test_anosim_small_ties(self):
+        """Test _anosim() on small dm with ties."""
+        # These results were verified with R.
+        exp = 0.25
+        obs = self.anosim_small_tie._anosim(self.small_group_map)
+        self.assertFloatEqual(obs, exp)
+
     def test_remove_ties1(self):
         """Test removal of ties. Should return [1.5,1.5]."""
         result = self.anosim_small._remove_ties([1,1],[1,2])
@@ -499,6 +523,12 @@ class AnosimTests(TestHelper):
         """Should return [1.5,1.5,3.5,3.5]."""
         result = self.anosim_small._remove_ties([1,1,2,2],[1,2,3,4])
         self.assertEqual(result,[1.5,1.5,3.5,3.5])
+
+    def test_get_adjusted_vals(self):
+        """Test computing adjusted ranks for ties."""
+        exp = [4, 4, 4]
+        obs = self.anosim_small._get_adjusted_vals([3, 4, 5], 0, 2)
+        self.assertEqual(obs, exp)
 
     def test_compute_r1(self):
         """Should return .625 for the R statistic on the small dm."""
@@ -1073,7 +1103,7 @@ class PartialMantelTests(TestHelper):
 
         exp_mantel_r = 0.99999999999999944
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.46 and obs['mantel_p'] < 0.54)
+        self.assertTrue(obs['mantel_p'] > 0.40 and obs['mantel_p'] < 0.60)
 
         obs = self.small_pm_diff.runAnalysis()
         exp_method_name = 'Partial Mantel'

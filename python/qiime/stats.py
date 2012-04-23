@@ -402,188 +402,163 @@ class Anosim(CategoryStats, PermutationStats):
             p_value - the p-value computed by the test, or 'NA' if the number
                 of permutations was zero
         """
-        ntrials = self.getNumPermutations()
+        num_perms = self.getNumPermutations()
         category = self.getCategories()[0]
         samples = self.getDistanceMatrix().getSampleIds()
-        distmtx = self.getDistanceMatrix().getDataMatrix()
 
-        # Array to hold value of p-tests
-        r_value_permunations = zeros(ntrials)
-
-        group_hash = {}
+        # Create the group map, which maps sample ID to category value (e.g.
+        # sample 1 to 'control' and sample 2 to 'fast').
+        group_map = {}
         for samp_id in samples:
-            group_hash[samp_id] = self.getMetadataMap().getCategoryValue(
+            group_map[samp_id] = self.getMetadataMap().getCategoryValue(
                     samp_id, category)
 
-        # Calculate the R value
-        r_value = self._anosim(samples, distmtx, group_hash)
+        # Calculate the R statistic with the grouping found in the current
+        # metadata map.
+        r_stat = self._anosim(group_map)
 
-        # Main loop to run the p-tests
-        for i in xrange(ntrials):
-            # Randomize grouping
-            grouping_random = []
-            for sample in samples:
-                grouping_random.append(group_hash[sample])
-            grouping_random = self.getRandomFunction()(grouping_random)
-
-            for j, sample in enumerate(samples):
-                group_hash[sample] = grouping_random[j]
-            r_value_permunations[i] = self._anosim(samples, distmtx,
-                                                   group_hash)
-
-        # Calculate the p-value and return
-        p_value = (sum(r_value_permunations >= r_value) + 1) / (ntrials + 1)
-
-        if ntrials == 0:
+        if num_perms > 0:
+            # Calculate the p-value based on the number of permutations.
+            perm_stats = []
+            for i in range(num_perms):
+                # Randomize grouping. We don't use values() in order to
+                # preserve ordering in case the user's random function doesn't
+                # change the order of the items in the list.
+                grouping_random = [group_map[sample] for sample in samples]
+                grouping_random = self.getRandomFunction()(grouping_random)
+                for j, sample in enumerate(samples):
+                    group_map[sample] = grouping_random[j]
+                perm_stats.append(self._anosim(group_map))
+            # Calculate the p-value.
+            p_value = (sum(perm_stats >= r_stat) + 1) / (num_perms + 1)
+        else:
             p_value = 'NA'
 
-        return {'method_name': 'ANOSIM', 'r_value': r_value,
+        return {'method_name': 'ANOSIM', 'r_value': r_stat,
                 'p_value': p_value}
 
-    def _anosim(self, samples, distmtx, group_hash):
-        """Computes ANOSIM on the supplied data, returning the R value.
+    def _anosim(self, group_map):
+        """Computes ANOSIM on the supplied grouping, returning the R value.
 
         The R value is between -1 and 1 and indicates the strength of the
         grouping.
-        """
-        distmtx = asarray(distmtx)
-        # Local Variable
-        matrix_size = len(distmtx)
 
-        # Create grouping matrix
-        with_between = zeros(distmtx.shape)
-        for i, i_sample in enumerate(samples):
-            group_list_i_sample = group_hash[i_sample]
-            for j, j_sample in enumerate(samples):
-                if group_list_i_sample == group_hash[j_sample]:
-                    with_between[i][j] = 1
-        
-        # Extract upper triangle
-        differences = distmtx[tri(len(distmtx)) == 0]
-        grouping = with_between[tri(len(with_between)) == 0]
-        
-        # Sort extracted data
-        sorted_differences = []
+        Arguments:
+            group_map - a python dict mapping sample ID to category value (e.g.
+                sample 1 to 'control' and sample 2 to 'fast'). This map must
+                contain a key for each sample ID in the current distance
+                matrix
+        """
+        dm = self.getDistanceMatrix()
+        dm_size = dm.getSize()
+
+        # Create grouping matrix, where a one means that the two samples are in
+        # the same group (e.g. control) and a zero means that they aren't.
+        within_between = zeros((dm_size, dm_size))
+        for i, i_sample in enumerate(dm.getSampleIds()):
+            for j, j_sample in enumerate(dm.getSampleIds()):
+                if group_map[i_sample] == group_map[j_sample]:
+                    within_between[i][j] = 1
+
+        # Extract upper triangle from the distance and grouping matrices.
+        distances = dm.getDataMatrix()[tri(dm_size) == 0]
+        grouping = within_between[tri(dm_size) == 0]
+
+        # Sort extracted data.
+        sorted_distances = []
         sorted_grouping = []
-        for idx in argsort(differences):
-             sorted_differences.append(differences[idx])
+        for idx in argsort(distances):
+             sorted_distances.append(distances[idx])
              sorted_grouping.append(grouping[idx])
-        sorted_differences = array(sorted_differences)
-        sorted_grouping = array(sorted_grouping)
-        
-        # Account for rank ties, then compute r value
-        rank_list = arange(1,len(sorted_differences) + 1)
-        adjusted_rank_list = self._remove_ties(sorted_differences, rank_list)
-        result = self._compute_r_value(adjusted_rank_list, sorted_grouping,
-                                       matrix_size)
-        return result
 
-    def _remove_ties(self, sorted_diffs, ranks):
+        # Account for rank ties, then compute R statistic.
+        rank_list = range(1, len(sorted_distances) + 1)
+        adjusted_rank_list = self._remove_ties(sorted_distances, rank_list)
+        return self._compute_r_value(adjusted_rank_list, sorted_grouping,
+                                     dm_size)
+
+    def _remove_ties(self, sorted_dists, ranks):
+        """Replaces repeat values with the average of them.
+
+        Returns a list containing the adjusted ranks.
+
+        Arguments:
+            sorted_dists: list of the sorted distances
+            ranks: list containing the ranks of each of the differences
         """
-        Replaces repeat values with the average of them
-        
-            PARAMETERS
-            sorted_diffs: array of the sorted differences
-            ranks: array containing the ranks of each of the differences
-            
-            RETURNS
-            result: array of the adjusted ranks
-        """
-        # Local Variables
         result = []
-        tie_list = []
+        ties = []
         tie_count = 0
         tie_flag = 0
-        
-        # Main Loop
-        for i in range(len(sorted_diffs)-1):
-            # Store state information
-            curr = sorted_diffs[i]
-            next = sorted_diffs[i+1]
+
+        for i in range(len(sorted_dists) - 1):
+            # Store state information.
+            curr_dist = sorted_dists[i]
+            next_dist = sorted_dists[i+1]
             rank_val = ranks[i]
             
-            # A tie has not occured yet
+            # A tie has not occured yet.
             if tie_flag == 0:
-                # Check for a tie
-                if curr == next:
+                if curr_dist == next_dist:
+                    # We have a tie, so add the current rank to the tie list.
                     tie_count = tie_count + 1
-                    tie_list.append(rank_val)
+                    ties.append(rank_val)
                     first_tie_index = i
                     tie_flag = 1
-                # If no tie, fill in the list
                 else:
+                    # If no tie, fill in the list with the current rank.
                     result.append(rank_val)
-            # A tie has occured
             else:
-                # If another tie occurs
-                if curr == next:
+                # A tie has already occured.
+                if curr_dist == next_dist:
+                    # If another tie occurs, add the current rank to the tie
+                    # list.
                     tie_count = tie_count + 1
-                    tie_list.append(rank_val)
-                # No more ties, average their values and attach to adjusted list
+                    ties.append(rank_val)
                 else:
-                    tie_list.append(rank_val)
+                    # No more ties, average their values and attach to adjusted
+                    # rank list.
+                    ties.append(rank_val)
                     last_tie_index = i
-                    result = self._populate_adjusted_vals(tie_list, first_tie_index, \
-                        last_tie_index, result)
+                    result.extend(self._get_adjusted_vals(ties,
+                            first_tie_index, last_tie_index))
                     tie_flag = 0
                     tie_count = 0
-                    tie_list = []
-        
-        # If there is a tie that extends to the final position, out of main loop
-        # to avoid out of list bounds errors
+                    ties = []
+        # If there is a tie that extends to the final position, we must process
+        # it here to avoid out of list bounds errors.
         if tie_flag == 1:
-            tie_list.append(ranks[i+1])
+            ties.append(ranks[i+1])
             last_tie_index = i + 1
-            result = self._populate_adjusted_vals(tie_list, first_tie_index, \
-                last_tie_index, result)
+            result.extend(self._get_adjusted_vals(ties, first_tie_index,
+                                                  last_tie_index))
         else:
             result.append(ranks[i+1])
-            
-        return array(result)
-
-    def _populate_adjusted_vals(self, tie_list, first_tie_index, last_tie_index, result):
-        """
-        Helper function to _remove_ties. Consolidates repeated code
-        """
-        tie_list = array(tie_list)
-        adjusted_value = tie_list.mean()
-        while first_tie_index <= last_tie_index:
-            result.append(adjusted_value)
-            first_tie_index = first_tie_index + 1
         return result
 
-    def _compute_r_value(self, adjusted_ranks, sorted_groups, number_samples):
+    def _get_adjusted_vals(self, ties, first_tie_idx, last_tie_idx):
+        """Helper function to _remove_ties. Consolidates repeated code."""
+        adjusted_val = sum(ties) / len(ties)
+        return [adjusted_val] * ((last_tie_idx - first_tie_idx) + 1)
+
+    def _compute_r_value(self, adjusted_ranks, sorted_groups, num_samps):
+        """Code that performs the actual math involved in solving ANOSIM.
+
+        Returns the ANOSIM R value (between -1 and 1).
+
+        Arguments:
+            adjusted_ranks - list of the ranks, adjusted for ties
+            sorted_groups - list associating distances to groups
+            num_samps: how many total samples
         """
-        Code that performs the actual math involved in solving anosim
-        
-            PARAMETERS
-            adjusted_rank_list: list of the ranks, adjusted for ties
-            sorted_group_list: list associating differences to groups
-            number_samples: how many total samples
-            
-            RETURNS
-            r: R value computed by anosim
-        """
-        
-        # Compute r_W and r_B
+        adjusted_ranks = array(adjusted_ranks)
+        sorted_groups = array(sorted_groups)
+
+        # Compute r_W and r_B.
         r_W = mean(adjusted_ranks[sorted_groups==1])
         r_B = mean(adjusted_ranks[sorted_groups==0])
-        
-        n = number_samples
-        divisor = float(n*((n-1)/4))
-        r = (r_B - r_W) / divisor 
-        return r
-
-    def _format_anosim_results(self, input_path, r_value, p_value='NA'):
-        """
-        Formats the results of the script for the output file
-        
-            Line 1: header ("Input filepath ANOSIM_R_VALUE  p_value")
-            Line 2: data 
-        """
-        result = ['Input_filepath\tANOSIM_R_value\tp_value']
-        result.append('{0}\t{1}\t{2}'.format(input_path,r_value,p_value))
-        return result
+        divisor = num_samps * ((num_samps - 1) / 4)
+        return (r_B - r_W) / divisor
 
 
 class BioEnv(CategoryStats):
@@ -782,8 +757,7 @@ class DistanceBasedRda(CategoryStats):
         else:
             adjust = sqrt(k)
 
-        points, eigs = principal_coordinates_analysis(
-                asarray(dm.getDataMatrix()))
+        points, eigs = principal_coordinates_analysis(dm.getDataMatrix())
 
         # Order the axes in descending order based on eigenvalue. This code is
         # taken from QIIME's principal_coordinates.py library.
