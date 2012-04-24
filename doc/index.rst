@@ -32,6 +32,7 @@ There are currently notes on the following statistical methods:
    notes/permdisp
    notes/rda
    notes/repeated_measures_permanova
+   notes/samova
 
 Tutorials
 ---------
