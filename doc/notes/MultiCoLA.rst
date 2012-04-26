@@ -255,52 +255,53 @@ team has access to. These data files will not be included for download due to
 their (usually) large size. Unless otherwise noted, the data files that were
 used can be found under the datasets directory.
 
-Whole Body
-^^^^^^^^^^
-Test 1
-~~~~~~
+Glen Caynon Attempt
+^^^^^^^^^^^^^^^^^^^
 **Description:**
 
+This is where we explore running MultiCoLA with QIIME files.
 
-**Command:** ::
+:download:`convert_otu <../downloads/MultiCoLA/convert_otu>` is used in this part
+        
+Run the commands ::
 
-        The command
+        ./convert_otu otu_table_even17340.txt 100
 
-**Results:**
+        R
 
-The following output file is created
+        setwd("/home/aragorn/bio/microbiogeo/r/MCT/glen_canyon")
 
+        M<-read.table("otu_table_even17340.txt",header=TRUE,row.names=1)
+        ENV<-read.table("map_25Jan2012.txt",header=TRUE,row.names=1)
+        
+        source("../taxa.pooler.1.3.r")
+        source("../COtables.1.3.r")
+        source("../cutoff.impact.1.3.r")
+        source("../cutoff.impact.fig.1.3.r")
+        source("../VP.COL.1.3.r")
+        source("../corrcoeff.ENV.1.3.r")
+        source("../signif.1.4.r")
+        
+        all_taxa_pooled<-taxa.pooler(M)
+	
+**Answered the questions:**
 
+	Number of samples? (e.g. 16)... 94(columns-taxonomic levels)
 
-Test 2
-~~~~~~
+	Number of taxonomic levels? (e.g. phylum+class+order+family+genus=5)... 5
 
-Test 3
-~~~~~~
+	Presence/absence tables as output? (y/n) y
 
-Keyboard
-^^^^^^^^
-
-Test 1
-~~~~~~
-
-Test 2
-~~~~~~
-
-Test 3
-~~~~~~
-
-Glen Canyon
-^^^^^^^^^^^
-
-Test 1
-~~~~~~
-
-Test 2
-~~~~~~
-
-Test 3
-~~~~~~
+	Output as text files? (y/n)... y
+	
+**The following files were created:**
+:download:`Phylum.matrix.txt <../downloads/MultiCoLA/gPhylum.matrix.txt>`
+:download:`Class.matrix.txt <../downloads/MultiCoLA/gClass.matrix.txt>`	
+:download:`Order.matrix.txt <../downloads/MultiCoLA/gOrder.matrix.txt>`
+:download:`Family.matrix.txt <../downloads/MultiCoLA/gFamily.matrix.txt>`
+:download:`Genus.matrix.txt <../downloads/MultiCoLA/gGenus.matrix.txt>`
+:download:`OTUs_completeDS.matrix.txt <../downloads/MultiCoLA/gOTUs_completeDS.matrix.txt>`
+:download:`OTUs_wholeDS.matrix.txt <../downloads/MultiCoLA/gOTUs_wholeDS.matrix.txt>`
 
 References
 ----------

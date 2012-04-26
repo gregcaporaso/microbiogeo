@@ -1,0 +1,7 @@
+sed 1d $1 > tmp
+sed -i 's/#//1' tmp
+sed -i 's/Consensus Lineage/Phylum	Class	Order	Family 	Genus/g' tmp
+sed -i 's/;/\t/g' tmp
+sed -i 's/ //g' tmp
+cat tmp | cut -f 1-$2 > $1
+rm tmp
