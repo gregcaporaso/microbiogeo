@@ -272,8 +272,8 @@ class CategoryStats(object):
             raise TypeError('Invalid type: %s; not DistanceMatrix' %
                             new_dm.__class__.__name__)
         if not self.compatibleSampleIds(new_dm, new_mdmap):
-            raise ValueError("The metadata map and distance matrix must have "
-                             "the same sample IDs.")
+            raise ValueError("The metadata map must have all of the sample "
+                             "IDs in the distance matrix.")
         self._metadata_map = new_mdmap
         self._dm = new_dm
 
@@ -317,20 +317,21 @@ class CategoryStats(object):
         return self._categories
 
     def compatibleSampleIds(self, dm, mdmap):
-        """Returns True if the sample IDs are the same in both structures.
+        """Returns True if the sample IDs in the dm are in the metadata map.
 
-        This method will return True if the sample IDs in the distance matrix
-        are exactly the same as the sample IDs in the metadata map. Ordering of
-        samples is not taken into account.
+        This method will return True if all of the sample IDs in the distance
+        matrix can be found in the metadata map. Ordering of sample IDs is not
+        taken into account.
 
         Arguments:
             dm - the DistanceMatrix instance to compare
             mdmap - the MetadataMap instance to compare
         """
-        same = False
-        if sorted(dm.getSampleIds()) == sorted(mdmap.getSampleIds()):
-            same = True
-        return same
+        compatible = True
+        for samp_id in dm.getSampleIds():
+            if samp_id not in mdmap.getSampleIds():
+                compatible = False
+        return compatible
 
     def runAnalysis(self):
         """Runs the statistical method and returns relevant results.
