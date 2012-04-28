@@ -23,8 +23,8 @@ cat('	    VP values\n')
 
 VP.COL<-function(MM,ENV,Type){
 require(vegan)
-  OUTP=readline("\nOutput as text files? (y/n)...\t")
-  PLOT=readline("\nPlot the results? (y/n)...\t")
+  OUTP="y"
+  PLOT="y"
                        
 	COP<-function(ODS,z,ENV,Type){###################
 			#vector to store sum,adjRsq 

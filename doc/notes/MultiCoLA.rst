@@ -265,35 +265,11 @@ This is where we explore running MultiCoLA with QIIME files.
         
 Run the commands ::
 
-        ./convert_otu otu_table_even17340.txt 100
+        ./../convert_otu otu_table_even17340.txt 100
+        R --slave --args -s 94 -l 5 -w /home/aragorn/test/microbiogeo/r/MultiCoLA.1.3/glen -m map_25Jan2012.txt -o otu_table_even17340.txt < ../betadisper.r
 
-        R
+**Note** change script name        
 
-        setwd("/home/aragorn/bio/microbiogeo/r/MCT/glen_canyon")
-
-        M<-read.table("otu_table_even17340.txt",header=TRUE,row.names=1)
-        ENV<-read.table("map_25Jan2012.txt",header=TRUE,row.names=1)
-        
-        source("../taxa.pooler.1.3.r")
-        source("../COtables.1.3.r")
-        source("../cutoff.impact.1.3.r")
-        source("../cutoff.impact.fig.1.3.r")
-        source("../VP.COL.1.3.r")
-        source("../corrcoeff.ENV.1.3.r")
-        source("../signif.1.4.r")
-        
-        all_taxa_pooled<-taxa.pooler(M)
-	
-**Answered the questions:**
-
-	Number of samples? (e.g. 16)... 94(columns-taxonomic levels)
-
-	Number of taxonomic levels? (e.g. phylum+class+order+family+genus=5)... 5
-
-	Presence/absence tables as output? (y/n) y
-
-	Output as text files? (y/n)... y
-	
 **The following files were created:**
 :download:`Phylum.matrix.txt <../downloads/MultiCoLA/gPhylum.matrix.txt>`
 :download:`Class.matrix.txt <../downloads/MultiCoLA/gClass.matrix.txt>`	

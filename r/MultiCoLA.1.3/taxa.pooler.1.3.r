@@ -20,11 +20,11 @@ cat('	    list of new tables with the samples as rows & taxa\n')
 cat('	    with sum of tags for each sample as columns\n')
 cat('	    for each taxonomic level with complete annotation+whole dataset OTUs\n\n\n')
 
-taxa.pooler<-function(M1){
-sa=as.numeric(readline("\nNumber of samples? (e.g. 16)...\t"))
-ta=as.numeric(readline("\nNumber of taxonomic levels? (e.g. phylum+class+order+family+genus=5)...\t"))
-pa=readline("\nPresence/absence tables as output? (y/n)...\t")
-OUTP=readline("\nOutput as text files? (y/n)...\t")
+taxa.pooler<-function(M1,M2,M3){
+sa=M2
+ta=M3
+pa="y"
+OUTP="y"
 
 if(nrow(M1[-which(apply(M1,1,function(x)any(is.na(x)))),])==0){
   M<-M1

@@ -20,10 +20,10 @@ cat('--->type of output:\n')
 cat('	    list with: total sum of pyro-tags, correlation coefficient,\n')
 cat('	    procrustes R value for each cutoff and all taxonomic levels\n')
 
-cutoff.impact<-function(MM,Type="ADS",corcoef="spearman",typem="dominant"){
+cutoff.impact<-function(MM,M1,Type="ADS",corcoef="spearman",typem="dominant"){
 require(MASS)
 require(vegan)
-details=readline("\nDetails of the NMDS calculations? (y/n)...\t")
+details=M1
 #calculation of the cut-off matrices, correlation coefficient, procrustes R value
 CoCalc<-function(ODS,z,Type,corcoef){
 	res1<-matrix(NA,1,3)	#create a matrix to store mantel and procrustes data

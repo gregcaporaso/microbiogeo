@@ -19,8 +19,8 @@ cat('	    vector with: total sum of pyro-tags, correlation coefficient,\n')
 cat('	    procrustes R value\n')
 
 cutoff.impact.fig<-function(M){
-  OUTP=readline("\nOutput as text files? (y/n)...\t")
-  PLOT=readline("\nPlot the results? (y/n)...\t")
+  OUTP="y"
+  PLOT="y"
   list.all<-vector("list",3)
   names(list.all)<-c("Abundance","Non-par.correlation","Procrustes")
   list.all[[1]]<-matrix(NA,nrow(M[[1]]),length(M))
