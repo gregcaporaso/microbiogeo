@@ -8,9 +8,11 @@ __credits__ = ["Michael Dwan, Logan Knecht"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
-__email__ = "mdwan.tgen@gmail.com"
+__email__ = "mdwan.tgen@gmail.com, lgk7@nau.edu"
 __status__ = "Development"
 
+from numpy import zeros
+from numpy.random import permutation
 
 from os import path, makedirs, listdir
 
@@ -84,7 +86,14 @@ def main():
         rex = RExecutor()
         results = rex(command_args, opts.method+".r", output_dir=opts.output_dir, remove_tmp=True)
     elif opts.method == 'anosim':
-        pass
+        anosim_object = Anosim(md_map, dm, first_category, opts.num_permutations)
+        runAnalysisOutput = anosim_object.runAnalysis()
+        outputFile = open(opts.method+"_output_file.txt","w")
+        outputFile.write("Method Name:\tR-value:\tP-value:")
+        outputFile.write("\n")
+        outputFile.write(runAnalysisOutput["method_name"]+"\t"+str(runAnalysisOutput["r_value"])+"\t"+str(runAnalysisOutput["p_value"])+"\t")
+        outputFile.write("\n")
+        outputFile.close()
     elif opts.method == 'best':
         pass
     elif opts.method == 'dfa':
