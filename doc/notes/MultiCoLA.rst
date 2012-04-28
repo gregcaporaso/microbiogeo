@@ -8,7 +8,7 @@ Many microbiological studies have a problem with `rare` sequences in the raw dat
 
 Existing Implementations
 ------------------------
-The only implementation seems to be by the authors who suggested this method.  The implementation is in R and is a collection of scripts rather than a all encompassing script.
+The only implementation seems to be by the authors who suggested this method.  The implementation is in R and is a collection of scripts rather than an all encompassing script.
 
 
 System Setup and Required Dependencies
@@ -54,8 +54,8 @@ Run script and store output in a variable: ::
 	results<-script(M)
 	
 	
-Our progress understanding MultiCoLA
-------------------------------------
+MultiCoLA example from paper
+----------------------------
 **Import all needed scripts and files:** ::
 
 	M<-read.table("input.txt",header=TRUE,row.names=1)
@@ -239,36 +239,57 @@ Our progress understanding MultiCoLA
         It looks like OTU_table has the same format as input.txt
         map.txt might be the same as env.txt
 
-Input Files
------------
-
-
-Output Files
-------------
-
-
-Testing Results
+MultiCoLA Guide
 ---------------
-This section will describe different tests that were run on the MultiCoLA script.
-These tests will use empirical data from one of the several datasets that the
-team has access to. These data files will not be included for download due to
-their (usually) large size. Unless otherwise noted, the data files that were
-used can be found under the datasets directory.
+Description
+***********
 
-Glen Caynon Attempt
-^^^^^^^^^^^^^^^^^^^
-**Description:**
+How to run MultiCoLa on QIIME formatted data
+
+Preparation
+***********
+
+Go to the the directory containing the MultiCola scripts
+
+Run the command: ::
+
+        ./../convert_otu (name of otu table) (columns)
+
+:note: columns = samples+taxonomic levels+1
+
+Process the data
+****************
+
+Run the command: ::
+
+        R --slave --args -s (samples) -l (taxonomic levels) -w (the results of pwd(pass working directory)) -m (name of map file) -o (name of otu table) < ../MultiCoLA.r
+
+MultiCoLA on our data
+---------------------
+
+Glen Caynon
+***********
+
+Description
+^^^^^^^^^^^
 
 This is where we explore running MultiCoLA with QIIME files.
 
-:download:`convert_otu <../downloads/MultiCoLA/convert_otu>` is used in this part
-        
-Run the commands ::
+Preparation
+^^^^^^^^^^^
+
+Go to the the directory containing the MultiCola scripts
+
+Run the command: ::
 
         ./../convert_otu otu_table_even17340.txt 100
-        R --slave --args -s 94 -l 5 -w /home/aragorn/test/microbiogeo/r/MultiCoLA.1.3/glen -m map_25Jan2012.txt -o otu_table_even17340.txt < ../betadisper.r
+        
+Process the data
+^^^^^^^^^^^^^^^^
 
-**Note** change script name        
+Run the command: ::
+
+        R --slave --args -s 94 -l 5 -w /home/aragorn/test/microbiogeo/r/MultiCoLA.1.3/glen -m map_25Jan2012.txt -o otu_table_even17340.txt < ../MultiCoLA.r
 
 **The following files were created:**
 :download:`Phylum.matrix.txt <../downloads/MultiCoLA/gPhylum.matrix.txt>`
