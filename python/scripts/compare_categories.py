@@ -3,8 +3,8 @@
 from __future__ import division
 
 __author__ = "Michael Dwan"
-__copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Michael Dwan"]
+__copyright__ = "Copyright 2012, The QIIME MiCOS project"
+__credits__ = ["Michael Dwan, Logan Knecht"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Michael Dwan"
@@ -18,10 +18,15 @@ from cogent.util.misc import create_dir
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_distmat, fields_to_dict, \
-                        parse_mapping_file
+                        parse_mapping_file, parse_mapping_file_to_dict
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.r_executor import RExecutor
+#from python.qiime.parse import DistanceMatrix, MetadataMap
+#from python.qiime.r_executor import RExecutor
+from parse import DistanceMatrix, MetadataMap
+from r_executor import RExecutor
+
+from stats import Anosim
+#, anosim_p_test, _format_anosim_results
 
 script_info = {}
 script_info['brief_description'] = ""
@@ -42,8 +47,6 @@ script_info['optional_options'] = [\
 ]
 script_info['version'] = __version__
 
-
-
 def main():
     option_parser, opts, args =\
     parse_command_line_parameters(**script_info)
@@ -56,16 +59,30 @@ def main():
         option_parser.error("Could not create or access output directory "
                                 "specified with the -o option.")
 
-
     dm_labels, dm_temp = parse_distmat(open(opts.input_dm, 'U'))
 
     dm = DistanceMatrix(dm_temp, dm_labels, dm_labels)
     md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file))
 
     cats = opts.categories.split(',')
+    first_category = cats[0]
 
     if   opts.method == 'adonis':
-        pass
+        # verify that category is in mapping file
+        map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
+        if not first_category in map_list[1][1:]:
+            print "Category '%s' not found in mapping file columns:" %(first_category)
+            print map_list[1][1:]
+            exit(1)
+
+        distance_matrix = opts.input_dm
+        map_file = opts.mapping_file
+        output = opts.output_dir
+
+        command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + first_category + " -o " + output]
+
+        rex = RExecutor()
+        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir, remove_tmp=True)
     elif opts.method == 'anosim':
         pass
     elif opts.method == 'best':
@@ -96,12 +113,26 @@ def main():
         results = rex(command_args, "morans_i.r", output_dir=opts.output_dir, remove_tmp=True)
 
     elif opts.method == 'mrpp':
-        pass
+        # verify that category is in mapping file
+        map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
+        if not opts.categories in map_list[1][1:]:
+            print "Category '%s' not found in mapping file columns:" %(first_category)
+            print map_list[1][1:]
+            exit(1)
+
+        distance_matrix = opts.input_dm
+        map_file = opts.mapping_file
+        category = opts.categories
+        output = opts.output_dir
+
+        command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+
+        rex = RExecutor()
+        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir, remove_tmp=True)
     elif opts.method == 'multicola':
         pass
     elif opts.method == 'permanova':
         pass
-
     elif opts.method == 'permdisp':
         category = cats[0]
         # verify that category is in mapping file
@@ -143,7 +174,6 @@ def main():
     else:
         print "Method '%s' not recognized"
 
-
     # 'adonis'
     # 'anosim'
     # 'best'
@@ -157,7 +187,6 @@ def main():
     # 'permdisp'
     # 'rda'
     # 'rm_permanova'
-
 
 if __name__ == "__main__":
     main()
