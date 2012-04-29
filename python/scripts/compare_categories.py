@@ -22,12 +22,12 @@ from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_distmat, fields_to_dict, \
                         parse_mapping_file, parse_mapping_file_to_dict
 
-#from python.qiime.parse import DistanceMatrix, MetadataMap
-#from python.qiime.r_executor import RExecutor
-from parse import DistanceMatrix, MetadataMap
-from r_executor import RExecutor
+from python.qiime.parse import DistanceMatrix, MetadataMap
+from python.qiime.r_executor import RExecutor
+#from parse import DistanceMatrix, MetadataMap
+#from r_executor import RExecutor
 
-from stats import Anosim
+from python.qiime.stats import Anosim
 #, anosim_p_test, _format_anosim_results
 
 script_info = {}
@@ -137,6 +137,7 @@ def main():
 
         rex = RExecutor()
         results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
+
     elif opts.method == 'mrpp':
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())

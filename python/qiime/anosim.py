@@ -208,6 +208,6 @@ def _format_anosim_results(input_path, r_value, p_value='NA'):
         Line 2: data 
     """
     result = ['Input_filepath\tANOSIM_R_value\tp_value']
-    result.append('{0}\t{1}\t{2}'.format(input_path,r_value,p_value))
+    result.append('\n{0}\t{1}\t{2}\n\n'.format(input_path,r_value,p_value))
     return result
     
