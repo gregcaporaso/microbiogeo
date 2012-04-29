@@ -589,8 +589,6 @@ class PermanovaTests(TestHelper):
         "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\tControl_mouse_I.D._356",
         "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\tControl_mouse_I.D._481"]
        self.mapping = MetadataMap.parseMetadataMap(self.mapping_str)
-       #self.mapping_groups = self.mapping.getSampleIds()
-       #self.mapping_comments = self.mapping.getComments()
 
        self.mapping_non_sym_str=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
         "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354",
@@ -625,7 +623,7 @@ class PermanovaTests(TestHelper):
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = self.permanova_distmtx_non_sym._permanova(self.mapping_map)
+        obs = round(self.permanova_distmtx_non_sym._permanova(self.mapping_map),5)
         self.assertEqual(obs, exp)
 
     def test_compute_f1(self):
@@ -639,17 +637,16 @@ class PermanovaTests(TestHelper):
 
     def test_p_test(self):
         """P-value should be .5 for this test"""
-        group_list = {}
-        samples, distmtx = parse_distmat(self.distmtx_txt)
-        grouping, comment = parse_mapping_file_to_dict(self.mapping_txt)
-        for sample in grouping:
-            group_list[sample] = grouping[sample]["Treatment"]
-
         nrs = NonRandomShuffler()
+        self.permanova_distmtx.setNumPermutations(3)
+        self.permanova_distmtx.setRandomFunction(nrs.permutation)
 
-        result, p_val = permanova_p_test(samples, distmtx,group_list, ntrials=3, randomfun=nrs.permutation)
-        self.assertEqual(p_val, 0.5)
+        exp = {'method_name' : 'PERMANOVA', 'p_value' : 0.5, 'r_value' : 4.4}
+        obs = self.permanova_distmtx.runAnalysis()
 
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertFloatEqual(obs['p_value'], exp['p_value'])
 
 class BioEnvTests(TestHelper):
     """Tests for the BioEnv class."""
