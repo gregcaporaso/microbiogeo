@@ -32,10 +32,10 @@ def permanova(samples, distmtx, grouping):
     # Local Vars
     group_map = {}      # dict to map group number to group name
     unique_n = []       # number of samples in each group
-
-    # Extract the unique list of group labels    
-    gl_unique = unique(array(grouping.values()))
     
+    # Extract the unique list of group labels 
+    gl_unique = unique(array(grouping.values()))
+ 
     # Calculate number of gorups and unique 'n's
     number_groups = len(gl_unique)
     for i, i_string in enumerate(gl_unique):
@@ -48,6 +48,7 @@ def permanova(samples, distmtx, grouping):
         grouping_i = grouping[i_sample]
         for j, j_sample in enumerate(samples):
             if grouping_i == grouping[j_sample]:
+                print(grouping_matrix)
                 grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
     # Extract upper triangle

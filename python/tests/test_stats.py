@@ -599,7 +599,6 @@ class PermanovaTests(TestHelper):
         "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\tControl_mouse_I.D._481",
         "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\tcontrolmouseid"]
        self.mapping_non_sym = MetadataMap.parseMetadataMap(self.mapping_non_sym_str)
-       #self.mapping_non_sym_groups = self.mapping_non_sym.getSampleIds()
         
        self.mapping_map = {}
        for samp_id in self.mapping.getSampleIds():
@@ -619,23 +618,15 @@ class PermanovaTests(TestHelper):
 
     def test_permanova2(self):
         """Should result in 2"""
-        group_list = {}
-        samples, distmtx = parse_distmat(self.distmtx_tie_txt)
-        dict, comment = parse_mapping_file_to_dict(self.mapping_txt)
-        for sample in dict:
-            group_list[sample] = dict[sample]["Treatment"]
-        result = permanova(samples, distmtx, group_list)
-        self.assertEqual(result, 2)
+        exp = 2
+        obs = self.permanova_distmtx_tie._permanova(self.mapping_map)
+        self.assertEqual(obs, exp)
 
     def test_permanova3(self):
         """Should result in 3.58462"""
-        group_list = {}
-        samples, distmtx = parse_distmat(self.distmtx_non_sym)
-        dict, comment = parse_mapping_file_to_dict(self.mapping_non_sym)
-        for sample in dict:
-            group_list[sample] = dict[sample]["Treatment"]
-        result = permanova(samples, distmtx, group_list)
-        self.assertEqual(round(result,5), 3.58462)
+        exp = 3.58462
+        obs = self.permanova_distmtx_non_sym._permanova(self.mapping_map)
+        self.assertEqual(obs, exp)
 
     def test_compute_f1(self):
         """Should return 4.4, testing just function"""
@@ -643,7 +634,7 @@ class PermanovaTests(TestHelper):
         grouping = [0,-1,-1,-1,-1,1]
         distances = array(distances)
         grouping = array(grouping)
-        result = _compute_f_value(distances,grouping,4,2,[2,2])
+        result = self.permanova_distmtx._compute_f_value(distances,grouping,4,2,[2,2])
         self.assertEqual(result, 4.4)
 
     def test_p_test(self):

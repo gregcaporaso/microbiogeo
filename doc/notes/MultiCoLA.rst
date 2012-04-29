@@ -287,7 +287,7 @@ Make and enter a subdirectory.
 
 Run the command: ::
 
-        ./../convert_otu (name of otu table) (columns)
+        ./../convert_otu otu_table_even17340.txt 100
 
 :note: columns = samples+taxonomic levels+1
 
@@ -302,7 +302,7 @@ Process the data
 
 Run the command: ::
 
-        R --slave --args -s 16 -l 5 -w /home/aragorn/test/microbiogeo/r/MultiCoLA.1.3/glen -m map_25Jan2012.txt -o otu_table_even17340.txt < ../MultiCoLA.r
+        R --slave --args -s 16 -l 5 -w "/home/aragorn/microbiogeo/r/MultiCoLA.1.3/glen" -m map_25Jan2012.txt -o otu_table_even17340.txt < ../MultiCoLA.r
 
 **The following files were created:**
 :download:`Phylum.matrix.txt <../downloads/MultiCoLA/gPhylum.matrix.txt>`
@@ -315,5 +315,4 @@ Run the command: ::
 
 References
 ----------
-
 
