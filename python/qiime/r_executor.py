@@ -2,7 +2,7 @@
 
 __author__ = "Damien Coy"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Damien Coy"]
+__credits__ = ["Damien Coy, Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.4.0"
 __maintainer__ = "Damien Coy"
@@ -11,7 +11,7 @@ __status__ = "Release"
 
 import subprocess
 from os import remove, path, devnull
-from os.path import join, abspath, dirname
+from os.path import join
 from sys import stdout
 from time import sleep
 from tempfile import mkdtemp
@@ -26,24 +26,9 @@ from numpy import array, set_printoptions, nan
 
 import sys
 
-def parse_feature_importances(filepath):
-    """Returns vector of feature IDs, vector of importance scores
-    """
-    lines = open(filepath,'U').readlines()
-    feature_IDs = []
-    scores = []
-    for line in lines[1:]:
-        words = line.strip().split('\t')
-        feature_IDs.append(words[0].strip())
-        scores.append(float(words[1].strip()))
-    return array(feature_IDs), array(scores)
-
 class RExecutor(CommandLineApplication):
-    """R Supervised Learner application controller
-       Runs R with a source script (from qiime/support_files/R), and 
-       passes in an OTU table and mapping file. Causes R to run a supervised
-       classifier to predict labels from a given category from the mapping file
-       using the provided OTUs.
+    """RExecutor application controller
+       Runs R with a source script (from qiime/support_files/R)
     """
     _input_handler = '_input_as_path'
     _command = "R"
@@ -64,34 +49,15 @@ class RExecutor(CommandLineApplication):
         """Returns documentation string"""
         help_str =\
         """
-        Runs a supervised classifier with an OTU table as predictors and one
-        column from a mapping file as the category labels.
+        Runs the specified r script using the specified command
         
         Outputs:
-            cv_probabilities.txt: the label probabilities for each of the given 
-                samples. (if available)
-            mislabeling.txt: A convenient presentation of cv_probabilities for 
-                mislabeling detection.
-            confusion_matrix.txt: confusion matrix for hold-out predictions.
-            summary.txt: a summary of the results, including the expected
-                generalization error of the classifier
-            feature_importance_scores.txt: a list of discriminative OTUs with their associated
-                importance scores (if available)
-        
-        For an overview of the application of supervised classification to 
-        microbiota, see PubMed ID 21039646.
+            The results of the r script that is ran
         """
         return help_str
 
-    def __call__(self, command_args, script_name, output_dir=None, remove_tmp=True):
-        """Run the application with the specified kwargs on data
-        
-            data: A file nameinput_handler will be called on this data before it 
-                is passed as part of the command-line argument, so by creating
-                your own input handlers you can customize what kind of data
-                you want your application to accept
-
-            remove_tmp: if True, removes tmp files
+    def __call__(self, command_args, script_name, output_dir=None, verbose=False):
+        """Run the specified r script using the commands_args
             
             returns a CommandLineAppResult object
         """
@@ -108,9 +74,7 @@ class RExecutor(CommandLineApplication):
         else:
             errfilepath = FilePath(self.getTmpFilename(self.TmpDir))
             errfile = open(errfilepath, 'w')
-        # create random output dir if needed
 
-        rflags = self.RParameters['flags']
 	self._R_script = script_name
         rscript = self._get_R_script_path()
         base_command = self._get_base_command()
@@ -126,8 +90,6 @@ class RExecutor(CommandLineApplication):
                 '--args'
             ] + command_args + [' < %s ' %(rscript)]
             )
-
-	#sys.exit(command)
 
         if self.HaltExec: 
             raise AssertionError, "Halted exec with command:\n" + command
@@ -159,29 +121,15 @@ class RExecutor(CommandLineApplication):
         err = None        
         if not suppress_stderr:
             err = open(errfilepath,"r")
-       
-        result = {}
-        try:
-            result = CommandLineAppResult(
-                out, err, exit_status, 
-                result_paths=self._get_result_paths(output_dir))
-        except ApplicationError, ae:
-            msg = str(ae) + \
-                '\n\ncommand: %s'\
+        
+	if verbose:
+            msg = '\n\nCommand Executed: %s'\
                 % (command) +\
-                ' \n\nProgram stdout:\n%s'\
-                  %(''.join(open(outfilepath,'r').readlines())) +\
-                 ' \n\nProgram stderr:\n%s'\
+                 ' \n\nR Command Output:\n%s'\
                  %(''.join(open(errfilepath,'r').readlines()))
-            raise ApplicationError, msg
+            print(msg)
 
-        # Clean up the input file if one was created
-        if remove_tmp:
-            if self._input_filename:
-                remove(self._input_filename)
-                self._input_filename = None
-
-        return result
+    # The methods below were taken from supervised_learning.py
 
     def _get_result_paths(self, output_dir):
         """Returns the filepaths for all result files"""
@@ -201,16 +149,8 @@ class RExecutor(CommandLineApplication):
     def _get_R_script_dir(self):
         """Returns the path to the qiime R source directory
         """
-
-        # Dwan ADDED the next three lines.
-        current_file_path = abspath(__file__)
-        current_dir_path = dirname(current_file_path)
-        script_dir = path.join(dirname(current_dir_path), '..', 'r')
-
-        # The next two lines were the originals that Dwan replaced.
-
-        # qiime_dir = get_qiime_project_dir()
-        # script_dir = path.join(qiime_dir,'qiime','support_files','R')
+        qiime_dir = get_qiime_project_dir()
+        script_dir = path.join(qiime_dir,'qiime','support_files','R')
         return script_dir
 
     def _get_R_script_path(self):

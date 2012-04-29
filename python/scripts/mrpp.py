@@ -11,6 +11,7 @@ __maintainer__ = "Damien Coy"
 __email__ = "damien.coy@nau.edu"
 __status__ = "Release"
  
+
 from qiime.util import make_option
 from os import makedirs, listdir
 from os.path import join
@@ -72,7 +73,7 @@ def main():
     command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
 
     rex = RExecutor()
-    results = rex(command_args, "mrpp.r", output_dir=opts.output_dir, remove_tmp=True)
+    results = rex(command_args, "mrpp.r", output_dir=opts.output_dir)
         
 if __name__ == "__main__":
     main()
