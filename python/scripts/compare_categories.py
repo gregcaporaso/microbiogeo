@@ -94,8 +94,10 @@ def main():
         outputFile.write(runAnalysisOutput["method_name"]+"\t"+str(runAnalysisOutput["r_value"])+"\t"+str(runAnalysisOutput["p_value"])+"\t")
         outputFile.write("\n")
         outputFile.close()
+
     elif opts.method == 'best':
         pass
+
     elif opts.method == 'dfa':
         #-i otu_table.txt -m map.txt -c BODY_SITE -o dfa_output.txt
         distance_matrix = opts.input_dm
@@ -200,19 +202,7 @@ def main():
     else:
         print "Method '%s' not recognized"
 
-    # 'adonis'
-    # 'anosim'
-    # 'best'
-    # 'dfa'
-    # 'isa'
-    # 'lsa'
-    # 'morans_i'
-    # 'mrpp'
-    # 'multicola'
-    # 'permanova'
-    # 'permdisp'
-    # 'rda'
-    # 'rm_permanova'
+
 
 if __name__ == "__main__":
     main()

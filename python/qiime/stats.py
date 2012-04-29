@@ -52,7 +52,7 @@ class DistanceMatrixStats(object):
 
     def __init__(self, distmats, num_dms=-1, min_dm_size=-1):
         """Default constructor.
-        
+
         Initializes an instance with the provided list of distance matrices.
 
         Arguments:
@@ -70,7 +70,7 @@ class DistanceMatrixStats(object):
     def getDistanceMatrices(self):
         """Returns the list of distance matrices."""
         return self._distmats
-  
+
     def setDistanceMatrices(self, distmats):
         """Sets the list of distance matrices to the supplied list.
 
@@ -279,7 +279,7 @@ class CategoryStats(object):
 
     def getMetadataMap(self):
         """Returns the instance's metadata map.
- 
+
         The metadata map is returned as a MetadataMap class instance.
         """
         return self._metadata_map
@@ -497,7 +497,7 @@ class Anosim(CategoryStats, PermutationStats):
             curr_dist = sorted_dists[i]
             next_dist = sorted_dists[i+1]
             rank_val = ranks[i]
-            
+
             # A tie has not occured yet.
             if tie_flag == 0:
                 if curr_dist == next_dist:
@@ -650,9 +650,9 @@ class Permanova(CategoryStats, PermutationStats):
 
     def _permanova(self, group_map):
         """Computes PERMANOVA pseudo-f-statistic
-        
+
            PARAMETERS
-	   group_map: a Metamap object
+       group_map: a Metamap object
         """
 
         # Local Vars
@@ -660,76 +660,76 @@ class Permanova(CategoryStats, PermutationStats):
         grouping = {}
         map = {}
         metaMap = self.getMetadataMap()
-	distmtx = self.getDistanceMatrix()
+        distmtx = self.getDistanceMatrix()
         samples = distmtx.getSampleIds()
 
-        #make map
- 	for sample in metaMap.getSampleIds():
-            subkey = {}
-            for cat in metaMap.getCategoryNames():
-                subkey[cat] = metaMap.getCategoryValue(sample, cat)
-            map[sample] = subkey
+            #make map
+        for sample in metaMap.getSampleIds():
+                subkey = {}
+                for cat in metaMap.getCategoryNames():
+                    subkey[cat] = metaMap.getCategoryValue(sample, cat)
+                map[sample] = subkey
 
-        #make grouping
-	for samp_id in metaMap.getSampleIds():
+            #make grouping
+        for samp_id in metaMap.getSampleIds():
             grouping[samp_id] = metaMap.getCategoryValue(samp_id, self.category)
 
-        # Extract the unique list of group labels    
-        gl_unique = unique(array(grouping.values()))
+            # Extract the unique list of group labels
+            gl_unique = unique(array(grouping.values()))
 
-        # Calculate number of gorups and unique 'n's
-        number_groups = len(gl_unique)
-        for i, i_string in enumerate(gl_unique):
-            group_map[i_string] = i
-            unique_n.append(grouping.values().count(i_string))
+            # Calculate number of gorups and unique 'n's
+            number_groups = len(gl_unique)
+            for i, i_string in enumerate(gl_unique):
+                group_map[i_string] = i
+                unique_n.append(grouping.values().count(i_string))
 
-        # Create grouping matrix
-        grouping_matrix = -1 * ones((distmtx.getSize(),distmtx.getSize()))
-        for i, i_sample in enumerate(samples):
-            grouping_i = grouping[i_sample]
-            for j, j_sample in enumerate(samples):
-                if grouping_i == grouping[j_sample]:
-                    grouping_matrix[i][j] = group_map[grouping[i_sample]]
+            # Create grouping matrix
+            grouping_matrix = -1 * ones((distmtx.getSize(),distmtx.getSize()))
+            for i, i_sample in enumerate(samples):
+                grouping_i = grouping[i_sample]
+                for j, j_sample in enumerate(samples):
+                    if grouping_i == grouping[j_sample]:
+                        grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
-        # Extract upper triangle
-        distances = distmtx[tri(distmtx.getSize()) == 0]
-        gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
+            # Extract upper triangle
+            distances = distmtx[tri(distmtx.getSize()) == 0]
+            gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
-        # Compute f value
-        result = self._compute_f_value(distances,gropuing,distmtx.getSize(),number_groups,unique_n)
-        return result
+            # Compute f value
+            result = self._compute_f_value(distances,gropuing,distmtx.getSize(),number_groups,unique_n)
+            return result
 
 
     def permanova_p_test(samples, distmtx, group_list, ntrials=9999,\
                      randomfun=random.permutation):
         """Performs the calculations for the permutation test
-        
+
         PARAMETERS
         samples: names of the samples
         distmtx: the data
         group_list: listing of the grouping information
         ntrials: how many trials to run, default 9999
-        
+
         RETURNS
         f_value: the value of permanova
         p_value: permutation factor
-        
+
         """
         # Array to store permutation values
         f_value_permunations = zeros(ntrials)
-        
+
         # Calculate the F-Value
         f_value = permanova(samples, distmtx, group_list)
 
         # Run p-tests
         for i in xrange(ntrials):
-        
+
             # Randomize Grouping
             grouping_random = []
             for sample in samples:
                 grouping_random.append(group_list[sample])
             grouping_random = randomfun(grouping_random)
-        
+
             # Calculate p-values
             for j, sample in enumerate(samples):
                 group_list[sample] = grouping_random[j]
@@ -741,7 +741,7 @@ class Permanova(CategoryStats, PermutationStats):
 
     def _compute_f_value(self, distances, groupings, number_samples, number_groups, unique_n):
         """Performs the calculations for the f value
-        
+
            PARAMETERS
            difference_list: a list of the distance values
            group_list: a list associating the distances to their groups
@@ -751,17 +751,17 @@ class Permanova(CategoryStats, PermutationStats):
         """
         a = number_groups                 # number of groups
         N = number_samples                # total samples
-        
+
         # Calculate s_T
         s_T = sum(distances*distances)/N
-        
+
         # Calculate s_W for each group, this accounts for diff group sizes
         s_W = 0
         for i in range(number_groups):
             group_ix = groupings==i
             diffs = distances[group_ix]
             s_W = s_W + sum(diffs**2)/unique_n[i]
-        
+
         # Execute the formula
         s_A = s_T - s_W
         f = (s_A/(a-1))/(s_W/(N-a))
@@ -773,7 +773,7 @@ class Permanova(CategoryStats, PermutationStats):
         result = ['Input_filepath\tpermanova_R_value\tp_value']
         result.append('{0}\t{1}\t{2}'.format(input_path,r_value,p_value))
         return result
-     
+
 
 class BioEnv(CategoryStats):
     """Class for BioEnv analysis."""
@@ -791,34 +791,36 @@ class BioEnv(CategoryStats):
 
         Returns a dictionary which contains the resulting data. Keys:
             method_name - name of the statistical method
-        
-        Note: This code is loosely based on the implementation of BioEnv
-        in the vegan package of R.
         """
 
         cats = self.getCategories()
-        dm = self.getDistanceMatrices()[0]
+        dm = self.getDistanceMatrix()
         dm_flat = dm.flatten()
 
         row_count = dm.getSize()
         col_count = len(cats)
-        sum = 0 
-        stats = []
+        sum = 0
+        stats = [(-777, '') for c in range(col_count+1)]
         for i in range(col_count+1):
             combo = list(combinate([j for j in range(0,col_count)], i))[1:]
+
+            if i == 11:
+                combo = list(combinate([j for j in range(0,col_count+1)], i))[0:1]
+                # print combo1
 
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
-                # stats.append(pearson(dm_flat, cat_dm.flatten()))
-                stats.append(self._spearman_correlation(
-                                 dm_flat, cat_dm.flatten()))
+                r = self._spearman_correlation(dm_flat, cat_dm.flatten())
+                if r > stats[i][0]:
+                    stats[i] = (r, ','.join(str(s+1) for s in combo[c]))
 
-        sset = sorted(list(set(stats)))
-        for s in sset:
+
+
+        for s in stats[1:]:
             print s
         # print (2**col_count - 1)/2
-       
+
 
     def _derive_euclidean_dm(self, cat_mat, dim):
         """Returns an n x n, euclidean distance matrix, where n = len(cats) """
@@ -832,10 +834,10 @@ class BioEnv(CategoryStats):
                 res_mat[j][i] = res_mat[i][j]
 
         return DistanceMatrix(asarray(res_mat), dm_labels, dm_labels)
-    
+
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors"""
-        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in 
+        return sqrt(sum([(float(v1) - float(v2))**2 for v1,v2 in
                             zip(vec1,vec2)]))
 
 
@@ -858,14 +860,15 @@ class BioEnv(CategoryStats):
         """
         indices = range(len(data))
         ranks = range(1,len(data)+1)
-        ranks.sort(key=lambda index:data[index-1])
         indices.sort(key=lambda index:data[index])
+        ranks.sort(key=lambda index:indices[index-1])
         data_len = len(data)
         i = 0
-        while i < data_len: 
+        ties = 0
+        while i < data_len:
             j = i + 1
             val = data[indices[i]]
-            while j < data_len and data[indices[j]] == val: 
+            while j < data_len and data[indices[j]] == val:
                 j += 1
 
             dup_ranks = j - i
@@ -874,51 +877,58 @@ class BioEnv(CategoryStats):
                 ranks[indices[k]] = val
             i += dup_ranks
 
-        return ranks
+            ties += dup_ranks-1
+
+        return ranks, ties
 
     def _spearman_correlation(self, vec1, vec2):
         """Calculates the the Spearman distance of two vectors"""
-        rank1 = self._get_rank(vec1)
-        rank2 = self._get_rank(vec2)
+        rank1, ties1 = self._get_rank(vec1)
+        rank2, ties2 = self._get_rank(vec2)
 
-        res = 0.0
-        denom1 = 0.0
-        denom2 = 0.0
+        if ties1 == 0 and ties2 == 0:
+            n = len(rank1)
+            sum_sqr = sum([(x-y)**2 for x,y in zip(rank1,rank2)])
+            rho = 1 - (6*sum_sqr/(n*(n**2 - 1)))
+            return rho
 
-        n = len(vec1)
-        avg_rank = 0.5*(n-1)
-        for i in range(n):
-            res += rank1[i] * rank2[i]
-            denom1 += rank1[i]**2
-            denom2 += rank2[i]**2
+        avg = lambda x: sum(x)/len(x)
 
-        res = (res/n) - avg_rank**2
-        denom1 = (denom1/n) - avg_rank**2
-        denom2 = (denom2/n) - avg_rank**2
+        x_bar = avg(rank1)
+        y_bar = avg(rank2)
 
-        if denom1 <= 0 or denom2 <= 0: 
-            return 1.0
+        numerator = sum([(x-x_bar)*(y-y_bar) for x,y in zip(rank1, rank2)])
+        denominator = sqrt(sum([(x-x_bar)**2 for x in rank1])*sum([(y-y_bar)**2 for y in rank2]))
 
-        res = 1.0 - (res/sqrt(denom1*denom2))
+        rho = numerator/denominator
+        return rho
 
-        return res
-
-
-# if __name__ == '__main__':
-#    dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
-#    md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
-#    # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-#    # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+if __name__ == '__main__':
+    # dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
+    # md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
+    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
 
 
-#    cats = ('TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE')
+    cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
 
-#    bioenv = BioEnv(dm, md_map, cats)
-#    # bioenv.runAnalysis()
-#    a = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4)
-#    b = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13)
-#    print bioenv._spearman_correlation(a,b)
+    bioenv = BioEnv(dm, md_map, cats)
+    bioenv.runAnalysis()
+    # a = [1,2,4,3,1,6,7,8,10,4]
+    # b = [2,10,20,1,3,7,5,11,6,13]
+    # x = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
+    # y = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13, 5, 6, 99, 101)
+    # r = (1,2,4,5,2,2,4,3,1,4)
+    # s = (2,3,5,4,2,2,3,4,3,2)
+    # u = (1,2,3,4,5,6,7,8,9)
+    # v = (10, 11, 4, 2, 9, 33, 1, 5, 88)
+    # print bioenv._spearman_correlation(a,b)
+    # print bioenv._spearman_correlation(x,y)
+    # print bioenv._spearman_correlation(r,s)
+    # print bioenv._spearman_correlation(u,v)
 
+   # x = c(1,  2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
+   # y = c(2, 10, 20, 1, 3, 7, 5, 11, 6, 13, 5, 6, 99, 101)
 
 
 
@@ -1101,7 +1111,7 @@ class DistanceBasedRda(CategoryStats):
 
     def _create_factor(self, group_membership):
         """Transforms group membership list into a factor.
-        
+
         The factor is basically a column vector. Any categorical data (strings)
         are transformed into a numeric representation. This does not respect
         ordinal categorical data; it will simply represent the first category
@@ -1201,7 +1211,7 @@ class MantelCorrelogram(CorrelationStats, PermutationStats):
                 corrected for multiple tests
             correlogram_plot - a matplotlib Figure object containing the
                 correlogram
-        
+
         Note: This code is heavily based on the implementation of
         mantel.correlog in R's vegan package.
         """
@@ -1222,7 +1232,7 @@ class MantelCorrelogram(CorrelationStats, PermutationStats):
         # class.
         dist_class_matrix, class_indices = self._find_distance_classes(geo_dm,
             num_classes)
-        
+
         # Start assembling the results.
         results = {}
         results['method_name'] = 'Mantel Correlogram'
@@ -1460,7 +1470,7 @@ class Mantel(CorrelationStats, PermutationStats):
         resultsDict['method_name'] = "Mantel"
         resultsDict['dm1'] = self.getDistanceMatrices()[0]
         resultsDict['dm2'] = self.getDistanceMatrices()[1]
-        resultsDict['num_perms'] = self.getNumPermutations() 
+        resultsDict['num_perms'] = self.getNumPermutations()
         resultsDict['p_value'] = results[0]
         resultsDict['r_value'] = results[1]
         resultsDict['perm_stats'] = results[2]
@@ -1470,7 +1480,7 @@ class Mantel(CorrelationStats, PermutationStats):
 
     def _mantel_test(self):
         """Runs a Mantel test on the current distance matrices.
-    
+
         Returns the p-value, Mantel correlation statistic, and a list of Mantel
         correlation statistics for each permutation test. The currently set
         tail type and number of permutations will be used to run the test.
