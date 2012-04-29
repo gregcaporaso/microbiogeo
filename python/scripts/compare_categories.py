@@ -81,10 +81,10 @@ def main():
         map_file = opts.mapping_file
         output = opts.output_dir
 
-        command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + first_category + " -o " + output]
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + first_category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir, remove_tmp=True)
+        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
     elif opts.method == 'anosim':
         anosim_object = Anosim(md_map, dm, first_category, opts.num_permutations)
         runAnalysisOutput = anosim_object.runAnalysis()
@@ -97,7 +97,24 @@ def main():
     elif opts.method == 'best':
         pass
     elif opts.method == 'dfa':
-        pass
+        #-i otu_table.txt -m map.txt -c BODY_SITE -o dfa_output.txt
+        distance_matrix = opts.input_dm
+        map_file = opts.mapping_file
+
+        output = opts.output_dir
+
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + first_category + " -o " + output]
+
+        rex = RExecutor()
+        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
+
+        print results
+
+        outputFile = open(opts.method+"_output.txt", "w")
+        outputFile.write("Method Name:\tR-value:\tP-value:")
+        outputFile.write("\n")
+        #outputFile.write(runAnalysisOutput["method_name"]+"\t"+str(runAnalysisOutput["r_value"])+"\t"+str(runAnalysisOutput["p_value"])+"\t")
+        outputFile.close()
     elif opts.method == 'isa':
         pass
     elif opts.method == 'lsa':
@@ -119,8 +136,7 @@ def main():
         command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, "morans_i.r", output_dir=opts.output_dir, remove_tmp=True)
-
+        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
     elif opts.method == 'mrpp':
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
@@ -137,7 +153,7 @@ def main():
         command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir, remove_tmp=True)
+        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
     elif opts.method == 'multicola':
         pass
     elif opts.method == 'permanova':
@@ -158,7 +174,7 @@ def main():
         command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, "betadisper.r", output_dir=opts.output_dir, remove_tmp=True)
+        results = rex(command_args, "betadisper.r", output_dir=opts.output_dir)
 
     elif opts.method == 'rda':
         category = cats[0]
@@ -176,7 +192,7 @@ def main():
         command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, "rda.r", output_dir=opts.output_dir, remove_tmp=True)
+        results = rex(command_args, "rda.r", output_dir=opts.output_dir)
 
     elif opts.method == 'rm_permanova':
         pass
