@@ -249,13 +249,18 @@ How to run MultiCoLa on QIIME formatted data
 Preparation
 ***********
 
-Go to the the directory containing the MultiCola scripts
+Go to the the directory containing the MultiCola scripts.
+Make and enter a subdirectory.
 
 Run the command: ::
 
         ./../convert_otu (name of otu table) (columns)
 
 :note: columns = samples+taxonomic levels+1
+
+Delete the first word from the map file.
+Open the otu file and remove all but 16 of the samples.
+Open the map file and remove all but 4 categories to compare.
 
 Process the data
 ****************
@@ -277,19 +282,27 @@ This is where we explore running MultiCoLA with QIIME files.
 
 Preparation
 ^^^^^^^^^^^
-
-Go to the the directory containing the MultiCola scripts
+Go to the the directory containing the MultiCola scripts.
+Make and enter a subdirectory.
 
 Run the command: ::
 
-        ./../convert_otu otu_table_even17340.txt 100
-        
+        ./../convert_otu (name of otu table) (columns)
+
+:note: columns = samples+taxonomic levels+1
+
+Delete the first word from the map file.
+Open the otu file and remove all but 16 of the samples.
+Open the map file and remove all but 4 categories to compare.
+
+I kept the first 16 in otu and sample_pH, estimated_elevation, estimated_years_since_submerged_for_plotting, and Hour from the map file
+
 Process the data
 ^^^^^^^^^^^^^^^^
 
 Run the command: ::
 
-        R --slave --args -s 94 -l 5 -w /home/aragorn/test/microbiogeo/r/MultiCoLA.1.3/glen -m map_25Jan2012.txt -o otu_table_even17340.txt < ../MultiCoLA.r
+        R --slave --args -s 16 -l 5 -w /home/aragorn/test/microbiogeo/r/MultiCoLA.1.3/glen -m map_25Jan2012.txt -o otu_table_even17340.txt < ../MultiCoLA.r
 
 **The following files were created:**
 :download:`Phylum.matrix.txt <../downloads/MultiCoLA/gPhylum.matrix.txt>`
@@ -302,3 +315,5 @@ Run the command: ::
 
 References
 ----------
+
+

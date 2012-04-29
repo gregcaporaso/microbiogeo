@@ -561,6 +561,239 @@ class Anosim(CategoryStats, PermutationStats):
         divisor = num_samps * ((num_samps - 1) / 4)
         return (r_B - r_W) / divisor
 
+class Permanova(CategoryStats, PermutationStats):
+    """ This code is heavily based on Andrew Cochran's original procedural version.
+    """
+
+    def __init__(self, mdmap, dm, cat, num_perms, random_fn=permutation):
+        """Initializes an instance with the specified analysis parameters.
+
+        Arguments:
+            mdmap - the MetadataMap instance to obtain grouping info from
+            dm - the DistanceMatrix instance to obtain distances from
+            cat - the category string to group samples by (must be in the
+                metadata map)
+            num_perms - the number of permutations to use when calculating the
+                p-value. If zero, the p-value will not be calculated. Must be
+                greater than or equal to zero
+            random_fn - the function to use when randomizing the grouping
+                during calculation of the p-value. It must return a value and
+                must be callable
+        """
+        CategoryStats.__init__(self, mdmap, dm, [cat])
+        PermutationStats.__init__(self, num_perms)
+        self.setRandomFunction(random_fn)
+
+    def permanova(samples, distmtx, grouping):
+        """Computes PERMANOVA pseudo-f-statistic
+        
+           PARAMETERS
+           samples: list of the sample labels
+           distmtx: a distance matrix as returned by parse_distmat
+           grouping: a dict, keys = sample labels, values = which group they're in
+        """
+        # Local Vars
+        group_map = {}      # dict to map group number to group name
+        unique_n = []       # number of samples in each group
+
+        # Extract the unique list of group labels    
+        gl_unique = unique(array(grouping.values()))
+        
+        # Calculate number of gorups and unique 'n's
+        number_groups = len(gl_unique)
+        for i, i_string in enumerate(gl_unique):
+            group_map[i_string] = i
+            unique_n.append(grouping.values().count(i_string))
+
+        # Create grouping matrix
+        grouping_matrix = -1 * ones(distmtx.shape)
+        for i, i_sample in enumerate(samples):
+            grouping_i = grouping[i_sample]
+            for j, j_sample in enumerate(samples):
+                if grouping_i == grouping[j_sample]:
+                    grouping_matrix[i][j] = group_map[grouping[i_sample]]
+
+        # Extract upper triangle
+        distances = distmtx[tri(len(distmtx)) == 0]
+        gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
+
+        # Compute f value
+        result = _compute_f_value(distances,gropuing,len(distmtx),number_groups,unique_n)
+        return result
+
+    def getRandomFunction(self):
+        """Returns the randomization function used in p-value calculations."""
+        return self._random_fn
+
+    def setRandomFunction(self, random_fn):
+        """Setter for the randomization function used in p-value calcs.
+
+        Arguments:
+            random_fn - the function to use when randomizing the grouping
+                during calculation of the p-value. It must return a value and
+                must be callable
+        """
+        if hasattr(random_fn, '__call__'):
+            self._random_fn = random_fn
+        else:
+            raise TypeError("The supplied function reference is not callable.")
+
+    def permanova_p_test(samples, distmtx, group_list, ntrials=9999,\
+                     randomfun=getRandomFunction):
+        """Performs the calculations for the permutation test
+        
+        PARAMETERS
+        samples: names of the samples
+        distmtx: the data
+        group_list: listing of the grouping information
+        ntrials: how many trials to run, default 9999
+        
+        RETURNS
+        f_value: the value of permanova
+        p_value: permutation factor
+        
+        """
+        # Array to store permutation values
+        f_value_permunations = zeros(ntrials)
+        
+        # Calculate the F-Value
+        f_value = permanova(samples, distmtx, group_list)
+
+        # Run p-tests
+        for i in xrange(ntrials):
+        
+            # Randomize Grouping
+            grouping_random = []
+            for sample in samples:
+                grouping_random.append(group_list[sample])
+            grouping_random = randomfun(grouping_random)
+        
+            # Calculate p-values
+            for j, sample in enumerate(samples):
+                group_list[sample] = grouping_random[j]
+            f_value_permunations[i] = permanova(samples, distmtx, group_list)
+
+        p_value = (sum(f_value_permunations >= f_value) + 1) / (ntrials + 1)
+        return f_value, p_value
+
+
+    def _compute_f_value(self,distances, groupings, number_samples, number_groups, unique_n):
+        """Performs the calculations for the f value
+        
+           PARAMETERS
+           difference_list: a list of the distance values
+           group_list: a list associating the distances to their groups
+           number_samples: how many samples there are
+           number_groups: how many groups there are
+           unique_n: list containing how many samples are in each within group
+        """
+        a = number_groups                 # number of groups
+        N = number_samples                # total samples
+        
+        # Calculate s_T
+        s_T = sum(distances*distances)/N
+        
+        # Calculate s_W for each group, this accounts for diff group sizes
+        s_W = 0
+        for i in range(number_groups):
+            group_ix = groupings==i
+            diffs = distances[group_ix]
+            s_W = s_W + sum(diffs**2)/unique_n[i]
+        
+        # Execute the formula
+        s_A = s_T - s_W
+        f = (s_A/(a-1))/(s_W/(N-a))
+        return f
+
+    def _format_permanova_results(input_path, r_value, p_value='NA'):
+        """Formats the data to be output to a text file
+        """
+        result = ['Input_filepath\tpermanova_R_value\tp_value']
+        result.append('{0}\t{1}\t{2}'.format(input_path,r_value,p_value))
+        return result
+
+    def _permanova(self, group_map):
+	"""
+        Arguments:
+            group_map - a python dict mapping sample ID to category value (e.g.
+                sample 1 to 'control' and sample 2 to 'fast'). This map must
+                contain a key for each sample ID in the current distance
+                matrix
+        """
+        dm = self.getDistanceMatrix()
+        dm_size = dm.getSize()
+
+        # Create grouping matrix, where a one means that the two samples are in
+        # the same group (e.g. control) and a zero means that they aren't.
+        within_between = zeros((dm_size, dm_size))
+        for i, i_sample in enumerate(dm.getSampleIds()):
+            for j, j_sample in enumerate(dm.getSampleIds()):
+                if group_map[i_sample] == group_map[j_sample]:
+                    within_between[i][j] = 1
+
+        # Extract upper triangle from the distance and grouping matrices.
+        distances = dm.getDataMatrix()[tri(dm_size) == 0]
+        grouping = within_between[tri(dm_size) == 0]
+
+        # Account for rank ties, then compute R statistic.
+        return self._compute_f_value(distances,grouping,dm_size,,unique_n)
+    
+    def _remove_ties(self, sorted_dists, ranks):
+        result = []
+        ties = []
+        tie_count = 0
+        tie_flag = 0
+
+        for i in range(len(sorted_dists) - 1):
+            # Store state information.
+            curr_dist = sorted_dists[i]
+            next_dist = sorted_dists[i+1]
+            rank_val = ranks[i]
+            
+            # A tie has not occured yet.
+            if tie_flag == 0:
+                if curr_dist == next_dist:
+                    # We have a tie, so add the current rank to the tie list.
+                    tie_count = tie_count + 1
+                    ties.append(rank_val)
+                    first_tie_index = i
+                    tie_flag = 1
+                else:
+                    # If no tie, fill in the list with the current rank.
+                    result.append(rank_val)
+            else:
+                # A tie has already occured.
+                if curr_dist == next_dist:
+                    # If another tie occurs, add the current rank to the tie
+                    # list.
+                    tie_count = tie_count + 1
+                    ties.append(rank_val)
+                else:
+                    # No more ties, average their values and attach to adjusted
+                    # rank list.
+                    ties.append(rank_val)
+                    last_tie_index = i
+                    result.extend(self._get_adjusted_vals(ties,
+                            first_tie_index, last_tie_index))
+                    tie_flag = 0
+                    tie_count = 0
+                    ties = []
+        # If there is a tie that extends to the final position, we must process
+        # it here to avoid out of list bounds errors.
+        if tie_flag == 1:
+            ties.append(ranks[i+1])
+            last_tie_index = i + 1
+            result.extend(self._get_adjusted_vals(ties, first_tie_index,
+                                                  last_tie_index))
+        else:
+            result.append(ranks[i+1])
+        return result
+
+    def _get_adjusted_vals(self, ties, first_tie_idx, last_tie_idx):
+        """Helper function to _remove_ties. Consolidates repeated code."""
+        adjusted_val = sum(ties) / len(ties)
+        return [adjusted_val] * ((last_tie_idx - first_tie_idx) + 1)
+
 
 class BioEnv(CategoryStats):
     """Class for BioEnv analysis."""

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 sed 1d $1 > tmp
 sed -i 's/#//1' tmp
 sed -i 's/Consensus Lineage/Phylum	Class	Order	Family 	Genus/g' tmp

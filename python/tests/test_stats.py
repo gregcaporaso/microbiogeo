@@ -18,7 +18,7 @@ from numpy import array, matrix, roll
 from numpy.random import permutation
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.stats import (Anosim, BioEnv, CategoryStats,
+from python.qiime.stats import (Anosim, Permanova, BioEnv, CategoryStats,
     CorrelationStats, DistanceBasedRda, DistanceMatrixStats, MantelCorrelogram,
     Mantel, PartialMantel, PermutationStats)
 
@@ -551,6 +551,113 @@ class AnosimTests(TestHelper):
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertFloatEqual(obs['p_value'], exp['p_value'])
+
+class PermanovaTests(TestHelper):
+    def setUp(self):
+ 
+       """Define some useful data to use in testing."""
+       super(PermanovaTests, self).setUp()
+
+       self.distmtx_str = ["\tsam1\tsam2\tsam3\tsam4",
+        "sam1\t0\t1\t5\t4",
+        "sam2\t1\t0\t3\t2",
+        "sam3\t5\t3\t0\t3",
+        "sam4\t4\t2\t3\t0"]
+       self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
+       self.distmtx_samples = self.distmtx.getSampleIds()
+
+       self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
+        "sam1\t0\t1\t1\t4",
+        "sam2\t1\t0\t3\t2",
+        "sam3\t5\t3\t0\t3",
+        "sam4\t4\t2\t3\t0"]
+       self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(self.distmtx_tie_str)
+       self.distmtx_tie_samples = self.distmtx_tie.getSampleIds()
+
+       self.distmtx_non_sym_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
+        "sam1\t0\t3\t7\t2\t1",
+        "sam2\t3\t0\t5\t4\t1",
+        "sam3\t7\t5\t0\t2\t6",
+        "sam4\t2\t4\t2\t0\t2",
+        "sam5\t1\t1\t6\t6\t0"]
+       self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(self.distmtx_non_sym_str)
+       self.distmtx_non_sym_samples = self.distmtx_non_sym.getSampleIds()
+
+       self.mapping_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
+        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354",
+        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._355",
+        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\tControl_mouse_I.D._356",
+        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\tControl_mouse_I.D._481"]
+       self.mapping = MetadataMap.parseMetadataMap(self.mapping_str)
+       #self.mapping_groups = self.mapping.getSampleIds()
+       #self.mapping_comments = self.mapping.getComments()
+
+       self.mapping_non_sym_str=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
+        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354",
+        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._355",
+        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\tControl_mouse_I.D._356",
+        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\tControl_mouse_I.D._481",
+        "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\tcontrolmouseid"]
+       self.mapping_non_sym = MetadataMap.parseMetadataMap(self.mapping_non_sym_str)
+       #self.mapping_non_sym_groups = self.mapping_non_sym.getSampleIds()
+        
+       self.mapping_map = {}
+       for samp_id in self.mapping.getSampleIds():
+           self.mapping_map[samp_id] = self.mapping.getCategoryValue(
+               samp_id, 'Treatment')
+
+       self.permanova_distmtx = Permanova(self.mapping, self.distmtx, 'Treatment', 999)
+       self.permanova_distmtx_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment', 999)
+       self.permanova_distmtx_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment', 999)
+       self.permanova_overview = Permanova(self.overview_map, self.overview_dm, 'Treatment', 999)
+
+    def test_permanova1(self):
+        """permanova should return 4.4"""
+        exp = 4.4
+        obs = self.permanova_distmtx._permanova(self.mapping_map)
+        self.assertEqual(obs, exp)
+
+    def test_permanova2(self):
+        """Should result in 2"""
+        group_list = {}
+        samples, distmtx = parse_distmat(self.distmtx_tie_txt)
+        dict, comment = parse_mapping_file_to_dict(self.mapping_txt)
+        for sample in dict:
+            group_list[sample] = dict[sample]["Treatment"]
+        result = permanova(samples, distmtx, group_list)
+        self.assertEqual(result, 2)
+
+    def test_permanova3(self):
+        """Should result in 3.58462"""
+        group_list = {}
+        samples, distmtx = parse_distmat(self.distmtx_non_sym)
+        dict, comment = parse_mapping_file_to_dict(self.mapping_non_sym)
+        for sample in dict:
+            group_list[sample] = dict[sample]["Treatment"]
+        result = permanova(samples, distmtx, group_list)
+        self.assertEqual(round(result,5), 3.58462)
+
+    def test_compute_f1(self):
+        """Should return 4.4, testing just function"""
+        distances = [1,5,4,3,2,3]
+        grouping = [0,-1,-1,-1,-1,1]
+        distances = array(distances)
+        grouping = array(grouping)
+        result = _compute_f_value(distances,grouping,4,2,[2,2])
+        self.assertEqual(result, 4.4)
+
+    def test_p_test(self):
+        """P-value should be .5 for this test"""
+        group_list = {}
+        samples, distmtx = parse_distmat(self.distmtx_txt)
+        grouping, comment = parse_mapping_file_to_dict(self.mapping_txt)
+        for sample in grouping:
+            group_list[sample] = grouping[sample]["Treatment"]
+
+        nrs = NonRandomShuffler()
+
+        result, p_val = permanova_p_test(samples, distmtx,group_list, ntrials=3, randomfun=nrs.permutation)
+        self.assertEqual(p_val, 0.5)
 
 
 class BioEnvTests(TestHelper):
