@@ -445,7 +445,7 @@ class AnosimTests(TestHelper):
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertTrue(obs['p_value'] > 0 and obs['p_value'] < 0.02)
+        self.assertTrue(obs['p_value'] > 0 and obs['p_value'] < 0.06)
 
     def test_runAnalysis_small(self):
         """Test runAnalysis() on small dm."""
