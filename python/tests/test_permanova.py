@@ -10,9 +10,9 @@ __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 __status__ = "Development"
 
-from Bio.qiime.permanova import permanova, _compute_f_value, permanova_p_test
+from python.qiime.permanova import permanova, _compute_f_value, permanova_p_test
 from cogent.util.unit_test import TestCase, main
-from qiime.parse import parse_distmat, parse_mapping_file_to_dict
+from python.qiime.parse import parse_distmat, parse_mapping_file_to_dict
 from numpy import array, roll
 
 
@@ -99,7 +99,8 @@ class permanovaTests(TestCase):
             group_list[sample] = grouping[sample]["Treatment"]
 
         nrs = NonRandomShuffler()
-
+	
+	print(group_list)
         result, p_val = permanova_p_test(samples, distmtx,group_list, ntrials=3, randomfun=nrs.permutation)
         self.assertEqual(p_val, 0.5)
 

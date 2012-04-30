@@ -48,7 +48,6 @@ def permanova(samples, distmtx, grouping):
         grouping_i = grouping[i_sample]
         for j, j_sample in enumerate(samples):
             if grouping_i == grouping[j_sample]:
-                print(grouping_matrix)
                 grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
     # Extract upper triangle

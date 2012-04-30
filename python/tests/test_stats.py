@@ -641,12 +641,13 @@ class PermanovaTests(TestHelper):
         self.permanova_distmtx.setNumPermutations(3)
         self.permanova_distmtx.setRandomFunction(nrs.permutation)
 
-        exp = {'method_name' : 'PERMANOVA', 'p_value' : 0.5, 'r_value' : 4.4}
-        obs = self.permanova_distmtx.runAnalysis()
+	exp_result = 4.4
+        exp_p_val = 0.5
 
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertFloatEqual(obs['p_value'], exp['p_value'])
+        obs_result, obs_p_val = self.permanova_distmtx.permanova_p_test(self.distmtx_samples, self.distmtx, self.mapping_map, 3, nrs.permutation)
+
+        self.assertFloatEqual(obs_result, exp_result)
+        self.assertFloatEqual(obs_p_val, exp_p_val)
 
 class BioEnvTests(TestHelper):
     """Tests for the BioEnv class."""
