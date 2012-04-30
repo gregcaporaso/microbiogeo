@@ -12,7 +12,7 @@ __email__ = "mdwan.tgen@gmail.com"
 __status__ = "Development"
 
 """Test suite for classes, methods and functions of the stats module."""
- 
+
 from cogent.util.unit_test import TestCase, main
 from numpy import array, matrix, roll
 from numpy.random import permutation
@@ -178,7 +178,7 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, {})
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
-        
+
     def test_setDistanceMatrices_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
         self.assertRaises(ValueError, self.two_dms.setDistanceMatrices,
@@ -235,7 +235,7 @@ class PermutationStatsTests(TestHelper):
         self.assertRaises(TypeError, PermutationStats, [1])
         self.assertRaises(TypeError, PermutationStats, ())
         self.assertRaises(ValueError, PermutationStats, -1)
-        
+
     def test_runAnalysis(self):
         """Test runAnalysis() is not implemented."""
         self.assertRaises(NotImplementedError, self.ps.runAnalysis)
@@ -351,7 +351,7 @@ class CategoryStatsTests(TestHelper):
 
 class AnosimTests(TestHelper):
     """Tests for the Anosim class.
-    
+
     This testing code is heavily based on Andrew Cochran's original suite of
     unit tests for ANOSIM.
     """
@@ -554,7 +554,7 @@ class AnosimTests(TestHelper):
 
 class PermanovaTests(TestHelper):
     def setUp(self):
- 
+
        """Define some useful data to use in testing."""
        super(PermanovaTests, self).setUp()
 
@@ -597,7 +597,7 @@ class PermanovaTests(TestHelper):
         "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\tControl_mouse_I.D._481",
         "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\tcontrolmouseid"]
        self.mapping_non_sym = MetadataMap.parseMetadataMap(self.mapping_non_sym_str)
-        
+
        self.mapping_map = {}
        for samp_id in self.mapping.getSampleIds():
            self.mapping_map[samp_id] = self.mapping.getCategoryValue(
@@ -655,7 +655,105 @@ class BioEnvTests(TestHelper):
     def setUp(self):
         """Define some useful data to use in testing."""
         super(BioEnvTests, self).setUp()
-        self.bioenv = BioEnv
+
+        self.bv_dm_88soils_str = ["\tMT2.141698\tCA1.141704\tBB2.141659\tCO2.141657\tTL3.141709\tSN3.141650",
+        "MT2.141698\t0.0\t0.623818643706\t0.750015427505\t0.585201193913\t0.729023583672\t0.622135587669",
+        "CA1.141704\t0.623818643706\t0.0\t0.774881224555\t0.649822398416\t0.777203137034\t0.629507320436",
+        "BB2.141659\t0.750015427505\t0.774881224555\t0.0\t0.688845424001\t0.567470311282\t0.721707516043",
+        "CO2.141657\t0.585201193913\t0.649822398416\t0.688845424001\t0.0\t0.658853575764\t0.661223617505",
+        "TL3.141709\t0.729023583672\t0.777203137034\t0.567470311282\t0.658853575764\t0.0\t0.711173405838",
+        "SN3.141650\t0.622135587669\t0.629507320436\t0.721707516043\t0.661223617505\t0.711173405838\t0.0"]
+        self.bv_dm_88soils = DistanceMatrix.parseDistanceMatrix(self.bv_dm_88soils_str)
+
+        self.bv_map_88soils_str = ["#SampleId\tTOT_ORG_CARB\tSILT_CLAY\tELEVATION\tSOIL_MOISTURE_DEFICIT\tCARB_NITRO_RATIO\tANNUAL_SEASON_TEMP\tANNUAL_SEASON_PRECPT\tPH\tCMIN_RATE\tLONGITUDE\tLATITUDE",
+        "MT2.141698\t39.1\t35\t1000\t70\t23.087\t7\t450\t6.66\t19.7\t-114\t46.8",
+        "CA1.141704\t16.7\t73\t2003\t198\t13\t10.3\t400\t7.27\t2.276\t-111.7666667\t36.05",
+        "BB2.141659\t52.2\t44\t400\t-680\t21.4\t6.1\t1200\t4.6\t2.223\t-68.1\t44.86666667",
+        "CO2.141657\t18.1\t24\t2400\t104\t31.8\t6.1\t350\t5.68\t9.223\t-105.3333333\t40.58333333",
+        "TL3.141709\t53.9\t52\t894\t-212\t24.6\t-9.3\t400\t4.23\t16.456\t-149.5833333\t68.63333333",
+        "SN3.141650\t16.6\t20\t3000\t-252\t13.9\t3.6\t600\t5.74\t6.289\t-118.1666667\t36.45"]
+        self.bv_map_88soils = MetadataMap.parseMetadataMap(self.bv_map_88soils_str)
+
+        self.cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
+
+        self.bioenv = BioEnv(self.bv_dm_88soils, self.bv_map_88soils, self.cats)
+
+        self.a = [1,2,4,3,1,6,7,8,10,4]
+        self.b = [2,10,20,1,3,7,5,11,6,13]
+        self.c = [7,1,20,13,3,57,5,121,2,9]
+        self.x = (1, 2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
+        self.y = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13, 5, 6, 99, 101)
+        self.r = (1.7,10,20,1.7,3,7,5,11,6.5,13)
+        self.s = (2,3,5,4,2,2,3,4,3,2)
+        self.u = (1,2,3,4,5,6,7,8,9)
+        self.v = (10,11,4,2,9,33,1,5,88)
+
+    def test_get_rank(self):
+        """Test the _get_rank method with valid input"""
+        exp = ([1.5,3.5,7.5,5.5,1.5,9.0,10.0,11.0,12.0,7.5,14.0,3.5,5.5,13.0], 4)
+        obs = self.bioenv._get_rank(self.x)
+        self.assertFloatEqual(exp,obs)
+
+        exp = ([1.5,3.0,5.5,4.0,1.5,7.0,8.0,9.0,10.0,5.5],2)
+        obs = self.bioenv._get_rank(self.a)
+        self.assertFloatEqual(exp,obs)
+
+        exp = ([2,7,10,1,3,6,4,8,5,9],0)
+        obs = self.bioenv._get_rank(self.b)
+        self.assertFloatEqual(exp,obs)
+
+        exp = ([1.5,7.0,10.0,1.5,3.0,6.0,4.0,8.0,5.0,9.0], 1)
+        obs = self.bioenv._get_rank(self.r)
+        self.assertFloatEqual(exp,obs)
+
+        exp = ([],0)
+        obs = self.bioenv._get_rank([])
+        self.assertEqual(exp,obs)
+
+    def test_get_rank_invalid_input(self):
+        """Test the _get_rank method with invalid input"""
+        vec = [1, 'a', 3, 2.5, 3, 1]
+        self.assertRaises(TypeError, self.bioenv._get_rank, vec)
+
+        vec = [1, 2, {1:2}, 2.5, 3, 1]
+        self.assertRaises(TypeError, self.bioenv._get_rank, vec)
+
+        vec = [1, 2, [23,1], 2.5, 3, 1]
+        self.assertRaises(TypeError, self.bioenv._get_rank, vec)
+
+        vec = [1, 2, (1,), 2.5, 3, 1]
+        self.assertRaises(TypeError, self.bioenv._get_rank, vec)
+
+    def test_spearman_correlation(self):
+        """Test the _spearman_correlation method."""
+
+        # One vector has no ties
+        exp = 0.3719581
+        obs = self.bioenv._spearman_correlation(self.a,self.b)
+        self.assertFloatEqual(exp,obs)
+
+        # Both vectors have no ties
+        exp = 0.2969697
+        obs = self.bioenv._spearman_correlation(self.b,self.c)
+        self.assertFloatEqual(exp,obs)
+
+        # Both vectors have ties
+        exp = 0.388381
+        obs = self.bioenv._spearman_correlation(self.a,self.r)
+        self.assertFloatEqual(exp,obs)
+
+    def test_spearman_correlation_invalid_input(self):
+        """Test the _spearman_correlation method."""
+        self.assertRaises(ValueError,
+                          self.bioenv._spearman_correlation, [],[])
+
+        self.assertRaises(ValueError,
+                          self.bioenv._spearman_correlation, self.a,[])
+
+        self.assertRaises(ValueError,
+                          self.bioenv._spearman_correlation,
+                          {0:2}, [1,2,3])
+
 
 
 class DistanceBasedRdaTests(TestHelper):

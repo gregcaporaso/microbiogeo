@@ -748,33 +748,40 @@ class BioEnv(CategoryStats):
             method_name - name of the statistical method
         """
 
+        res = {}
         cats = self.getCategories()
         dm = self.getDistanceMatrix()
         dm_flat = dm.flatten()
+        dm_flat_ranked = self._get_rank(dm_flat)
 
         row_count = dm.getSize()
         col_count = len(cats)
         sum = 0
         stats = [(-777, '') for c in range(col_count+1)]
         for i in range(col_count+1):
-            combo = list(combinate([j for j in range(0,col_count)], i))[1:]
-
-            if i == 11:
+            if i < 11:
+                combo = list(combinate([j for j in range(0,col_count)], i))[1:]
+            else:
                 combo = list(combinate([j for j in range(0,col_count+1)], i))[0:1]
-                # print combo1
 
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
-                r = self._spearman_correlation(dm_flat, cat_dm.flatten())
+                cat_dm_flat_ranked = self._get_rank(cat_dm.flatten())
+                r = self._spearman_correlation(dm_flat_ranked, cat_dm_flat_ranked, ranked=True)
                 if r > stats[i][0]:
                     stats[i] = (r, ','.join(str(s+1) for s in combo[c]))
 
-
-
-        for s in stats[1:]:
-            print s
+        # for s in stats[1:]:
+        #     print s
         # print (2**col_count - 1)/2
+
+        res['method_name'] = 'BioEnv'
+        res['num_vars'] = col_count
+        res['vars'] = ['%s = %d' % (name,val+1) for val,name in enumerate(cats)]
+        res['bioenv_rho_vals'] = stats[1:]
+
+        return res
 
 
     def _derive_euclidean_dm(self, cat_mat, dim):
@@ -823,6 +830,11 @@ class BioEnv(CategoryStats):
         while i < data_len:
             j = i + 1
             val = data[indices[i]]
+            try:
+                val += 0
+            except TypeError:
+                raise(TypeError)
+
             while j < data_len and data[indices[j]] == val:
                 j += 1
 
@@ -836,10 +848,30 @@ class BioEnv(CategoryStats):
 
         return ranks, ties
 
-    def _spearman_correlation(self, vec1, vec2):
+    def _spearman_correlation(self, vec1, vec2, ranked=False):
         """Calculates the the Spearman distance of two vectors"""
-        rank1, ties1 = self._get_rank(vec1)
-        rank2, ties2 = self._get_rank(vec2)
+        try:
+            temp = len(vec1)
+        except ValueError:
+            raise(ValueError, 'First input vector is not a list.')
+
+        try:
+            temp = len(vec2)
+        except ValueError:
+            raise(ValueError, 'Second input vector is not a list.')
+
+        if len(vec1) == 0 or len(vec2) == 0:
+            raise(ValueError, 'One or both input vectors has/have zero elements')
+
+        if len(vec1) != len(vec2):
+            raise(ValueError, 'Vector lengths must be equal')
+
+        if not ranked:
+            rank1, ties1 = self._get_rank(vec1)
+            rank2, ties2 = self._get_rank(vec2)
+        else:
+            rank1, ties1 = vec1
+            rank2, ties2 = vec2
 
         if ties1 == 0 and ties2 == 0:
             n = len(rank1)
@@ -868,7 +900,7 @@ if __name__ == '__main__':
     cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
 
     bioenv = BioEnv(dm, md_map, cats)
-    bioenv.runAnalysis()
+    print bioenv.runAnalysis()
     # a = [1,2,4,3,1,6,7,8,10,4]
     # b = [2,10,20,1,3,7,5,11,6,13]
     # x = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
