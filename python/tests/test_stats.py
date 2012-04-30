@@ -644,7 +644,24 @@ class PermanovaTests(TestHelper):
 	exp_result = 4.4
         exp_p_val = 0.5
 
-        obs_result, obs_p_val = self.permanova_distmtx.permanova_p_test(self.distmtx_samples, self.distmtx, self.mapping_map, 3, nrs.permutation)
+        # Create the group map, which maps sample ID to category value (e.g.
+        # sample 1 to 'control' and sample 2 to 'fast').
+
+        group_list = {}
+	grouping = self.permanova_distmtx.getDistanceMatrix().getSampleIds()
+
+        #make map
+        map = {}
+        for sample in self.permanova_distmtx.getMetadataMap().getSampleIds():
+                subkey = {}
+                for cat in self.permanova_distmtx.getMetadataMap().getCategoryNames():
+                    subkey[cat] = self.permanova_distmtx.getMetadataMap().getCategoryValue(sample, cat)     
+                map[sample] = subkey
+
+        for sample in map:
+            group_list[sample] = map[sample]["Treatment"]
+        
+        obs_result, obs_p_val = self.permanova_distmtx.permanova_p_test(self.distmtx_samples, self.distmtx.getDataMatrix(), group_list, 3, nrs.permutation)
 
         self.assertFloatEqual(obs_result, exp_result)
         self.assertFloatEqual(obs_p_val, exp_p_val)

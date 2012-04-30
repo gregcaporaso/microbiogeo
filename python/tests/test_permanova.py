@@ -99,8 +99,7 @@ class permanovaTests(TestCase):
             group_list[sample] = grouping[sample]["Treatment"]
 
         nrs = NonRandomShuffler()
-	
-	print(group_list)
+
         result, p_val = permanova_p_test(samples, distmtx,group_list, ntrials=3, randomfun=nrs.permutation)
         self.assertEqual(p_val, 0.5)
 
