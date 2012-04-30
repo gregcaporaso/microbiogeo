@@ -663,41 +663,41 @@ class Permanova(CategoryStats, PermutationStats):
         distmtx = self.getDistanceMatrix()
         samples = distmtx.getSampleIds()
 
-            #make map
+        #make map
         for sample in metaMap.getSampleIds():
                 subkey = {}
                 for cat in metaMap.getCategoryNames():
                     subkey[cat] = metaMap.getCategoryValue(sample, cat)
                 map[sample] = subkey
 
-            #make grouping
+        #make grouping
         for samp_id in metaMap.getSampleIds():
             grouping[samp_id] = metaMap.getCategoryValue(samp_id, self.category)
 
-            # Extract the unique list of group labels
-            gl_unique = unique(array(grouping.values()))
+        # Extract the unique list of group labels
+        gl_unique = unique(array(grouping.values()))
 
-            # Calculate number of gorups and unique 'n's
-            number_groups = len(gl_unique)
-            for i, i_string in enumerate(gl_unique):
-                group_map[i_string] = i
-                unique_n.append(grouping.values().count(i_string))
+        # Calculate number of gorups and unique 'n's
+        number_groups = len(gl_unique)
+        for i, i_string in enumerate(gl_unique):
+            group_map[i_string] = i
+            unique_n.append(grouping.values().count(i_string))
 
-            # Create grouping matrix
-            grouping_matrix = -1 * ones((distmtx.getSize(),distmtx.getSize()))
-            for i, i_sample in enumerate(samples):
-                grouping_i = grouping[i_sample]
-                for j, j_sample in enumerate(samples):
-                    if grouping_i == grouping[j_sample]:
-                        grouping_matrix[i][j] = group_map[grouping[i_sample]]
+        # Create grouping matrix
+        grouping_matrix = -1 * ones((distmtx.getSize(),distmtx.getSize()))
+        for i, i_sample in enumerate(samples):
+            grouping_i = grouping[i_sample]
+            for j, j_sample in enumerate(samples):
+                if grouping_i == grouping[j_sample]:
+                    grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
-            # Extract upper triangle
-            distances = distmtx[tri(distmtx.getSize()) == 0]
-            gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
+        # Extract upper triangle
+        distances = distmtx[tri(distmtx.getSize()) == 0]
+        gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
-            # Compute f value
-            result = self._compute_f_value(distances,gropuing,distmtx.getSize(),number_groups,unique_n)
-            return result
+        # Compute f value
+        result = self._compute_f_value(distances,gropuing,distmtx.getSize(),number_groups,unique_n)
+        return result
 
 
     def permanova_p_test(samples, distmtx, group_list, ntrials=9999,\
