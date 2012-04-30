@@ -41,6 +41,7 @@ Tutorials
    :maxdepth: 1
 
    notes/simulation_code_example
+   notes/distance_matrix_comparison
 
 Progress Reports
 ----------------
