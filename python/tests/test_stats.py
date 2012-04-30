@@ -743,7 +743,7 @@ class BioEnvTests(TestHelper):
         self.assertFloatEqual(exp,obs)
 
     def test_spearman_correlation_invalid_input(self):
-        """Test the _spearman_correlation method."""
+        """Test the _spearman_correlation method with invalid input."""
         self.assertRaises(ValueError,
                           self.bioenv._spearman_correlation, [],[])
 
@@ -753,6 +753,10 @@ class BioEnvTests(TestHelper):
         self.assertRaises(ValueError,
                           self.bioenv._spearman_correlation,
                           {0:2}, [1,2,3])
+
+    def test_vector_dist(self):
+        """Test the _vector_dist helper method"""
+
 
 
 
