@@ -254,13 +254,11 @@ Make and enter a subdirectory.
 
 Run the command: ::
 
-        ./../convert_otu (name of otu table) (columns)
+        ./../convert_otu (name of otu table) (name of map file)
 
-:note: columns = samples+taxonomic levels+1
-
-Delete the first word from the map file.
-Open the otu file and remove all but 16 of the samples.
 Open the map file and remove all but 4 categories to compare.
+
+:notes: This script makes the otu table only have 16 columns, more are likely possible but have not worked for me. The map file must have exactly four categories.
 
 Process the data
 ****************
