@@ -37,7 +37,6 @@ from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
-import copy
 
 
 class DistanceMatrixStats(object):
@@ -611,9 +610,6 @@ class Permanova(CategoryStats, PermutationStats):
        grouping: a Metamap object
         """
 
-        dm = self.getDistanceMatrix()
-        dm_size = dm.getSize()
-
 
         # Local Vars
         unique_n = []       # number of samples in each group
@@ -628,9 +624,6 @@ class Permanova(CategoryStats, PermutationStats):
                     subkey[cat] = metaMap.getCategoryValue(sample, cat)
                 map[sample] = subkey
 
-        #make grouping
-        for samp_id in metaMap.getSampleIds():
-            grouping[samp_id] = metaMap.getCategoryValue(samp_id, self.category)
 
         # Extract the unique list of group labels
         gl_unique = unique(array(grouping.values()))
@@ -642,7 +635,7 @@ class Permanova(CategoryStats, PermutationStats):
             unique_n.append(grouping.values().count(i_string))
 
         # Create grouping matrix
-        grouping_matrix = -1 * ones((dm_size,dm_size))
+        grouping_matrix = -1 * ones((len(distmtx),len(distmtx)))
         for i, i_sample in enumerate(samples):
             grouping_i = grouping[i_sample]
             for j, j_sample in enumerate(samples):
@@ -650,11 +643,11 @@ class Permanova(CategoryStats, PermutationStats):
                     grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
         # Extract upper triangle
-        distances = distmtx[tri(dm_size) == 0]
+        distances = distmtx[tri(len(distmtx)) == 0]
         gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute f value
-        result = self._compute_f_value(distances,gropuing,dm_size,number_groups,unique_n)
+        result = self._compute_f_value(distances,gropuing,len(distmtx),number_groups,unique_n)
         return result
 
 
@@ -691,9 +684,8 @@ class Permanova(CategoryStats, PermutationStats):
             # Calculate p-values
             for j, sample in enumerate(samples):
                 group_list[sample] = grouping_random[j]
-            f_value_permunations[i] = self._permanova(samples,distmtx,copy.deepcopy(group_list))
+            f_value_permunations[i] = self._permanova(samples,distmtx,group_list)
        
-        print(f_value_permunations) 
         p_value = (sum(f_value_permunations >= f_value) + 1) / (ntrials + 1)
         return f_value, p_value
 

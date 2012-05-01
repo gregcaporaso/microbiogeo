@@ -603,6 +603,11 @@ class PermanovaTests(TestHelper):
            self.mapping_map[samp_id] = self.mapping.getCategoryValue(
                samp_id, 'Treatment')
 
+       self.mapping_map_non_sym = {}
+       for samp_id in self.mapping_non_sym.getSampleIds():
+           self.mapping_map_non_sym[samp_id] = self.mapping_non_sym.getCategoryValue(
+               samp_id, 'Treatment')
+
        self.permanova_distmtx = Permanova(self.mapping, self.distmtx, 'Treatment', 999)
        self.permanova_distmtx_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment', 999)
        self.permanova_distmtx_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment', 999)
@@ -611,19 +616,19 @@ class PermanovaTests(TestHelper):
     def test_permanova1(self):
         """permanova should return 4.4"""
         exp = 4.4
-        obs = self.permanova_distmtx._permanova(self.distmtx_samples,self.distmtx,self.mapping_map)
+        obs = self.permanova_distmtx._permanova(self.distmtx_samples,self.distmtx.getDataMatrix(),self.mapping_map)
         self.assertEqual(obs, exp)
 
     def test_permanova2(self):
         """Should result in 2"""
         exp = 2
-        obs = self.permanova_distmtx_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie,self.mapping_map)
+        obs = self.permanova_distmtx_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie.getDataMatrix(),self.mapping_map)
         self.assertEqual(obs, exp)
 
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = round(self.permanova_distmtx_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym,self.mapping_map),5)
+        obs = round(self.permanova_distmtx_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym.getDataMatrix(),self.mapping_map_non_sym),5)
         self.assertEqual(obs, exp)
 
     def test_compute_f1(self):
@@ -660,7 +665,7 @@ class PermanovaTests(TestHelper):
 
         for sample in map:
             group_list[sample] = map[sample]["Treatment"]
-        
+     
         obs_result, obs_p_val = self.permanova_distmtx.permanova_p_test(self.distmtx_samples, self.distmtx.getDataMatrix(), group_list, 3, nrs.permutation)
 
         self.assertFloatEqual(obs_result, exp_result)
