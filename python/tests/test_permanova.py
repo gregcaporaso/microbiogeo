@@ -95,6 +95,7 @@ class permanovaTests(TestCase):
         group_list = {}
         samples, distmtx = parse_distmat(self.distmtx_txt)
         grouping, comment = parse_mapping_file_to_dict(self.mapping_txt)
+        
         for sample in grouping:
             group_list[sample] = grouping[sample]["Treatment"]
 

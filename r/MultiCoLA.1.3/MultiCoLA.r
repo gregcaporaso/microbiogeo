@@ -56,9 +56,6 @@ print("source(\"../signif.1.4.r\")")
 source("../signif.1.4.r")
 print("all_taxa_pooled<-taxa.pooler(M,(opts$samples),(opts$levels))")
 all_taxa_pooled<-taxa.pooler(M,(opts$samples),(opts$levels))
-all_taxa_pooled[[1]]
-all_taxa_pooled[[2]]
-all_taxa_pooled[[3]]
 print("truncated.DS.phylum<-COtables(all_taxa_pooled[[1]], Type=\"ADS\",typem=\"dominant\")")
 truncated.DS.phylum<-COtables(all_taxa_pooled[[1]], Type="ADS",typem="dominant")
 print("truncated.DS.class<-COtables(all_taxa_pooled[[2]], Type=\"ADS\",typem=\"dominant\")")
@@ -193,9 +190,9 @@ print("SPE<-all_taxa_pooled[[7]]")
 SPE<-all_taxa_pooled[[7]]
 print("signif.table.ADS.orig<-signif(SPE,ENV)")
 signif.table.ADS.orig<-signif(SPE,ENV)
-print("row.names(signif.table.ADS.orig)<-c("CO_1")")
+print("row.names(signif.table.ADS.orig)<-c(\"CO_1\")")
 row.names(signif.table.ADS.orig)<-c("CO_1")
 print("signif.table.ADS<-rbind(signif.table.ADS, signif.table.ADS.orig)")
 signif.table.ADS<-rbind(signif.table.ADS, signif.table.ADS.orig)
-print("write.table(signif.table.ADS,"signif.table.ADS.txt",quote=FALSE)")
+print("write.table(signif.table.ADS,\"signif.table.ADS.txt\",quote=FALSE)")
 write.table(signif.table.ADS,"signif.table.ADS.txt",quote=FALSE)

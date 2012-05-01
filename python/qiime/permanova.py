@@ -94,6 +94,7 @@ def permanova_p_test(samples, distmtx, group_list, ntrials=9999,\
             group_list[sample] = grouping_random[j]
         f_value_permunations[i] = permanova(samples, distmtx, group_list)
 
+    print(f_value_permunations)
     p_value = (sum(f_value_permunations >= f_value) + 1) / (ntrials + 1)
     return f_value, p_value
 

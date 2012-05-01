@@ -1,0 +1,17 @@
+p__Acidobacteria p__Actinobacteria p__Bacteroidetes p__BRC1 p__Chlorobi p__Chloroflexi p__Cyanobacteria p__Firmicutes p__Fusobacteria p__Gemmatimonadetes p__Lentisphaerae p__Nitrospirae p__OP10 p__Planctomycetes p__Proteobacteria p__SC3 p__Spirochaetes p__SR1 p__Synergistetes p__Tenericutes p__Thermi p__Thermotogae p__TM7 p__Verrucomicrobia
+M13Urin.140575 0 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+M64Urin.140764 1 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0
+M44Uric.140688 0 1 1 0 0 0 0 1 1 0 0 0 0 0 1 0 0 0 0 1 0 0 1 0
+M12Aptr.140800 0 1 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+M41Kner.140735 0 1 1 0 0 0 1 1 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0
+F24Plmr.140433 0 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 1 0 1 0
+M53Tong.140327 0 1 1 0 0 0 0 1 1 0 0 0 0 0 1 0 0 1 0 1 0 0 1 0
+M42Glns.140719 0 1 1 0 0 0 1 1 1 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0
+F31Indl.140679 0 1 1 0 0 0 1 1 0 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0
+M33Fotl.140701 0 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+F21Aptl.140686 1 1 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+F32Mout.140603 0 1 1 0 0 0 1 1 1 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0
+M22Mout.140541 0 1 1 0 0 0 1 1 1 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0
+F32Knel.140324 1 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+F12Navl.140828 0 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+F34Tong.140848 0 1 1 0 0 0 0 1 1 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0

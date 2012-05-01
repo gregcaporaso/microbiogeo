@@ -1,0 +1,17 @@
+p__ p__ABY1_OD1 p__Acidobacteria p__Actinobacteria p__Armatimonadetes p__Bacteroidetes p__BRC1 p__CCM11b p__Chlamydiae p__Chlorobi p__Chloroflexi p__Crenarchaeota p__Cyanobacteria p__Elusimicrobia p__Euryarchaeota p__Firmicutes p__Fusobacteria p__GAL15 p__Gemmatimonadetes p__GN02 p__GN04 p__GOUTA4 p__Lentisphaerae p__MVP-15 p__NC10 p__Nitrospirae p__NKB19 p__OP11 p__OP3 p__OP8 p__Planctomycetes p__Proteobacteria p__SC3 p__SC4 p__SM2F11 p__SPAM p__Spirochaetes p__SR1 p__Synergistetes p__Tenericutes p__TG3 p__Thermi p__TM6 p__TM7 p__Verrucomicrobia p__WPS-2 p__WS1 p__WS3 p__ZB2
+CrustControlR1 0 0 1 1 1 1 1 0 0 1 1 1 1 1 0 1 1 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 0 1 1 1 0 0 1
+CrustControlR2 0 0 1 1 1 1 0 0 1 1 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 1 0 1 1 1 1 0 1 0 0 0 0 0 1 0 0 1 1 0 0 0
+CrustControlR3 0 0 1 1 1 1 0 0 0 1 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 0 0 0 0 1 0 1 0 0 1 1 0 0 0
+HCanyon0R1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 0 1 1 0 1 1 1 0 0 1 1 1 1 0 1 0 0 1 1 0 1 1 0 0 0 1 0 1 1 0
+HCanyon0R2 1 1 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 0 1 0 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 1 1 0 0 1 1 0 0 1 1 0 0 1 0
+HCanyon0R3 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 0 1 1 1 1 1 1 1 1 1 1 1 1 0 1 0 1 1 0 0 1 1 0 0 1 1 1 1 1 0
+HCanyon10R1 0 0 1 1 1 1 0 0 1 0 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 0 0 0 1 0 1 1 1 0 0 0
+HCanyon10R2 0 0 1 1 1 1 1 1 1 0 1 1 1 1 0 1 1 0 1 0 0 0 0 0 0 1 0 0 1 0 1 1 0 1 0 1 0 0 0 0 0 1 0 1 1 1 0 1 0
+HCanyon10R3 0 0 1 1 1 1 1 1 0 1 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 1 0 1 1 0 1 0 1 0 0 0 0 0 1 0 1 1 1 0 0 0
+HCanyon11R1 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 0 0 0 1 0 0 1 0 0 0 0
+HCanyon11R2 0 0 1 1 1 1 1 0 1 1 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 0 1 1 1 0 0 0
+HCanyon11R3 0 0 1 1 1 1 0 1 1 0 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 0 0 0 1 0 1 1 1 0 1 0
+HCanyon12R1 0 0 1 1 1 1 1 0 1 1 1 1 1 1 0 1 1 0 1 0 0 0 0 0 0 1 0 0 1 0 1 1 0 1 0 1 0 0 0 0 0 1 0 0 1 1 0 0 0
+HCanyon12R2 0 0 1 1 1 1 0 1 1 0 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 0 1 0 1 0 1 1 0 0 1 0
+HCanyon12R3 0 0 1 1 1 1 0 1 1 0 1 1 1 1 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 0 0 0 1 0 1 1 1 0 1 1
+HCanyon1R1 0 0 1 1 1 1 0 0 0 1 1 0 1 1 1 1 1 0 1 0 1 0 1 0 0 1 0 0 1 0 1 1 0 0 0 0 1 0 0 1 0 0 0 1 1 0 0 1 0

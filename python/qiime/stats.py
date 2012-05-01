@@ -37,6 +37,7 @@ from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
 
 from python.qiime.parse import DistanceMatrix, MetadataMap
+import copy
 
 
 class DistanceMatrixStats(object):
@@ -603,20 +604,22 @@ class Permanova(CategoryStats, PermutationStats):
         else:
             raise TypeError("The supplied function reference is not callable.")
 
-    def _permanova(self, group_map):
+    def _permanova(self, samples, distmtx, grouping):
         """Computes PERMANOVA pseudo-f-statistic
 
            PARAMETERS
-       group_map: a Metamap object
+       grouping: a Metamap object
         """
+
+        dm = self.getDistanceMatrix()
+        dm_size = dm.getSize()
+
 
         # Local Vars
         unique_n = []       # number of samples in each group
-        grouping = {}
+        group_map = {}
         map = {}
         metaMap = self.getMetadataMap()
-        distmtx = self.getDistanceMatrix()
-        samples = distmtx.getSampleIds()
 
         #make map
         for sample in metaMap.getSampleIds():
@@ -639,7 +642,7 @@ class Permanova(CategoryStats, PermutationStats):
             unique_n.append(grouping.values().count(i_string))
 
         # Create grouping matrix
-        grouping_matrix = -1 * ones((distmtx.getSize(),distmtx.getSize()))
+        grouping_matrix = -1 * ones((dm_size,dm_size))
         for i, i_sample in enumerate(samples):
             grouping_i = grouping[i_sample]
             for j, j_sample in enumerate(samples):
@@ -647,11 +650,11 @@ class Permanova(CategoryStats, PermutationStats):
                     grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
         # Extract upper triangle
-        distances = distmtx[tri(distmtx.getSize()) == 0]
+        distances = distmtx[tri(dm_size) == 0]
         gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute f value
-        result = self._compute_f_value(distances,gropuing,distmtx.getSize(),number_groups,unique_n)
+        result = self._compute_f_value(distances,gropuing,dm_size,number_groups,unique_n)
         return result
 
 
@@ -674,7 +677,7 @@ class Permanova(CategoryStats, PermutationStats):
         f_value_permunations = zeros(ntrials)
 
         # Calculate the F-Value
-        f_value = self._permanova(group_list)
+        f_value = self._permanova(samples,distmtx,group_list)
 
         # Run p-tests
         for i in xrange(ntrials):
@@ -688,8 +691,9 @@ class Permanova(CategoryStats, PermutationStats):
             # Calculate p-values
             for j, sample in enumerate(samples):
                 group_list[sample] = grouping_random[j]
-            f_value_permunations[i] = self._permanova(group_list)
-
+            f_value_permunations[i] = self._permanova(samples,distmtx,copy.deepcopy(group_list))
+       
+        print(f_value_permunations) 
         p_value = (sum(f_value_permunations >= f_value) + 1) / (ntrials + 1)
         return f_value, p_value
 
@@ -900,7 +904,7 @@ if __name__ == '__main__':
     cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
 
     bioenv = BioEnv(dm, md_map, cats)
-    print bioenv.runAnalysis()
+    #print bioenv.runAnalysis()
     # a = [1,2,4,3,1,6,7,8,10,4]
     # b = [2,10,20,1,3,7,5,11,6,13]
     # x = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
