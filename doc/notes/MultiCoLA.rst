@@ -276,24 +276,18 @@ Glen Caynon
 Description
 ^^^^^^^^^^^
 
-This is where we explore running MultiCoLA with QIIME files.
+Ran MultiCoLA on Glen Canyon data
 
 Preparation
 ^^^^^^^^^^^
-Go to the the directory containing the MultiCola scripts.
-Make and enter a subdirectory.
+Went to the the directory containing the MultiCola scripts and made the subdirectory "glen".
 
 Run the command: ::
 
         ./../convert_otu otu_table_even17340.txt 100
 
-:note: columns = samples+taxonomic levels+1
 
-Delete the first word from the map file.
-Open the otu file and remove all but 16 of the samples.
-Open the map file and remove all but 4 categories to compare.
-
-I kept the first 16 in otu and sample_pH, estimated_elevation, estimated_years_since_submerged_for_plotting, and Hour from the map file
+I kept sample_pH, estimated_elevation, estimated_years_since_submerged_for_plotting, and Hour from the map file
 
 Process the data
 ^^^^^^^^^^^^^^^^
@@ -302,14 +296,8 @@ Run the command: ::
 
         R --slave --args -s 16 -l 5 -w "/home/aragorn/microbiogeo/r/MultiCoLA.1.3/glen" -m map_25Jan2012.txt -o otu_table_even17340.txt < ../MultiCoLA.r
 
-**The following files were created:**
-:download:`Phylum.matrix.txt <../downloads/MultiCoLA/gPhylum.matrix.txt>`
-:download:`Class.matrix.txt <../downloads/MultiCoLA/gClass.matrix.txt>`	
-:download:`Order.matrix.txt <../downloads/MultiCoLA/gOrder.matrix.txt>`
-:download:`Family.matrix.txt <../downloads/MultiCoLA/gFamily.matrix.txt>`
-:download:`Genus.matrix.txt <../downloads/MultiCoLA/gGenus.matrix.txt>`
-:download:`OTUs_completeDS.matrix.txt <../downloads/MultiCoLA/gOTUs_completeDS.matrix.txt>`
-:download:`OTUs_wholeDS.matrix.txt <../downloads/MultiCoLA/gOTUs_wholeDS.matrix.txt>`
+The following file was created:
+:download:`glenRplots.pdf <../downloads/MultiCoLA/glenRplots.pdf>`
 
 References
 ----------
