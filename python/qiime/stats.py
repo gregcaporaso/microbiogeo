@@ -21,7 +21,6 @@ provides a hierarchy of statistical classes that can be inherited from to
 create new statistical method implementations.
 """
 
-from math import ceil, log, sqrt
 from types import ListType
 
 from cogent.cluster.metric_scaling import principal_coordinates_analysis
@@ -30,8 +29,9 @@ from cogent.util.misc import combinate
 from matplotlib import use
 use('Agg', warn=False)
 from matplotlib.pyplot import figure
-from numpy import (arange, argsort, array, asarray, asmatrix, dot, empty,
-                   finfo, matrix, mean, ones, random, std, tri, unique, zeros)
+from numpy import (arange, argsort, array, asarray, asmatrix, ceil, dot, empty,
+                   finfo, log2, matrix, mean, ones, random, sqrt, std, tri,
+                   unique, zeros)
 from numpy import min as np_min, max as np_max
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
@@ -1211,7 +1211,7 @@ class MantelCorrelogram(CorrelationStats, PermutationStats):
         num_dists = dm_size * (dm_size - 1) // 2
 
         # Use Sturge's rule to determine the number of distance classes.
-        num_classes = int(ceil(1 + log(num_dists, 2)))
+        num_classes = int(ceil(1 + log2(num_dists)))
 
         # Create the matrix of distance classes. Each element in the matrix
         # contains what distance class the original element is in. Also find
