@@ -167,8 +167,7 @@ def main():
         try:
             outputFile = open(opts.output_dir+"/permanova_output_file.txt", os.O_CREAT)
         except:
-            option_parser.error("Could not create the output file, it already exists, delete the file: "+opts.output_dir+"/permanova_output_file.txt"
-                                "specified with the -o option.")
+            option_parser.error("Could not create the output file. It already exists, delete the file: "+opts.output_dir+"/permanova_output_file.txt in order to resolve this.")
         #makes a permanova object
         permanova_plain = Permanova(md_map, dm, first_category)
         #relies on the __call__ property and
