@@ -209,7 +209,8 @@ def main():
                 #yet again as a pair of data with the informations
                 #being (sample ids, distant matrix data)
                 (dm1_labels, dm1), (dm2_labels, dm2) =\
-                 make_compatible_distance_matrices(parse_distmat(open(fp1,'U')), parse_distmat(open(fp2,'U')), lookup=sample_id_map)
+                 make_compatible_distance_matrices(parse_distmat(open(fp1,'U')),
+                      parse_distmat(open(fp2,'U')), lookup=sample_id_map)
                 if len(dm1_labels) < 2:
                     output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,
                                    fp2,len(dm1_labels)))
