@@ -98,10 +98,10 @@ def main():
     # Construct a PartialMantel object.
     pm = PartialMantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), 
                         DistanceMatrix(dm2, dm2_labels, dm2_labels), 
-                        DistanceMatrix(cdm, cdm_labels, cdm_labels), num_perms)
+                        DistanceMatrix(cdm, cdm_labels, cdm_labels))
 
     # Run the analysis.
-    res = pm.runAnalysis()
+    res = pm(num_perms)
     #res['mantel_p'] = format_p_value_for_num_iters(res['mantel_p'], num_perms)
 
     # Output statistic to result file.

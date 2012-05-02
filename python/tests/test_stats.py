@@ -20,7 +20,7 @@ from numpy.random import permutation
 from python.qiime.parse import DistanceMatrix, MetadataMap
 from python.qiime.stats import (Anosim, Permanova, BioEnv, CategoryStats,
     CorrelationStats, DistanceBasedRda, DistanceMatrixStats, MantelCorrelogram,
-    Mantel, PartialMantel, PermutationStats)
+    Mantel, PartialMantel)
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -191,54 +191,15 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(ValueError, self.size_dms.setDistanceMatrices,
                 [self.single_ele_dm, self.single_ele_dm])
 
-    def test_runAnalysis(self):
-        """Test runAnalysis() is not implemented."""
-        self.assertRaises(NotImplementedError, self.single_dms.runAnalysis)
+    def test_call(self):
+        """Test __call__() returns an empty result set."""
+        self.assertEqual(self.single_dms(), {})
+        self.assertEqual(self.single_dms(10), {})
+        self.assertEqual(self.single_dms(0), {})
 
-
-class PermutationStatsTests(TestHelper):
-    """Tests for the PermutationStats class."""
-
-    def setUp(self):
-        """Define some perm stats instances that will be used by the tests."""
-        super(PermutationStatsTests, self).setUp()
-        self.ps = PermutationStats(10)
-
-    def test_getNumPermutations(self):
-        """Test getter for number of permutations."""
-        self.assertEqual(self.ps.getNumPermutations(), 10)
-
-    def test_setNumPermutations(self):
-        """Test setter for number of permutations."""
-        self.assertEqual(self.ps.getNumPermutations(), 10)
-        self.ps.setNumPermutations(999)
-        self.assertEqual(self.ps.getNumPermutations(), 999)
-
-        self.ps.setNumPermutations(0)
-        self.assertEqual(self.ps.getNumPermutations(), 0)
-
-    def test_setNumPermutations_invalid(self):
-        """Test setter for invalid number of permutations."""
-        self.assertRaises(TypeError, self.ps.setNumPermutations, None)
-        self.assertRaises(TypeError, self.ps.setNumPermutations, "foo")
-        self.assertRaises(TypeError, self.ps.setNumPermutations, {})
-        self.assertRaises(TypeError, self.ps.setNumPermutations, [])
-        self.assertRaises(TypeError, self.ps.setNumPermutations, [1])
-        self.assertRaises(TypeError, self.ps.setNumPermutations, ())
-        self.assertRaises(ValueError, self.ps.setNumPermutations, -1)
-
-        # Test constructor as well.
-        self.assertRaises(TypeError, PermutationStats, None)
-        self.assertRaises(TypeError, PermutationStats, "foo")
-        self.assertRaises(TypeError, PermutationStats, {})
-        self.assertRaises(TypeError, PermutationStats, [])
-        self.assertRaises(TypeError, PermutationStats, [1])
-        self.assertRaises(TypeError, PermutationStats, ())
-        self.assertRaises(ValueError, PermutationStats, -1)
-
-    def test_runAnalysis(self):
-        """Test runAnalysis() is not implemented."""
-        self.assertRaises(NotImplementedError, self.ps.runAnalysis)
+    def test_call_bad_perms(self):
+        """Test __call__() fails upon receiving invalid number of perms."""
+        self.assertRaises(ValueError, self.single_dms, -1)
 
 
 class CorrelationStatsTests(TestHelper):
@@ -282,9 +243,9 @@ class CorrelationStatsTests(TestHelper):
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [])
 
-    def test_runAnalysis(self):
-        """Test runAnalysis() is not implemented in CorrelationStats."""
-        self.assertRaises(NotImplementedError, self.cs.runAnalysis)
+    def test_call(self):
+        """Test __call__() returns an empty result set."""
+        self.assertEqual(self.cs(), {})
 
 
 class CategoryStatsTests(TestHelper):
@@ -293,34 +254,28 @@ class CategoryStatsTests(TestHelper):
     def setUp(self):
         """Define some useful data to use in testing."""
         super(CategoryStatsTests, self).setUp()
-        self.cs_overview = CategoryStats(self.overview_map, self.overview_dm,
+        self.cs_overview = CategoryStats(self.overview_map, [self.overview_dm],
             ["Treatment", "DOB"])
 
-    def test_setData(self):
-        """setData() should set the dm and mdmap properties."""
-        self.cs_overview.setData(self.overview_map, self.overview_dm)
-        self.assertEqual(self.cs_overview.getDistanceMatrix(),
-                         self.overview_dm)
+    def test_setMetadataMap(self):
+        """Should set the mdmap property."""
+        self.cs_overview.setMetadataMap(self.overview_map)
         self.assertEqual(self.cs_overview.getMetadataMap(),
                          self.overview_map)
 
-    def test_setData_invalid_input(self):
-        """setData() must receive the correct and compatible object types."""
-        self.assertRaises(TypeError, self.cs_overview.setData, "Hello!", "foo")
-        self.assertRaises(TypeError, self.cs_overview.setData,
-            self.overview_dm, self.overview_map)
-        self.assertRaises(ValueError, self.cs_overview.setData,
-            self.overview_map, self.single_ele_dm)
+    def test_setMetadataMap_invalid_input(self):
+        """Must receive the correct and compatible object types."""
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, "foo")
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, [])
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, {})
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, None)
+        self.assertRaises(TypeError, self.cs_overview.setMetadataMap,
+                self.overview_dm)
 
     def test_getMetadataMap(self):
         """Test valid return of getMetadataMap method."""
         obs = self.cs_overview.getMetadataMap()
         self.assertEqual(self.overview_map, obs)
-
-    def test_getDistanceMatrix(self):
-        """Test valid return of getDistanceMatrix()."""
-        obs = self.cs_overview.getDistanceMatrix()
-        self.assertEqual(self.overview_dm, obs)
 
     def test_setCategories_invalid_input(self):
         """Must receive a list of strings that are in the mapping file."""
@@ -337,16 +292,26 @@ class CategoryStatsTests(TestHelper):
         observed = self.cs_overview.getCategories()
         self.assertEqual(expected, observed)
 
-    def test_compatibleSampleIds(self):
-        """Test for compatible sample IDs between dm and mdmap."""
-        self.assertEqual(self.cs_overview.compatibleSampleIds(
-                self.overview_dm, self.overview_map), True)
-        self.assertEqual(self.cs_overview.compatibleSampleIds(
-                self.single_ele_dm, self.overview_map), False)
+    def test_validate_compatibility(self):
+        """Test for compatible sample IDs between dms and mdmap."""
+        self.assertEqual(self.cs_overview._validate_compatibility(), None)
+        self.cs_overview.setDistanceMatrices([self.single_ele_dm])
+        self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
 
-    def test_runAnalysis(self):
-        """Test runAnalysis() is not implemented in CategoryStats."""
-        self.assertRaises(NotImplementedError, self.cs_overview.runAnalysis)
+    def test_call(self):
+        """Test _call__() returns an empty result set."""
+        self.assertEqual(self.cs_overview(), {})
+        self.assertEqual(self.cs_overview(10), {})
+
+    def test_call_bad_perms(self):
+        """Test __call__() fails upon receiving invalid number of perms."""
+        self.assertRaises(ValueError, self.cs_overview, -1)
+
+    def test_call_incompatible_data(self):
+        """Test __call__() fails after incompatible dms/mdmap pair is set."""
+        self.cs_overview.setDistanceMatrices([self.single_ele_dm,
+                self.single_ele_dm])
+        self.assertRaises(ValueError, self.cs_overview)
 
 
 class AnosimTests(TestHelper):
@@ -401,12 +366,11 @@ class AnosimTests(TestHelper):
 
         # Create three Anosim instances: one for the small dm, one for the
         # small dm with ties, and one for the overview tutorial dataset.
-        self.anosim_small = Anosim(self.small_map, self.small_dm, 'Treatment',
-                                   999)
+        self.anosim_small = Anosim(self.small_map, self.small_dm, 'Treatment')
         self.anosim_small_tie = Anosim(self.small_map, self.small_dm_tie,
-                                       'Treatment', 999)
+                                       'Treatment')
         self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
-                                      'Treatment', 999)
+                                      'Treatment')
 
     def test_getRandomFunction(self):
         """Test retrieval of a random function reference."""
@@ -436,48 +400,53 @@ class AnosimTests(TestHelper):
         self.assertRaises(TypeError, self.anosim_small.setRandomFunction, ())
         self.assertRaises(TypeError, self.anosim_small.setRandomFunction, {})
 
-    def test_runAnalysis_overview(self):
-        """Test runAnalysis() on overview data with Treatment category."""
+    def test_call_overview(self):
+        """Test __call__() on overview data with Treatment category."""
         # These results were verified with R.
         exp = {'method_name': 'ANOSIM', 'p_value': 0.0080000000000000002,
                'r_value': 0.8125}
-        obs = self.anosim_overview.runAnalysis()
+        obs = self.anosim_overview()
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertTrue(obs['p_value'] > 0 and obs['p_value'] < 0.06)
 
-    def test_runAnalysis_small(self):
-        """Test runAnalysis() on small dm."""
+    def test_call_small(self):
+        """Test __call__() on small dm."""
         # These results were verified with R.
         exp = {'method_name': 'ANOSIM', 'p_value': 0.31, 'r_value': 0.625}
-        obs = self.anosim_small.runAnalysis()
+        obs = self.anosim_small()
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertTrue(obs['p_value'] > 0.28 and obs['p_value'] < 0.42)
 
-    def test_runAnalysis_small_ties(self):
-        """Test runAnalysis() on small dm with ties in ranks."""
+    def test_call_small_ties(self):
+        """Test __call__() on small dm with ties in ranks."""
         # These results were verified with R.
         exp = {'method_name': 'ANOSIM', 'p_value': 0.67600000000000005,
                'r_value': 0.25}
-        obs = self.anosim_small_tie.runAnalysis()
+        obs = self.anosim_small_tie()
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertTrue(obs['p_value'] > 0.56 and obs['p_value'] < 0.75)
 
-    def test_runAnalysis_no_perms(self):
-        """Test runAnalysis() on small dm with no permutations."""
+    def test_call_no_perms(self):
+        """Test __call__() on small dm with no permutations."""
         # These results were verified with R.
         exp = {'method_name': 'ANOSIM', 'p_value': 'NA', 'r_value': 0.625}
-        self.anosim_small.setNumPermutations(0)
-        obs = self.anosim_small.runAnalysis()
+        obs = self.anosim_small(0)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertEqual(obs['p_value'], exp['p_value'])
+
+    def test_call_incompatible_data(self):
+        """Should fail on incompatible mdmap/dm combo and bad perms."""
+        self.assertRaises(ValueError, self.anosim_small, -1)
+        self.anosim_small.setDistanceMatrices([self.single_ele_dm])
+        self.assertRaises(ValueError, self.anosim_small)
 
     def test_anosim_small(self):
         """Test _anosim() on small dm."""
@@ -542,19 +511,18 @@ class AnosimTests(TestHelper):
     def test_anosim_p_test(self):
         """p-value should be .5 for this test."""
         nrs = NonRandomShuffler()
-        self.anosim_small.setNumPermutations(3)
         self.anosim_small.setRandomFunction(nrs.permutation)
 
         exp = {'method_name': 'ANOSIM', 'p_value': 0.5, 'r_value': 0.625}
-        obs = self.anosim_small.runAnalysis()
+        obs = self.anosim_small(3)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
         self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertFloatEqual(obs['p_value'], exp['p_value'])
 
+
 class PermanovaTests(TestHelper):
     def setUp(self):
-
        """Define some useful data to use in testing."""
        super(PermanovaTests, self).setUp()
 
@@ -608,10 +576,10 @@ class PermanovaTests(TestHelper):
            self.mapping_map_non_sym[samp_id] = self.mapping_non_sym.getCategoryValue(
                samp_id, 'Treatment')
 
-       self.permanova_distmtx = Permanova(self.mapping, self.distmtx, 'Treatment', 999)
-       self.permanova_distmtx_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment', 999)
-       self.permanova_distmtx_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment', 999)
-       self.permanova_overview = Permanova(self.overview_map, self.overview_dm, 'Treatment', 999)
+       self.permanova_distmtx = Permanova(self.mapping, self.distmtx, 'Treatment')
+       self.permanova_distmtx_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment')
+       self.permanova_distmtx_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment')
+       self.permanova_overview = Permanova(self.overview_map, self.overview_dm, 'Treatment')
 
     def test_permanova1(self):
         """permanova should return 4.4"""
@@ -643,17 +611,16 @@ class PermanovaTests(TestHelper):
     def test_p_test(self):
         """P-value should be .5 for this test"""
         nrs = NonRandomShuffler()
-        self.permanova_distmtx.setNumPermutations(3)
         self.permanova_distmtx.setRandomFunction(nrs.permutation)
 
-	exp_result = 4.4
+        exp_result = 4.4
         exp_p_val = 0.5
 
         # Create the group map, which maps sample ID to category value (e.g.
         # sample 1 to 'control' and sample 2 to 'fast').
 
         group_list = {}
-	grouping = self.permanova_distmtx.getDistanceMatrix().getSampleIds()
+        grouping = self.permanova_distmtx.getDistanceMatrices()[0].getSampleIds()
 
         #make map
         map = {}
@@ -670,6 +637,7 @@ class PermanovaTests(TestHelper):
 
         self.assertFloatEqual(obs_result, exp_result)
         self.assertFloatEqual(obs_p_val, exp_p_val)
+
 
 class BioEnvTests(TestHelper):
     """Tests for the BioEnv class."""
@@ -780,8 +748,6 @@ class BioEnvTests(TestHelper):
         """Test the _vector_dist helper method"""
 
 
-
-
 class DistanceBasedRdaTests(TestHelper):
     """Tests for the DistanceBasedRda class."""
 
@@ -813,9 +779,9 @@ class DistanceBasedRdaTests(TestHelper):
         self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
             self.overview_map, 123)
 
-    def test_runAnalysis(self):
+    def test_call(self):
         """Test running RDA over various inputs."""
-        self.dbrda.runAnalysis()
+        self.dbrda()
 
     def test_center_matrix(self):
         """Test the centering of matrices."""
@@ -860,27 +826,13 @@ class MantelCorrelogramTests(TestHelper):
 
         # Mantel correlogram test using the overview tutorial's unifrac dm as
         # both inputs.
-        self.mc = MantelCorrelogram(self.overview_dm, self.overview_dm, 999)
+        self.mc = MantelCorrelogram(self.overview_dm, self.overview_dm)
 
         # Smallest test case: 3x3 matrices.
         ids = ['s1', 's2', 's3']
         self.small_mc = MantelCorrelogram(
             DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids, ids),
-            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids, ids),
-            999)
-
-    def test_getNumPermutations(self):
-        """Test retrieving the number of permutations."""
-        self.assertEqual(self.mc.getNumPermutations(), 999)
-
-    def test_setNumPermutations(self):
-        """Test setting the number of permutations."""
-        self.mc.setNumPermutations(5)
-        self.assertEqual(self.mc.getNumPermutations(), 5)
-
-    def test_setNumPermutations_invalid(self):
-        """Test setting the number of permutations with a negative number."""
-        self.assertRaises(ValueError, self.mc.setNumPermutations, -5)
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids, ids))
 
     def test_getAlpha(self):
         """Test retrieving the value of alpha."""
@@ -914,14 +866,14 @@ class MantelCorrelogramTests(TestHelper):
         self.assertRaises(ValueError, self.mc.setDistanceMatrices,
             [self.single_ele_dm, self.single_ele_dm])
 
-    def test_runAnalysis(self):
+    def test_call(self):
         """Test running a Mantel correlogram analysis on valid input."""
         # A lot of the returned numbers are based on random permutations and
         # thus cannot be tested for exact values. We'll test what we can
         # exactly, and then test for "sane" values for the "random" values. The
         # matplotlib Figure object cannot be easily tested either, so we'll try
         # our best to make sure it appears sane.
-        obs = self.mc.runAnalysis()
+        obs = self.mc()
 
         exp_method_name = 'Mantel Correlogram'
         self.assertEqual(obs['method_name'], exp_method_name)
@@ -960,11 +912,11 @@ class MantelCorrelogramTests(TestHelper):
         self.assertFloatEqual(corr_p_vals,
             [p_val * 3 if p_val is not None else None for p_val in p_vals])
 
-    def test_runAnalysis_small(self):
+    def test_call_small(self):
         """Test running a Mantel correlogram analysis on the smallest input."""
         # The expected output was verified with vegan's mantel correlogram
         # function.
-        obs = self.small_mc.runAnalysis()
+        obs = self.small_mc()
 
         exp_method_name = 'Mantel Correlogram'
         self.assertEqual(obs['method_name'], exp_method_name)
@@ -1090,7 +1042,7 @@ class MantelTests(TestHelper):
         # correctly.
         self.defaultPermutations = 999
         self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
-                self.defaultPermutations, 'greater')
+                                      'greater')
 
         # Create three small test distance matrices. These match the ones used
         # in PyCogent's mantel unit tests.
@@ -1102,29 +1054,6 @@ class MantelTests(TestHelper):
         self.m1_dm = DistanceMatrix(m1, sample_ids, sample_ids)
         self.m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
         self.m3_dm = DistanceMatrix(m3, sample_ids, sample_ids)
-
-    def test_initialGetNumPermutations(self):
-        """Test retrieval of the intial permutations value."""
-        self.assertEqual(self.overview_mantel.getNumPermutations(),
-                         self.defaultPermutations)
-
-    def test_setNumPermutations(self):
-        """Test setting of the number of permutations."""
-        permutations = 10
-        self.overview_mantel.setNumPermutations(permutations)
-        self.assertEqual(self.overview_mantel.getNumPermutations(),
-                         permutations)
-
-    def test_getNumPermutations(self):
-        """Test retrieval of the number of permutations."""
-        test_perms = 200
-        self.overview_mantel.setNumPermutations(test_perms)
-        self.assertEqual(self.overview_mantel.getNumPermutations(), test_perms)
-
-    def test_setNumPermutations_invalid(self):
-        """Test setting of the permutations using a negative number."""
-        self.assertRaises(ValueError, self.overview_mantel.setNumPermutations,
-                          -22)
 
     def test_setDistanceMatrices(self):
         """Test setting matrices using a valid number of distance matrices."""
@@ -1144,12 +1073,12 @@ class MantelTests(TestHelper):
         self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
             [self.single_ele_dm, self.single_ele_dm])
 
-    def test_runAnalysis(self):
+    def test_call(self):
         """Runs mantel test on the overview dm when compared to itself.
 
         Expected R output:
-            Mantel statistic r:     1
-                Significance: 0.001
+            Mantel statistic r: 1
+            Significance: 0.001
 
         Based on 999 permutations
         """
@@ -1160,9 +1089,8 @@ class MantelTests(TestHelper):
         expected_number_of_permutations = 999
         expected_tail_type = "greater"
 
-        overview_mantel = Mantel(self.overview_dm, self.overview_dm, 999,
-                                 'greater')
-        overview_mantel_output = overview_mantel.runAnalysis()
+        overview_mantel = Mantel(self.overview_dm, self.overview_dm, 'greater')
+        overview_mantel_output = overview_mantel(999)
 
         obs_method_name = overview_mantel_output['method_name']
         obs_num_permutations = overview_mantel_output['num_perms']
@@ -1187,15 +1115,15 @@ class MantelTests(TestHelper):
         """Test one-sided mantel test (greater)."""
         # This test output was verified by R (their mantel function does a
         # one-sided greater test).
-        mantel = Mantel(self.m1_dm, self.m1_dm, 999, 'greater')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m1_dm, 'greater')
+        p, stat, perms = mantel._mantel_test(999)
 
         self.assertTrue(p > 0.09 and p < 0.25)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
-        mantel = Mantel(self.m1_dm, self.m2_dm, 999, 'greater')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m2_dm, 'greater')
+        p, stat, perms = mantel._mantel_test(999)
 
         self.assertTrue(p > 0.2 and p < 0.5)
         self.assertFloatEqual(stat, 0.755928946018)
@@ -1206,20 +1134,20 @@ class MantelTests(TestHelper):
         # This test output was verified by R (their mantel function does a
         # one-sided greater test, but I modified their output to do a one-sided
         # less test).
-        mantel = Mantel(self.m1_dm, self.m1_dm, 999, 'less')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m1_dm, 'less')
+        p, stat, perms = mantel._mantel_test(999)
         self.assertFloatEqual(p, 1.0)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
-        mantel = Mantel(self.m1_dm, self.m2_dm, 999, 'less')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m2_dm, 'less')
+        p, stat, perms = mantel._mantel_test(999)
         self.assertTrue(p > 0.6 and p < 1.0)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
-        mantel = Mantel(self.m1_dm, self.m3_dm, 999, 'less')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m3_dm, 'less')
+        p, stat, perms = mantel._mantel_test(999)
         self.assertTrue(p > 0.1 and p < 2.5)
         self.assertFloatEqual(stat, -0.989743318611)
         self.assertEqual(len(perms), 999)
@@ -1229,20 +1157,20 @@ class MantelTests(TestHelper):
         # This test output was verified by R (their mantel function does a
         # one-sided greater test, but I modified their output to do a two-sided
         # test).
-        mantel = Mantel(self.m1_dm, self.m1_dm, 999, 'two sided')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m1_dm, 'two sided')
+        p, stat, perms = mantel._mantel_test(999)
         self.assertTrue(p > 0.20 and p < 0.45)
         self.assertFloatEqual(stat, 1.0)
         self.assertEqual(len(perms), 999)
 
-        mantel = Mantel(self.m1_dm, self.m2_dm, 999, 'two sided')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m2_dm, 'two sided')
+        p, stat, perms = mantel._mantel_test(999)
         self.assertTrue(p > 0.6 and p < 0.75)
         self.assertFloatEqual(stat, 0.755928946018)
         self.assertEqual(len(perms), 999)
 
-        mantel = Mantel(self.m1_dm, self.m3_dm, 999, 'two sided')
-        p, stat, perms = mantel._mantel_test()
+        mantel = Mantel(self.m1_dm, self.m3_dm, 'two sided')
+        p, stat, perms = mantel._mantel_test(999)
         self.assertTrue(p > 0.2 and p < 0.45)
         self.assertFloatEqual(stat, -0.989743318611)
         self.assertEqual(len(perms), 999)
@@ -1258,7 +1186,7 @@ class PartialMantelTests(TestHelper):
         # Test partial Mantel using the unifrac dm from the overview tutorial
         # as all three inputs (should be a small value).
         self.pm = PartialMantel(self.overview_dm, self.overview_dm,
-                                self.overview_dm, 999)
+                                self.overview_dm)
 
         # Just a small matrix that is easy to edit and observe.
         smpl_ids = ['s1', 's2', 's3']
@@ -1266,26 +1194,13 @@ class PartialMantelTests(TestHelper):
             [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids,
             smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
-            [10, 2, 8]]), smpl_ids, smpl_ids), 999)
+            [10, 2, 8]]), smpl_ids, smpl_ids))
 
         self.small_pm_diff = PartialMantel(DistanceMatrix(array([[1, 3, 2],
             [1, 1, 3], [4, 3, 1]]), smpl_ids, smpl_ids),
             DistanceMatrix(array([[100, 25, 53], [20, 30, 87], [51, 888, 0]]),
             smpl_ids, smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
-            [10, 2, 8]]), smpl_ids, smpl_ids), 999)
-
-    def test_getNumPermutations(self):
-        """Test retrieval of the number of permutations."""
-        self.assertEqual(self.pm.getNumPermutations(), 999)
-
-    def test_setNumPermutations(self):
-        """Test setting of the number of permutations."""
-        self.pm.setNumPermutations(7)
-        self.assertEqual(self.pm.getNumPermutations(), 7)
-
-    def test_setNumPermutations_invalid(self):
-        """Test setting of the permutations using a negative number."""
-        self.assertRaises(ValueError, self.pm.setNumPermutations, -22)
+            [10, 2, 8]]), smpl_ids, smpl_ids))
 
     def test_setDistanceMatrices(self):
         """Test setting matrices using a valid number of distance matrices."""
@@ -1305,9 +1220,9 @@ class PartialMantelTests(TestHelper):
         self.assertRaises(ValueError, self.pm.setDistanceMatrices,
                 [self.single_ele_dm, self.single_ele_dm, self.single_ele_dm])
 
-    def test_runAnalysis(self):
+    def test_call(self):
         """Test running partial Mantel analysis on valid input."""
-        obs = self.pm.runAnalysis()
+        obs = self.pm()
         exp_method_name = 'Partial Mantel'
         exp_mantel_r = 0.49999999999999989
 
@@ -1315,9 +1230,9 @@ class PartialMantelTests(TestHelper):
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
         self.assertTrue(obs['mantel_p'] >= 0.001 and obs['mantel_p'] < 0.01)
 
-    def test_runAnalysis_small(self):
+    def test_call_small(self):
         """Test the running of partial Mantel analysis on small input."""
-        obs = self.small_pm.runAnalysis()
+        obs = self.small_pm()
         exp_method_name = 'Partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
@@ -1325,7 +1240,7 @@ class PartialMantelTests(TestHelper):
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
         self.assertTrue(obs['mantel_p'] > 0.40 and obs['mantel_p'] < 0.60)
 
-        obs = self.small_pm_diff.runAnalysis()
+        obs = self.small_pm_diff()
         exp_method_name = 'Partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 

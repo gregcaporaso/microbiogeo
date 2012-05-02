@@ -123,8 +123,8 @@ def main():
 
     # Construct a MantelCorrelogram object and run the analysis.
     results = MantelCorrelogram(DistanceMatrix(dm1, dm1_labels,
-        dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_perms,
-        alpha=alpha).runAnalysis()
+        dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels),
+        alpha=alpha)(num_perms)
 
     # Write the correlogram plot to a file.
     results['correlogram_plot'].savefig(path.join(opts.output_dir,

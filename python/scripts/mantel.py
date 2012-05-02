@@ -100,7 +100,7 @@ def main():
                 continue
 
             #This takes in a distance matrix object for the dm1 and dm2 of Mantel
-            m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_iterations, opts.tail_type)
+            m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), opts.tail_type)
     
     #print "dm1 size: %d" % len(dm1)
     #print "dm1_labels size: %d" % len(dm1_labels)
@@ -112,7 +112,7 @@ def main():
     #print dm2_labels
 
             resultsDict = {}
-            resultsDict = m.runAnalysis()
+            resultsDict = m(num_iterations)
             resultsDict['DM1_file_name'] = input_dm_fps[0] 
             resultsDict['DM2_file_name'] = input_dm_fps[1] 
             resultsDict['sample_size'] = len(dm1_labels)

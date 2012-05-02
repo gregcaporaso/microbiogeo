@@ -159,10 +159,10 @@ def main():
                     continue
 
                 #This takes in a distance matrix object for the dm1 and dm2 of Mantel
-                m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_permutations, opts.tail_type)
+                m = Mantel(DistanceMatrix(dm1, dm1_labels, dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), opts.tail_type)
 
                 resultsDict = {}
-                resultsDict = m.runAnalysis()
+                resultsDict = m(num_permutations)
                 resultsDict['DM1_file_name'] = fp1
                 resultsDict['DM2_file_name'] = fp2
                 resultsDict['sample_size'] = len(dm1_labels)
@@ -219,10 +219,10 @@ def main():
                 # Construct a PartialMantel object.
                 pm = PartialMantel(DistanceMatrix(dm1, dm1_labels, dm1_labels),
                                     DistanceMatrix(dm2, dm2_labels, dm2_labels),
-                                    DistanceMatrix(cdm, cdm_labels, cdm_labels), num_perms)
+                                    DistanceMatrix(cdm, cdm_labels, cdm_labels))
 
                 # Run the analysis.
-                res = pm.runAnalysis()
+                res = pm(num_perms)
 
                 # Output statistic to result file.
                 res_file.write('\n%s\t%s\t%f\t%f' % (fp1,fp2,res['mantel_r'], res['mantel_p']))
@@ -269,8 +269,8 @@ def main():
 
                 # Construct a MantelCorrelogram object and run the analysis.
                 results = MantelCorrelogram(DistanceMatrix(dm1, dm1_labels,
-                    dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels), num_perms,
-                    alpha=alpha).runAnalysis()
+                    dm1_labels), DistanceMatrix(dm2, dm2_labels, dm2_labels),
+                    alpha=alpha)(num_perms)
 
                 # Write the correlogram plot to a file.
                 dm1_name = '.'.join(fp1.split('.txt')[:-1])

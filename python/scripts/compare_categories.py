@@ -86,8 +86,8 @@ def main():
         rex = RExecutor()
         results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
     elif opts.method == 'anosim':
-        anosim_object = Anosim(md_map, dm, first_category, opts.num_permutations)
-        runAnalysisOutput = anosim_object.runAnalysis()
+        anosim_object = Anosim(md_map, dm, first_category)
+        runAnalysisOutput = anosim_object(opts.num_permutations)
         outputFile = open(opts.method+"_output_file.txt","w")
         outputFile.write("Method Name:\tR-value:\tP-value:")
         outputFile.write("\n")
