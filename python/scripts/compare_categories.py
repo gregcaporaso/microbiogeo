@@ -18,17 +18,19 @@ from os import path, makedirs, listdir
 
 from cogent.util.misc import create_dir
 
+from qiime.format import format_p_value_for_num_iters
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_distmat, fields_to_dict, \
                         parse_mapping_file, parse_mapping_file_to_dict
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.r_executor import RExecutor
-#from parse import DistanceMatrix, MetadataMap
-#from r_executor import RExecutor
+#from python.qiime.parse import DistanceMatrix, MetadataMap
+#from python.qiime.r_executor import RExecutor
+from parse import DistanceMatrix, MetadataMap
+from r_executor import RExecutor
 
-from python.qiime.stats import Anosim
-#, anosim_p_test, _format_anosim_results
+#from python.qiime.stats import Anosim
+from stats import Anosim, Permanova
+#anosim_p_test, _format_anosim_results
 
 script_info = {}
 script_info['brief_description'] = ""
@@ -54,11 +56,12 @@ def main():
     parse_command_line_parameters(**script_info)
 
     # Create the output dir if it doesn't already exist.
+    # THIS DOESN'T WORK AT ALL AND WON'T CATCH ANY ERRORS FOR A DIR EXISTING
     try:
         if not path.exists(opts.output_dir):
             create_dir(opts.output_dir)
     except:
-        option_parser.error("Could not create or access output directory "
+        option_parser.error("Could not create or access output directory, it already exists. Please delete it and re-run the script"
                                 "specified with the -o option.")
 
     dm_labels, dm_temp = parse_distmat(open(opts.input_dm, 'U'))
@@ -160,7 +163,22 @@ def main():
     elif opts.method == 'multicola':
         pass
     elif opts.method == 'permanova':
-        pass
+        #tries to make the file, if it fails it outputs that the file exists and tells the user to delete it before proceeding/
+        try:
+            outputFile = open(opts.output_dir+"/permanova_output_file.txt", os.O_CREAT)
+        except:
+            option_parser.error("Could not create the output file, it already exists, delete the file: "+opts.output_dir+"/permanova_output_file.txt"
+                                "specified with the -o option.")
+        #makes a permanova object
+        permanova_plain = Permanova(md_map, dm, first_category)
+        #relies on the __call__ property and
+        results = permanova_plain(opts.num_permutations)
+        #writes the results to the output dir
+        outputFile.write("Method Name:\tR-value:\tP-value:")
+        outputFile.write("\n")
+        outputFile.write(results["method_name"]+"\t"+str(results["r_value"])+"\t"+str(format_p_value_for_num_iters(results["p_value"], opts.num_permutations))+"\t")
+        outputFile.write("\n")
+        outputFile.close()
     elif opts.method == 'permdisp':
         category = cats[0]
         # verify that category is in mapping file
