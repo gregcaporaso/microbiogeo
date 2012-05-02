@@ -227,7 +227,8 @@ def main():
                 resultsDict['DM2_file_name'] = fp2
                 resultsDict['sample_size'] = len(dm1_labels)
 
-                p_str = format_p_value_for_num_iters(resultsDict['p_value'],num_permutations)
+                p_str = format_p_value_for_num_iters(resultsDict['p_value'],
+                                                     num_permutations)
 
                 output_f.write(resultsDict['DM1_file_name'])
                 output_f.write("\t")
@@ -348,7 +349,8 @@ def main():
                 dm2_name = '.'.join(fp2.split('.txt')[:-1])
                 fig_file_name = '_'.join((dm1_name, 'VS', dm2_name,
                                     'mantel_correlogram'))+'.'+opts.image_type
-                results['correlogram_plot'].savefig(path.join(opts.output_dir, fig_file_name), format=opts.image_type)
+                results['correlogram_plot'].savefig(path.join(opts.output_dir,
+                                        fig_file_name), format=opts.image_type)
 
                 # Iterate over the results and write them to the text file.
 
