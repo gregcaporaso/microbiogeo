@@ -4,11 +4,11 @@ from __future__ import division
 
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME MiCOS project"
-__credits__ = ["Michael Dwan, Logan Knecht"]
+__credits__ = ["Logan Knecht, Michael Dwan"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
-__maintainer__ = "Michael Dwan"
-__email__ = "mdwan.tgen@gmail.com, lgk7@nau.edu"
+__maintainer__ = "Logan Knecht"
+__email__ = "lgk7@nau.edu, mdwan.tgen@gmail.com"
 __status__ = "Development"
 
 from numpy import zeros
@@ -39,15 +39,21 @@ script_info['script_usage'] = [("","","")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # All methods use these
-make_option('--method', help='The category analysis method. Valid options: [adonis, anosim, bioenv, dfa, isa, lsa, morans_i, mrpp, multicola, permanova, permdisp, rda, rm_permanova]'),\
+make_option('--method', help='The category analysis method. Valid options: \
+    [adonis, anosim, bioenv, dfa, isa, lsa, morans_i, mrpp, multicola, \
+    permanova, permdisp, rda, rm_permanova]'),\
  make_option('-i','--input_dm',help='the input distance matrix'),\
- make_option('-o','--output_dir',help='the output directory [default: %default]', default='.'),\
+ make_option('-o','--output_dir',help='the output directory \
+ [default: %default]', default='.'),\
  make_option('-m','--mapping_file', help='Mapping file'),
- make_option('-c','--categories',help='A comma delimited list of categories from the mapping file(NOTE: many methods take just a single category, if multiple are passed only the first will be selected.)'),\
+ make_option('-c','--categories',help='A comma delimited list of categories \
+     from the mapping file(NOTE: many methods take just a single category, if\
+     multiple are passed only the first will be selected.)'),\
 ]
 script_info['optional_options'] = [\
  # All methods use these
- make_option('-n','--num_permutations',help='the number of iterations to perform',default=100,type='int'),
+ make_option('-n','--num_permutations',help='the number of iterations to \
+     perform',default=100,type='int'),
 ]
 script_info['version'] = __version__
 
@@ -61,7 +67,8 @@ def main():
         if not path.exists(opts.output_dir):
             create_dir(opts.output_dir)
     except:
-        option_parser.error("Could not create or access output directory, it already exists. Please delete it and re-run the script"
+        option_parser.error("Could not create or access output directory, it \
+            already exists. Please delete it and re-run the script"
                                 "specified with the -o option.")
 
     dm_labels, dm_temp = parse_distmat(open(opts.input_dm, 'U'))
@@ -76,7 +83,8 @@ def main():
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
         if not first_category in map_list[1][1:]:
-            print "Category '%s' not found in mapping file columns:" %(first_category)
+            print "Category '%s' not found in mapping file columns:" %\
+                (first_category)
             print map_list[1][1:]
             exit(1)
 
@@ -84,17 +92,21 @@ def main():
         map_file = opts.mapping_file
         output = opts.output_dir
 
-        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + first_category + " -o " + output]
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " +\
+            first_category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
+        results = rex(command_args, opts.method+".r", \
+            output_dir=opts.output_dir)
     elif opts.method == 'anosim':
         anosim_object = Anosim(md_map, dm, first_category)
         runAnalysisOutput = anosim_object(opts.num_permutations)
         outputFile = open(opts.method+"_output_file.txt","w")
         outputFile.write("Method Name:\tR-value:\tP-value:")
         outputFile.write("\n")
-        outputFile.write(runAnalysisOutput["method_name"]+"\t"+str(runAnalysisOutput["r_value"])+"\t"+str(runAnalysisOutput["p_value"])+"\t")
+        outputFile.write(runAnalysisOutput["method_name"]+"\t"+\
+            str(runAnalysisOutput["r_value"])+"\t"+\
+            str(runAnalysisOutput["p_value"])+"\t")
         outputFile.write("\n")
         outputFile.close()
 
@@ -108,17 +120,18 @@ def main():
 
         output = opts.output_dir
 
-        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + first_category + " -o " + output]
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " +\
+            first_category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
+        results = rex(command_args, opts.method+".r", \
+            output_dir=opts.output_dir)
 
         print results
 
         outputFile = open(opts.method+"_output.txt", "w")
         outputFile.write("Method Name:\tR-value:\tP-value:")
         outputFile.write("\n")
-        #outputFile.write(runAnalysisOutput["method_name"]+"\t"+str(runAnalysisOutput["r_value"])+"\t"+str(runAnalysisOutput["p_value"])+"\t")
         outputFile.close()
     elif opts.method == 'isa':
         pass
@@ -129,7 +142,8 @@ def main():
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
         if not category in map_list[1][1:]:
-            print "Category '%s' not found in mapping file columns:" %(category)
+            print "Category '%s' not found in mapping file columns:" %\
+                (category)
             print map_list[1][1:]
             exit(1)
 
@@ -138,16 +152,19 @@ def main():
         category = category
         output = opts.output_dir
 
-        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " +\
+            category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
+        results = rex(command_args, opts.method+".r", \
+            output_dir=opts.output_dir)
 
     elif opts.method == 'mrpp':
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
         if not opts.categories in map_list[1][1:]:
-            print "Category '%s' not found in mapping file columns:" %(first_category)
+            print "Category '%s' not found in mapping file columns:" %\
+                (first_category)
             print map_list[1][1:]
             exit(1)
 
@@ -156,18 +173,24 @@ def main():
         category = opts.categories
         output = opts.output_dir
 
-        command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+        command_args = ["-d " + distance_matrix + " -m " + map_file + " -c " +\
+            category + " -o " + output]
 
         rex = RExecutor()
-        results = rex(command_args, opts.method+".r", output_dir=opts.output_dir)
+        results = rex(command_args, opts.method+".r", \
+            output_dir=opts.output_dir)
     elif opts.method == 'multicola':
         pass
     elif opts.method == 'permanova':
-        #tries to make the file, if it fails it outputs that the file exists and tells the user to delete it before proceeding/
+        #tries to make the file, if it fails it outputs that the file exists 
+        #and tells the user to delete it before proceeding
         try:
-            outputFile = open(opts.output_dir+"/permanova_output_file.txt", os.O_CREAT)
+            outputFile = open(opts.output_dir+"/permanova_output_file.txt", \
+                os.O_CREAT)
         except:
-            option_parser.error("Could not create the output file. It already exists, delete the file: "+opts.output_dir+"/permanova_output_file.txt in order to resolve this.")
+            option_parser.error("Could not create the output file. It already\
+                exists, delete the file: "+opts.output_dir+\
+                "/permanova_output_file.txt in order to resolve this.")
         #makes a permanova object
         permanova_plain = Permanova(md_map, dm, first_category)
         #relies on the __call__ property and
@@ -175,7 +198,9 @@ def main():
         #writes the results to the output dir
         outputFile.write("Method Name:\tR-value:\tP-value:")
         outputFile.write("\n")
-        outputFile.write(results["method_name"]+"\t"+str(results["r_value"])+"\t"+str(format_p_value_for_num_iters(results["p_value"], opts.num_permutations))+"\t")
+        outputFile.write(results["method_name"]+"\t"+str(results["r_value"])+\
+            "\t"+str(format_p_value_for_num_iters(results["p_value"], \
+            opts.num_permutations))+"\t")
         outputFile.write("\n")
         outputFile.close()
     elif opts.method == 'permdisp':
@@ -183,7 +208,8 @@ def main():
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
         if not category in map_list[1][1:]:
-            print "Category '%s' not found in mapping file columns:" %(category)
+            print "Category '%s' not found in mapping file columns:" %\
+                (category)
             print map_list[1][1:]
             exit(1)
 
@@ -191,7 +217,8 @@ def main():
         map_file = opts.mapping_file
         output = opts.output_dir
 
-        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " +\
+            category + " -o " + output]
 
         rex = RExecutor()
         results = rex(command_args, "betadisper.r", output_dir=opts.output_dir)
@@ -201,7 +228,8 @@ def main():
         # verify that category is in mapping file
         map_list = parse_mapping_file(open(opts.mapping_file,'U').readlines())
         if not category in map_list[1][1:]:
-            print "Category '%s' not found in mapping file columns:" %(category)
+            print "Category '%s' not found in mapping file columns:" %\
+                (category)
             print map_list[1][1:]
             exit(1)
 
@@ -209,7 +237,8 @@ def main():
         map_file = opts.mapping_file
         output = opts.output_dir
 
-        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " + category + " -o " + output]
+        command_args = ["-i " + distance_matrix + " -m " + map_file + " -c " +\
+            category + " -o " + output]
 
         rex = RExecutor()
         results = rex(command_args, "rda.r", output_dir=opts.output_dir)
