@@ -672,7 +672,7 @@ class PermanovaTests(TestHelper):
     def test_call_incompatible_data(self):
         """Should fail on incompatible mdmap/dm combo and bad perms."""
         self.assertRaises(ValueError, self.permanova_plain, -1)
-        self.permanova_plain.setDistanceMatrices([self.distmtx])
+        self.permanova_plain.setDistanceMatrices([self.single_ele_dm])
         self.assertRaises(ValueError, self.permanova_plain)
 
 class BioEnvTests(TestHelper):
