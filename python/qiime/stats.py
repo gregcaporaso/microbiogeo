@@ -549,6 +549,57 @@ class Permanova(CategoryStats):
         else:
             raise TypeError("The supplied function reference is not callable.")
 
+    def __call__(self, num_perms=999):
+        """Runs PERMANOVA on the current distance matrix and sample grouping.
+
+        Returns a dict containing the results. The following keys are set:
+            method_name - name of the statistical method
+            r_value - the PERMANOVA R statistic computed by the test
+            p_value - the p-value computed by the test, or 'NA' if the number
+                of permutations was zero
+
+        Arguments:
+            num_perms - the number of permutations to use when calculating the
+                p-value
+        """
+        results = super(Permanova, self).__call__(num_perms)
+        category = self.getCategories()[0]
+        samples = self.getDistanceMatrices()[0].getSampleIds()
+
+        # Create the group map, which maps sample ID to category value (e.g.
+        # sample 1 to 'control' and sample 2 to 'fast').
+        group_map = {}
+        for samp_id in samples:
+            group_map[samp_id] = self.getMetadataMap().getCategoryValue(
+                    samp_id, category)
+
+        # Calculate the R statistic with the grouping found in the current
+        # metadata map.
+        r_stat = self._permanova(samples,self.getDistanceMatrices()[0].getDataMatrix(),group_map)
+
+        if num_perms > 0:
+            # Calculate the p-value based on the number of permutations.
+            perm_stats = []
+            for i in range(num_perms):
+                # Randomize grouping. We don't use values() in order to
+                # preserve ordering in case the user's random function doesn't
+                # change the order of the items in the list.
+                grouping_random = [group_map[sample] for sample in samples]
+                grouping_random = self.getRandomFunction()(grouping_random)
+                for j, sample in enumerate(samples):
+                    group_map[sample] = grouping_random[j]
+                perm_stats.append(self._permanova(samples,self.getDistanceMatrices()[0].getDataMatrix(),group_map))
+            # Calculate the p-value.
+            p_value = (sum(perm_stats >= r_stat) + 1) / (num_perms + 1)
+        else:
+            p_value = 'NA'
+
+        results['method_name'] = 'PERMANOVA'
+        results['r_value'] = r_stat
+        results['p_value'] = p_value
+        return results
+
+
     def _permanova(self, samples, distmtx, grouping):
         """Computes PERMANOVA pseudo-f-statistic
 

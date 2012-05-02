@@ -576,27 +576,27 @@ class PermanovaTests(TestHelper):
            self.mapping_map_non_sym[samp_id] = self.mapping_non_sym.getCategoryValue(
                samp_id, 'Treatment')
 
-       self.permanova_distmtx = Permanova(self.mapping, self.distmtx, 'Treatment')
-       self.permanova_distmtx_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment')
-       self.permanova_distmtx_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment')
+       self.permanova_plain = Permanova(self.mapping, self.distmtx, 'Treatment')
+       self.permanova_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment')
+       self.permanova_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment')
        self.permanova_overview = Permanova(self.overview_map, self.overview_dm, 'Treatment')
 
     def test_permanova1(self):
         """permanova should return 4.4"""
         exp = 4.4
-        obs = self.permanova_distmtx._permanova(self.distmtx_samples,self.distmtx.getDataMatrix(),self.mapping_map)
+        obs = self.permanova_plain._permanova(self.distmtx_samples,self.distmtx.getDataMatrix(),self.mapping_map)
         self.assertEqual(obs, exp)
 
     def test_permanova2(self):
         """Should result in 2"""
         exp = 2
-        obs = self.permanova_distmtx_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie.getDataMatrix(),self.mapping_map)
+        obs = self.permanova_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie.getDataMatrix(),self.mapping_map)
         self.assertEqual(obs, exp)
 
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = round(self.permanova_distmtx_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym.getDataMatrix(),self.mapping_map_non_sym),5)
+        obs = round(self.permanova_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym.getDataMatrix(),self.mapping_map_non_sym),5)
         self.assertEqual(obs, exp)
 
     def test_compute_f1(self):
@@ -605,13 +605,13 @@ class PermanovaTests(TestHelper):
         grouping = [0,-1,-1,-1,-1,1]
         distances = array(distances)
         grouping = array(grouping)
-        result = self.permanova_distmtx._compute_f_value(distances,grouping,4,2,[2,2])
+        result = self.permanova_plain._compute_f_value(distances,grouping,4,2,[2,2])
         self.assertEqual(result, 4.4)
 
     def test_p_test(self):
         """P-value should be .5 for this test"""
         nrs = NonRandomShuffler()
-        self.permanova_distmtx.setRandomFunction(nrs.permutation)
+        self.permanova_plain.setRandomFunction(nrs.permutation)
 
         exp_result = 4.4
         exp_p_val = 0.5
@@ -620,24 +620,60 @@ class PermanovaTests(TestHelper):
         # sample 1 to 'control' and sample 2 to 'fast').
 
         group_list = {}
-        grouping = self.permanova_distmtx.getDistanceMatrices()[0].getSampleIds()
+        grouping = self.permanova_plain.getDistanceMatrices()[0].getSampleIds()
 
         #make map
         map = {}
-        for sample in self.permanova_distmtx.getMetadataMap().getSampleIds():
+        for sample in self.permanova_plain.getMetadataMap().getSampleIds():
                 subkey = {}
-                for cat in self.permanova_distmtx.getMetadataMap().getCategoryNames():
-                    subkey[cat] = self.permanova_distmtx.getMetadataMap().getCategoryValue(sample, cat)     
+                for cat in self.permanova_plain.getMetadataMap().getCategoryNames():
+                    subkey[cat] = self.permanova_plain.getMetadataMap().getCategoryValue(sample, cat)     
                 map[sample] = subkey
 
         for sample in map:
             group_list[sample] = map[sample]["Treatment"]
      
-        obs_result, obs_p_val = self.permanova_distmtx.permanova_p_test(self.distmtx_samples, self.distmtx.getDataMatrix(), group_list, 3, nrs.permutation)
+        obs_result, obs_p_val = self.permanova_plain.permanova_p_test(self.distmtx_samples, self.distmtx.getDataMatrix(), group_list, 3, nrs.permutation)
 
         self.assertFloatEqual(obs_result, exp_result)
         self.assertFloatEqual(obs_p_val, exp_p_val)
 
+    def test_call_plain(self):
+        """Test __call__() on plain dm."""
+        # These results were verified with R.
+        exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'r_value': 4.4}
+        obs = self.permanova_plain()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertTrue(obs['p_value'] > 0.28 and obs['p_value'] < 0.42)
+
+    def test_call_tie(self):
+        """Test __call__() on dm with ties in ranks."""
+        # These results were verified with R.
+        exp = {'method_name': 'PERMANOVA', 'p_value': "?",
+               'r_value': 2}
+        obs = self.permanova_tie()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
+        self.assertTrue(obs['p_value'] > 0.56 and obs['p_value'] < 0.75)
+
+    def test_call_non_sym(self):
+        """Test __call__() on non_sym dm with no permutations."""
+        # These results were verified with R.
+        exp = {'method_name': 'PERMANOVA', 'p_value': 'NA', 'r_value': 3.58462}
+        obs = self.permanova_non_sym()
+
+        self.assertEqual(obs['method_name'], exp['method_name'])
+        self.assertFloatEqual(round(obs['r_value']), exp['r_value'])
+        self.assertEqual(obs['p_value'], exp['p_value'])
+
+    def test_call_incompatible_data(self):
+        """Should fail on incompatible mdmap/dm combo and bad perms."""
+        self.assertRaises(ValueError, self.permanova_plain, -1)
+        self.permanova_plain.setDistanceMatrices([self.distmtx])
+        self.assertRaises(ValueError, self.permanova_plain)
 
 class BioEnvTests(TestHelper):
     """Tests for the BioEnv class."""
