@@ -655,7 +655,7 @@ class Permanova(CategoryStats):
 
     def permanova_p_test(self, samples, distmtx, group_list, ntrials=9999,
                          randomfun=random.permutation):
-        ""Performs the calculations for the permutation test
+        """Performs the calculations for the permutation test
 
         PARAMETERS
         samples: names of the samples
@@ -667,7 +667,7 @@ class Permanova(CategoryStats):
         f_value: the value of permanova
         p_value: permutation factor
 
-        ""
+        """
         # Array to store permutation values
         f_value_permutations = zeros(ntrials)
 
