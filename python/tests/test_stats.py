@@ -137,38 +137,43 @@ class DistanceMatrixStatsTests(TestHelper):
         self.size_dms = DistanceMatrixStats(
                 [self.overview_dm, self.overview_dm], 2, 4)
 
-    def test_getDistanceMatrices(self):
+    def test_DistanceMatrices_getter(self):
         """Test getter for distmats."""
-        self.assertEqual(self.empty_dms.getDistanceMatrices(), [])
-        self.assertEqual(self.single_dms.getDistanceMatrices(),
-                [self.overview_dm])
-        self.assertEqual(self.double_dms.getDistanceMatrices(),
+        self.assertEqual(self.empty_dms.DistanceMatrices, [])
+        self.assertEqual(self.single_dms.DistanceMatrices, [self.overview_dm])
+        self.assertEqual(self.double_dms.DistanceMatrices,
                 [self.overview_dm, self.single_ele_dm])
 
-    def test_setDistanceMatrices(self):
+    def test_DistanceMatrices_setter(self):
         """Test setter for dms on valid input data."""
-        self.empty_dms.setDistanceMatrices([])
-        self.assertEqual(self.empty_dms.getDistanceMatrices(), [])
+        self.empty_dms.DistanceMatrices = []
+        self.assertEqual(self.empty_dms.DistanceMatrices, [])
 
-        self.empty_dms.setDistanceMatrices([self.overview_dm])
-        self.assertEqual(self.empty_dms.getDistanceMatrices(),
-            [self.overview_dm])
+        self.empty_dms.DistanceMatrices = [self.overview_dm]
+        self.assertEqual(self.empty_dms.DistanceMatrices, [self.overview_dm])
 
-        self.empty_dms.setDistanceMatrices(
-            [self.overview_dm, self.overview_dm])
-        self.assertEqual(self.empty_dms.getDistanceMatrices(),
+        self.empty_dms.DistanceMatrices = [self.overview_dm, self.overview_dm]
+        self.assertEqual(self.empty_dms.DistanceMatrices,
             [self.overview_dm, self.overview_dm])
 
-    def test_setDistanceMatrices_invalid(self):
+    def test_DistanceMatrices_setter_invalid(self):
         """Test setter for dms on invalid input data."""
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, None)
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, 10)
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, 20.0)
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, "foo")
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, {})
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices,
-            self.overview_dm)
-        self.assertRaises(TypeError, self.empty_dms.setDistanceMatrices, [1])
+        # Allows testing of non-callable property setter that raises errors.
+        # Idea was obtained from http://stackoverflow.com/a/3073049
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', None)
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', 10)
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', 20.0)
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', "foo")
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', {})
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', self.overview_dm)
+        self.assertRaises(TypeError, setattr, self.empty_dms,
+                'DistanceMatrices', [1])
 
         # Test constructor as well.
         self.assertRaises(TypeError, DistanceMatrixStats, None)
@@ -179,17 +184,18 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
 
-    def test_setDistanceMatrices_wrong_number(self):
+    def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
-        self.assertRaises(ValueError, self.two_dms.setDistanceMatrices,
-                [self.overview_dm])
-        self.assertRaises(ValueError, self.two_dms.setDistanceMatrices,
-                [self.overview_dm, self.overview_dm, self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.two_dms,
+                'DistanceMatrices', [self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.two_dms,
+                'DistanceMatrices', [self.overview_dm, self.overview_dm,
+                                     self.overview_dm])
 
-    def test_setDistanceMatrices_too_small(self):
+    def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
-        self.assertRaises(ValueError, self.size_dms.setDistanceMatrices,
-                [self.single_ele_dm, self.single_ele_dm])
+        self.assertRaises(ValueError, setattr, self.size_dms,
+                'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):
         """Test __call__() returns an empty result set."""
@@ -210,36 +216,37 @@ class CorrelationStatsTests(TestHelper):
         super(CorrelationStatsTests, self).setUp()
         self.cs = CorrelationStats([self.overview_dm, self.overview_dm])
 
-    def test_setDistanceMatrices(self):
+    def test_DistanceMatrices_setter(self):
         """Test setting valid distance matrices."""
         dms = [self.overview_dm, self.overview_dm]
-        self.cs.setDistanceMatrices(dms)
-        self.assertEqual(self.cs.getDistanceMatrices(), dms)
+        self.cs.DistanceMatrices = dms
+        self.assertEqual(self.cs.DistanceMatrices, dms)
 
         dms = [self.overview_dm, self.overview_dm, self.overview_dm]
-        self.cs.setDistanceMatrices(dms)
-        self.assertEqual(self.cs.getDistanceMatrices(), dms)
+        self.cs.DistanceMatrices = dms
+        self.assertEqual(self.cs.DistanceMatrices, dms)
 
-    def test_setDistanceMatrices_mismatched_labels(self):
+    def test_DistanceMatrices_setter_mismatched_labels(self):
         """Test setting dms with mismatching sample ID labels."""
         mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
-        self.assertRaises(ValueError, self.cs.setDistanceMatrices,
+
+        self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices',
             [self.single_ele_dm, mismatch])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
                           mismatch])
 
-    def test_setDistanceMatrices_wrong_dims(self):
+    def test_DistanceMatrices_setter_wrong_dims(self):
         """Test setting dms with mismatching dimensions."""
-        self.assertRaises(ValueError, self.cs.setDistanceMatrices,
+        self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices',
             [self.overview_dm, self.single_ele_dm])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.overview_dm,
                           self.single_ele_dm])
 
-    def test_setDistanceMatrices_too_few(self):
+    def test_DistanceMatrices_setter_too_few(self):
         """Test setting dms with not enough of them."""
-        self.assertRaises(ValueError, self.cs.setDistanceMatrices, [])
+        self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices', [])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [])
 
@@ -257,45 +264,77 @@ class CategoryStatsTests(TestHelper):
         self.cs_overview = CategoryStats(self.overview_map, [self.overview_dm],
             ["Treatment", "DOB"])
 
-    def test_setMetadataMap(self):
+    def test_MetadataMap_setter(self):
         """Should set the mdmap property."""
-        self.cs_overview.setMetadataMap(self.overview_map)
-        self.assertEqual(self.cs_overview.getMetadataMap(),
-                         self.overview_map)
+        self.cs_overview.MetadataMap = self.overview_map
+        self.assertEqual(self.cs_overview.MetadataMap, self.overview_map)
 
-    def test_setMetadataMap_invalid_input(self):
-        """Must receive the correct and compatible object types."""
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, "foo")
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, [])
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, {})
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap, None)
-        self.assertRaises(TypeError, self.cs_overview.setMetadataMap,
-                self.overview_dm)
+    def test_MetadataMap_setter_invalid_input(self):
+        """Setter must receive the correct and compatible object types."""
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
+                          "foo")
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
+                          [])
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
+                          {})
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
+                          None)
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
+                          self.overview_dm)
 
-    def test_getMetadataMap(self):
-        """Test valid return of getMetadataMap method."""
-        obs = self.cs_overview.getMetadataMap()
-        self.assertEqual(self.overview_map, obs)
+    def test_MetadataMap_getter(self):
+        """Test valid return of MetadataMap property."""
+        self.assertEqual(self.cs_overview.MetadataMap, self.overview_map)
 
-    def test_setCategories_invalid_input(self):
+    def test_Categories_setter_invalid_input(self):
         """Must receive a list of strings that are in the mapping file."""
-        self.assertRaises(TypeError, self.cs_overview.setCategories, "Hello!")
-        self.assertRaises(TypeError, self.cs_overview.setCategories,
-            self.overview_dm)
-        self.assertRaises(ValueError, self.cs_overview.setCategories,
-            ["hehehe", 123, "hello"])
-        self.assertRaises(ValueError, self.cs_overview.setCategories, ["foo"])
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
+                          "Hello!")
+        self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
+                          self.overview_dm)
+        self.assertRaises(ValueError, setattr, self.cs_overview, 'Categories',
+                          ["hehehe", 123, "hello"])
+        self.assertRaises(ValueError, setattr, self.cs_overview, 'Categories',
+                          ["foo"])
 
-    def test_getCategories(self):
-        """Test valid return of getCategories()."""
+    def test_Categories_getter(self):
+        """Test valid return of Categories property."""
         expected = ['Treatment', 'DOB']
-        observed = self.cs_overview.getCategories()
-        self.assertEqual(expected, observed)
+        observed = self.cs_overview.Categories
+        self.assertEqual(observed, expected)
+
+    def test_RandomFunction_getter(self):
+        """Test retrieval of a random function reference."""
+        self.assertEqual(self.cs_overview.RandomFunction, permutation)
+
+    def test_RandomFunction_setter(self):
+        """Test setter for the random function to use in p-value calc."""
+        self.assertEqual(self.cs_overview.RandomFunction, permutation)
+        nrs = NonRandomShuffler()
+        self.cs_overview.RandomFunction = nrs.permutation
+        self.assertEqual(self.cs_overview.RandomFunction, nrs.permutation)
+
+    def test_RandomFunction_setter_invalid_input(self):
+        """Test setter for the random function with non-callable input."""
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', 42)
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', 42.0)
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', "j")
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', None)
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', [])
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', ())
+        self.assertRaises(TypeError, setattr, self.cs_overview,
+                'RandomFunction', {})
 
     def test_validate_compatibility(self):
         """Test for compatible sample IDs between dms and mdmap."""
         self.assertEqual(self.cs_overview._validate_compatibility(), None)
-        self.cs_overview.setDistanceMatrices([self.single_ele_dm])
+        self.cs_overview.DistanceMatrices = [self.single_ele_dm]
         self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
 
     def test_call(self):
@@ -309,8 +348,8 @@ class CategoryStatsTests(TestHelper):
 
     def test_call_incompatible_data(self):
         """Test __call__() fails after incompatible dms/mdmap pair is set."""
-        self.cs_overview.setDistanceMatrices([self.single_ele_dm,
-                self.single_ele_dm])
+        self.cs_overview.DistanceMatrices = [self.single_ele_dm,
+                                             self.single_ele_dm]
         self.assertRaises(ValueError, self.cs_overview)
 
 
@@ -360,7 +399,7 @@ class AnosimTests(TestHelper):
         # group map can be used for testing both the small dm data and the
         # small dm with ties data.
         self.small_group_map = {}
-        for samp_id in self.small_dm.getSampleIds():
+        for samp_id in self.small_dm.SampleIds:
             self.small_group_map[samp_id] = self.small_map.getCategoryValue(
                     samp_id, 'Treatment')
 
@@ -371,34 +410,6 @@ class AnosimTests(TestHelper):
                                        'Treatment')
         self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
                                       'Treatment')
-
-    def test_getRandomFunction(self):
-        """Test retrieval of a random function reference."""
-        self.assertEqual(self.anosim_small.getRandomFunction(), permutation)
-        self.assertEqual(self.anosim_small_tie.getRandomFunction(),
-                         permutation)
-        self.assertEqual(self.anosim_overview.getRandomFunction(),
-                         permutation)
-
-    def test_setRandomFunction(self):
-        """Test setter for the random function to use in p-value calc."""
-        self.assertEqual(self.anosim_small.getRandomFunction(), permutation)
-
-        nrs = NonRandomShuffler()
-        self.anosim_small.setRandomFunction(nrs.permutation)
-
-        self.assertEqual(self.anosim_small.getRandomFunction(),
-                         nrs.permutation)
-
-    def test_setRandomFunction_invalid_input(self):
-        """Test setter for the random function with non-callable input."""
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, 42)
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, 42.0)
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, "j")
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, None)
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, [])
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, ())
-        self.assertRaises(TypeError, self.anosim_small.setRandomFunction, {})
 
     def test_call_overview(self):
         """Test __call__() on overview data with Treatment category."""
@@ -445,7 +456,7 @@ class AnosimTests(TestHelper):
     def test_call_incompatible_data(self):
         """Should fail on incompatible mdmap/dm combo and bad perms."""
         self.assertRaises(ValueError, self.anosim_small, -1)
-        self.anosim_small.setDistanceMatrices([self.single_ele_dm])
+        self.anosim_small.DistanceMatrices = [self.single_ele_dm]
         self.assertRaises(ValueError, self.anosim_small)
 
     def test_anosim_small(self):
@@ -511,7 +522,7 @@ class AnosimTests(TestHelper):
     def test_anosim_p_test(self):
         """p-value should be .5 for this test."""
         nrs = NonRandomShuffler()
-        self.anosim_small.setRandomFunction(nrs.permutation)
+        self.anosim_small.RandomFunction = nrs.permutation
 
         exp = {'method_name': 'ANOSIM', 'p_value': 0.5, 'r_value': 0.625}
         obs = self.anosim_small(3)
@@ -532,7 +543,7 @@ class PermanovaTests(TestHelper):
         "sam3\t5\t3\t0\t3",
         "sam4\t4\t2\t3\t0"]
        self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
-       self.distmtx_samples = self.distmtx.getSampleIds()
+       self.distmtx_samples = self.distmtx.SampleIds
 
        self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
         "sam1\t0\t1\t1\t4",
@@ -540,7 +551,7 @@ class PermanovaTests(TestHelper):
         "sam3\t5\t3\t0\t3",
         "sam4\t4\t2\t3\t0"]
        self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(self.distmtx_tie_str)
-       self.distmtx_tie_samples = self.distmtx_tie.getSampleIds()
+       self.distmtx_tie_samples = self.distmtx_tie.SampleIds
 
        self.distmtx_non_sym_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
         "sam1\t0\t3\t7\t2\t1",
@@ -549,7 +560,7 @@ class PermanovaTests(TestHelper):
         "sam4\t2\t4\t2\t0\t2",
         "sam5\t1\t1\t6\t6\t0"]
        self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(self.distmtx_non_sym_str)
-       self.distmtx_non_sym_samples = self.distmtx_non_sym.getSampleIds()
+       self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
 
        self.mapping_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
         "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354",
@@ -567,12 +578,12 @@ class PermanovaTests(TestHelper):
        self.mapping_non_sym = MetadataMap.parseMetadataMap(self.mapping_non_sym_str)
 
        self.mapping_map = {}
-       for samp_id in self.mapping.getSampleIds():
+       for samp_id in self.mapping.SampleIds:
            self.mapping_map[samp_id] = self.mapping.getCategoryValue(
                samp_id, 'Treatment')
 
        self.mapping_map_non_sym = {}
-       for samp_id in self.mapping_non_sym.getSampleIds():
+       for samp_id in self.mapping_non_sym.SampleIds:
            self.mapping_map_non_sym[samp_id] = self.mapping_non_sym.getCategoryValue(
                samp_id, 'Treatment')
 
@@ -584,19 +595,19 @@ class PermanovaTests(TestHelper):
     def test_permanova1(self):
         """permanova should return 4.4"""
         exp = 4.4
-        obs = self.permanova_plain._permanova(self.distmtx_samples,self.distmtx.getDataMatrix(),self.mapping_map)
+        obs = self.permanova_plain._permanova(self.distmtx_samples,self.distmtx.DataMatrix,self.mapping_map)
         self.assertEqual(obs, exp)
 
     def test_permanova2(self):
         """Should result in 2"""
         exp = 2
-        obs = self.permanova_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie.getDataMatrix(),self.mapping_map)
+        obs = self.permanova_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie.DataMatrix,self.mapping_map)
         self.assertEqual(obs, exp)
 
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = round(self.permanova_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym.getDataMatrix(),self.mapping_map_non_sym),5)
+        obs = round(self.permanova_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym.DataMatrix,self.mapping_map_non_sym),5)
         self.assertEqual(obs, exp)
 
     def test_compute_f1(self):
@@ -611,7 +622,7 @@ class PermanovaTests(TestHelper):
     def test_p_test(self):
         """P-value should be .5 for this test"""
         nrs = NonRandomShuffler()
-        self.permanova_plain.setRandomFunction(nrs.permutation)
+        self.permanova_plain.RandomFunction = nrs.permutation
 
         exp_result = 4.4
         exp_p_val = 0.5
@@ -620,20 +631,20 @@ class PermanovaTests(TestHelper):
         # sample 1 to 'control' and sample 2 to 'fast').
 
         group_list = {}
-        grouping = self.permanova_plain.getDistanceMatrices()[0].getSampleIds()
+        grouping = self.permanova_plain.DistanceMatrices[0].SampleIds
 
         #make map
         map = {}
-        for sample in self.permanova_plain.getMetadataMap().getSampleIds():
+        for sample in self.permanova_plain.MetadataMap.SampleIds:
                 subkey = {}
-                for cat in self.permanova_plain.getMetadataMap().getCategoryNames():
-                    subkey[cat] = self.permanova_plain.getMetadataMap().getCategoryValue(sample, cat)     
+                for cat in self.permanova_plain.MetadataMap.CategoryNames:
+                    subkey[cat] = self.permanova_plain.MetadataMap.getCategoryValue(sample, cat)     
                 map[sample] = subkey
 
         for sample in map:
             group_list[sample] = map[sample]["Treatment"]
      
-        obs_result, obs_p_val = self.permanova_plain.permanova_p_test(self.distmtx_samples, self.distmtx.getDataMatrix(), group_list, 3, nrs.permutation)
+        obs_result, obs_p_val = self.permanova_plain.permanova_p_test(self.distmtx_samples, self.distmtx.DataMatrix, group_list, 3, nrs.permutation)
 
         self.assertFloatEqual(obs_result, exp_result)
         self.assertFloatEqual(obs_p_val, exp_p_val)
@@ -663,16 +674,16 @@ class PermanovaTests(TestHelper):
         """Test __call__() on non_sym dm with no permutations."""
         # These results were verified with R.
         exp = {'method_name': 'PERMANOVA', 'p_value': 'NA', 'r_value': 3.58462}
-        obs = self.permanova_non_sym()
+        obs = self.permanova_non_sym(0)
 
         self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(round(obs['r_value']), exp['r_value'])
+        self.assertFloatEqual(obs['r_value'], exp['r_value'])
         self.assertEqual(obs['p_value'], exp['p_value'])
 
     def test_call_incompatible_data(self):
         """Should fail on incompatible mdmap/dm combo and bad perms."""
         self.assertRaises(ValueError, self.permanova_plain, -1)
-        self.permanova_plain.setDistanceMatrices([self.single_ele_dm])
+        self.permanova_plain.DistanceMatrices = [self.single_ele_dm]
         self.assertRaises(ValueError, self.permanova_plain)
 
 class BioEnvTests(TestHelper):
@@ -793,28 +804,6 @@ class DistanceBasedRdaTests(TestHelper):
         self.dbrda = DistanceBasedRda(self.overview_dm, self.overview_map,
             "Treatment")
 
-    def test_getCategory(self):
-        """Test the category getter method. Should return a single category."""
-        self.assertEqual(self.dbrda.getCategory(), "Treatment")
-
-    def test_setCategory(self):
-        """Test the category setter method."""
-        self.dbrda.setCategory("DOB")
-        self.assertEqual(self.dbrda.getCategory(), "DOB")
-
-    def test_setCategory_invalid_input(self):
-        """Test the category setter method with invalid input."""
-        self.assertRaises(TypeError, self.dbrda.setCategory, ["DOB"])
-        self.assertRaises(TypeError, self.dbrda.setCategory,
-            ["DOB", "Treatment"])
-        self.assertRaises(TypeError, self.dbrda.setCategory, 123)
-        self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
-            self.overview_map, ["DOB"])
-        self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
-            self.overview_map, ["DOB", "Treatment"])
-        self.assertRaises(TypeError, DistanceBasedRda, self.overview_dm,
-            self.overview_map, 123)
-
     def test_call(self):
         """Test running RDA over various inputs."""
         self.dbrda()
@@ -870,37 +859,37 @@ class MantelCorrelogramTests(TestHelper):
             DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids, ids),
             DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids, ids))
 
-    def test_getAlpha(self):
+    def test_Alpha_getter(self):
         """Test retrieving the value of alpha."""
-        self.assertEqual(self.mc.getAlpha(), 0.05)
+        self.assertEqual(self.mc.Alpha, 0.05)
 
-    def test_setAlpha(self):
+    def test_Alpha_setter(self):
         """Test setting the value of alpha."""
-        self.mc.setAlpha(0.01)
-        self.assertEqual(self.mc.getAlpha(), 0.01)
+        self.mc.Alpha = 0.01
+        self.assertEqual(self.mc.Alpha, 0.01)
 
-    def test_setAlpha(self):
+    def test_Alpha_setter_invalid(self):
         """Test setting the value of alpha with an invalid value."""
-        self.assertRaises(ValueError, self.mc.setAlpha, -5)
-        self.assertRaises(ValueError, self.mc.setAlpha, 2)
+        self.assertRaises(ValueError, setattr, self.mc, 'Alpha', -5)
+        self.assertRaises(ValueError, setattr, self.mc, 'Alpha', 2)
 
-    def test_setDistanceMatrices(self):
+    def test_DistanceMatrices_setter(self):
         """Test setting a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm]
-        self.mc.setDistanceMatrices(dms)
-        self.assertEqual(self.mc.getDistanceMatrices(), dms)
+        self.mc.DistanceMatrices = dms
+        self.assertEqual(self.mc.DistanceMatrices, dms)
 
-    def test_setDistanceMatrices_wrong_number(self):
+    def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
-        self.assertRaises(ValueError, self.mc.setDistanceMatrices,
-            [self.overview_dm])
-        self.assertRaises(ValueError, self.mc.setDistanceMatrices,
-            [self.overview_dm, self.overview_dm, self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.mc, 'DistanceMatrices',
+                          [self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.mc, 'DistanceMatrices',
+                [self.overview_dm, self.overview_dm, self.overview_dm])
 
-    def test_setDistanceMatrices_too_small(self):
+    def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
-        self.assertRaises(ValueError, self.mc.setDistanceMatrices,
-            [self.single_ele_dm, self.single_ele_dm])
+        self.assertRaises(ValueError, setattr, self.mc, 'DistanceMatrices',
+                [self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):
         """Test running a Mantel correlogram analysis on valid input."""
@@ -990,7 +979,7 @@ class MantelCorrelogramTests(TestHelper):
         exp = (array([[-1,  0,  1], [ 0, -1,  2], [ 1,  2, -1]]),
                [3.0, 5.0, 7.0])
         obs = self.small_mc._find_distance_classes(
-            self.small_mc.getDistanceMatrices()[1], 3)
+            self.small_mc.DistanceMatrices[1], 3)
         self.assertFloatEqual(obs, exp)
 
         exp = (array([[-1,  1,  2,  0,  0,  5,  7,  4,  6],
@@ -1005,15 +994,15 @@ class MantelCorrelogramTests(TestHelper):
             [0.57381779, 0.60024231, 0.62666684, 0.65309137, 0.67951589,
              0.70594042, 0.73236494, 0.75878947])
         obs = self.mc._find_distance_classes(
-            self.mc.getDistanceMatrices()[1], 8)
+            self.mc.DistanceMatrices[1], 8)
         self.assertFloatEqual(obs, exp)
 
     def test_find_distance_classes_invalid_num_classes(self):
         """Test finding the distance classes for a bad number of classes."""
         self.assertRaises(ValueError, self.mc._find_distance_classes,
-                self.mc.getDistanceMatrices()[1], 0)
+                self.mc.DistanceMatrices[1], 0)
         self.assertRaises(ValueError, self.mc._find_distance_classes,
-                self.mc.getDistanceMatrices()[1], -1)
+                self.mc.DistanceMatrices[1], -1)
 
     def test_find_break_points(self):
         """Test finding equal-spaced breakpoints in a range."""
@@ -1091,23 +1080,24 @@ class MantelTests(TestHelper):
         self.m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
         self.m3_dm = DistanceMatrix(m3, sample_ids, sample_ids)
 
-    def test_setDistanceMatrices(self):
+    def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm]
-        self.overview_mantel.setDistanceMatrices(dms)
-        self.assertEqual(self.overview_mantel.getDistanceMatrices(), dms)
+        self.overview_mantel.DistanceMatrices = dms
+        self.assertEqual(self.overview_mantel.DistanceMatrices, dms)
 
-    def test_setDistanceMatrices_wrong_number(self):
+    def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
-        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
-            [self.overview_dm])
-        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
-            [self.overview_dm, self.overview_dm, self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.overview_mantel,
+                'DistanceMatrices', [self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.overview_mantel,
+                'DistanceMatrices', [self.overview_dm, self.overview_dm,
+                                     self.overview_dm])
 
-    def test_setDistanceMatrices_too_small(self):
+    def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
-        self.assertRaises(ValueError, self.overview_mantel.setDistanceMatrices,
-            [self.single_ele_dm, self.single_ele_dm])
+        self.assertRaises(ValueError, setattr, self.overview_mantel,
+                'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):
         """Runs mantel test on the overview dm when compared to itself.
@@ -1238,22 +1228,22 @@ class PartialMantelTests(TestHelper):
             smpl_ids, smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
             [10, 2, 8]]), smpl_ids, smpl_ids))
 
-    def test_setDistanceMatrices(self):
+    def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm, self.overview_dm]
-        self.pm.setDistanceMatrices(dms)
-        self.assertEqual(self.pm.getDistanceMatrices(), dms)
+        self.pm.DistanceMatrices = dms
+        self.assertEqual(self.pm.DistanceMatrices, dms)
 
-    def test_setDistanceMatrices_wrong_number(self):
+    def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
-        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
-                [self.overview_dm])
-        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
-                [self.overview_dm, self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.pm,
+                'DistanceMatrices', [self.overview_dm])
+        self.assertRaises(ValueError, setattr, self.pm,
+                'DistanceMatrices', [self.overview_dm, self.overview_dm])
 
-    def test_setDistanceMatrices_too_small(self):
+    def test_DistanceMatrices_setter_too_small(self):
         """Test setting distance matrices that are too small."""
-        self.assertRaises(ValueError, self.pm.setDistanceMatrices,
+        self.assertRaises(ValueError, setattr, self.pm, 'DistanceMatrices',
                 [self.single_ele_dm, self.single_ele_dm, self.single_ele_dm])
 
     def test_call(self):

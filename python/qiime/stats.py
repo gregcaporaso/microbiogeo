@@ -65,13 +65,15 @@ class DistanceMatrixStats(object):
         """
         self._num_dms = num_dms
         self._min_dm_size = min_dm_size
-        self.setDistanceMatrices(dms)
+        self.DistanceMatrices = dms
 
-    def getDistanceMatrices(self):
+    @property
+    def DistanceMatrices(self):
         """Returns the list of distance matrices."""
         return self._dms
 
-    def setDistanceMatrices(self, dms):
+    @DistanceMatrices.setter
+    def DistanceMatrices(self, dms):
         """Sets the list of distance matrices to the supplied list.
 
         Arguments:
@@ -88,12 +90,12 @@ class DistanceMatrixStats(object):
             if not isinstance(dm, DistanceMatrix):
                 raise TypeError('Invalid type: %s; expected DistanceMatrix' %
                                 dm.__class__.__name__)
-            elif self._min_dm_size >= 0 and dm.getSize() < self._min_dm_size:
+            elif self._min_dm_size >= 0 and dm.Size < self._min_dm_size:
                 raise ValueError("Distance matrix of size %dx%d is smaller "
                                  "than the minimum allowable distance matrix "
                                  "size of %dx%d for this analysis." %
-                                 (dm.getSize(), dm.getSize(),
-                                  self._min_dm_size, self._min_dm_size))
+                                 (dm.Size, dm.Size, self._min_dm_size,
+                                  self._min_dm_size))
         self._dms = dms
 
     def __call__(self, num_perms=999):
@@ -153,7 +155,13 @@ class CorrelationStats(DistanceMatrixStats):
         """
         super(CorrelationStats, self).__init__(dms, num_dms, min_dm_size)
 
-    def setDistanceMatrices(self, dms):
+    @property
+    def DistanceMatrices(self):
+        # Must re-declare so we can override property setter below.
+        return super(CorrelationStats, self).DistanceMatrices
+
+    @DistanceMatrices.setter
+    def DistanceMatrices(self, dms):
         """Sets the list of distance matrices to the supplied list.
 
         This method overrides the parent method and enforces more checks to
@@ -163,14 +171,15 @@ class CorrelationStats(DistanceMatrixStats):
         Arguments:
             dms - the new list of distance matrices being assigned
         """
-        super(CorrelationStats, self).setDistanceMatrices(dms)
+        # Must call superclass property setter this way (super doesn't work).
+        DistanceMatrixStats.DistanceMatrices.fset(self, dms)
+
         if len(dms) < 1:
             raise ValueError("Must provide at least one distance matrix.")
-
-        size = dms[0].getSize()
+        size = dms[0].Size
         sample_ids = dms[0].SampleIds
         for dm in dms:
-            if dm.getSize() != size:
+            if dm.Size != size:
                 raise ValueError("All distance matrices must have the same "
                                  "number of rows and columns.")
             if dm.SampleIds != sample_ids:
@@ -193,7 +202,8 @@ class CategoryStats(DistanceMatrixStats):
     or matrices.
     """
 
-    def __init__(self, mdmap, dms, cats, num_dms=-1, min_dm_size=-1):
+    def __init__(self, mdmap, dms, cats, num_dms=-1, min_dm_size=-1,
+                 random_fn=permutation):
         """Default constructor.
 
         Creates a new instance with the provided distance matrices,
@@ -210,13 +220,26 @@ class CategoryStats(DistanceMatrixStats):
                 matrices the user can set
             min_dm_size - the minimum size that all distance matrices must have
                 that are stored by this instance. If -1, no size restriction
+            random_fn - the function to use when randomizing the grouping
+                of samples in a category during calculation of the p-value. It
+                must return a value and must be callable
         """
         super(CategoryStats, self).__init__(dms, num_dms, min_dm_size)
-        self.setMetadataMap(mdmap)
-        self.setCategories(cats)
+        self.MetadataMap = mdmap
+        self.Categories = cats
+        self.RandomFunction = random_fn
         self._validate_compatibility()
 
-    def setMetadataMap(self, new_mdmap):
+    @property
+    def MetadataMap(self):
+        """Returns the instance's metadata map.
+
+        The metadata map is returned as a MetadataMap class instance.
+        """
+        return self._metadata_map
+
+    @MetadataMap.setter
+    def MetadataMap(self, new_mdmap):
         """Sets the instance's metadata map.
 
         Arguments:
@@ -227,14 +250,16 @@ class CategoryStats(DistanceMatrixStats):
                             new_mdmap.__class__.__name__)
         self._metadata_map = new_mdmap
 
-    def getMetadataMap(self):
-        """Returns the instance's metadata map.
+    @property
+    def Categories(self):
+        """Gets the instance's categories.
 
-        The metadata map is returned as a MetadataMap class instance.
+        Returns a list of mapping file category name strings.
         """
-        return self._metadata_map
+        return self._categories
 
-    def setCategories(self, new_categories):
+    @Categories.setter
+    def Categories(self, new_categories):
         """Sets the instance's list of categories.
 
         Arguments:
@@ -247,17 +272,29 @@ class CategoryStats(DistanceMatrixStats):
         for new_cat in new_categories:
             if not isinstance(new_cat, str):
                 raise TypeError("Invalid category: not of type 'string'")
-            elif new_cat not in self._metadata_map.getCategoryNames():
+            elif new_cat not in self._metadata_map.CategoryNames:
                 raise ValueError("The category %s is not in the mapping file."
                     % new_cat)
         self._categories = new_categories
 
-    def getCategories(self):
-        """Gets the instance's categories.
+    @property
+    def RandomFunction(self):
+        """Returns the randomization function used in p-value calculations."""
+        return self._random_fn
 
-        Returns a list of mapping file category name strings.
+    @RandomFunction.setter
+    def RandomFunction(self, random_fn):
+        """Setter for the randomization function used in p-value calcs.
+
+        Arguments:
+            random_fn - the function to use when randomizing the grouping
+                during calculation of the p-value. It must return a value and
+                must be callable
         """
-        return self._categories
+        if hasattr(random_fn, '__call__'):
+            self._random_fn = random_fn
+        else:
+            raise TypeError("The supplied function reference is not callable.")
 
     def _validate_compatibility(self):
         """Raises an error if the current dms and map are incompatible.
@@ -266,9 +303,9 @@ class CategoryStats(DistanceMatrixStats):
         distance matrices are not found in the metadata map. Ordering of
         sample IDs is not taken into account.
         """
-        for dm in self.getDistanceMatrices():
-            for samp_id in dm.getSampleIds():
-                if samp_id not in self.getMetadataMap().getSampleIds():
+        for dm in self.DistanceMatrices:
+            for samp_id in dm.SampleIds:
+                if samp_id not in self.MetadataMap.SampleIds:
                     raise ValueError("The sample ID '%s' was not found in the "
                                      "metadata map." % samp_id)
 
@@ -318,25 +355,8 @@ class Anosim(CategoryStats):
                 during calculation of the p-value. It must return a value and
                 must be callable
         """
-        super(Anosim, self).__init__(mdmap, [dm], [cat], num_dms=1)
-        self.setRandomFunction(random_fn)
-
-    def getRandomFunction(self):
-        """Returns the randomization function used in p-value calculations."""
-        return self._random_fn
-
-    def setRandomFunction(self, random_fn):
-        """Setter for the randomization function used in p-value calcs.
-
-        Arguments:
-            random_fn - the function to use when randomizing the grouping
-                during calculation of the p-value. It must return a value and
-                must be callable
-        """
-        if hasattr(random_fn, '__call__'):
-            self._random_fn = random_fn
-        else:
-            raise TypeError("The supplied function reference is not callable.")
+        super(Anosim, self).__init__(mdmap, [dm], [cat], num_dms=1,
+                                     random_fn=random_fn)
 
     def __call__(self, num_perms=999):
         """Runs ANOSIM on the current distance matrix and sample grouping.
@@ -352,14 +372,14 @@ class Anosim(CategoryStats):
                 p-value
         """
         results = super(Anosim, self).__call__(num_perms)
-        category = self.getCategories()[0]
-        samples = self.getDistanceMatrices()[0].getSampleIds()
+        category = self.Categories[0]
+        samples = self.DistanceMatrices[0].SampleIds
 
         # Create the group map, which maps sample ID to category value (e.g.
         # sample 1 to 'control' and sample 2 to 'fast').
         group_map = {}
         for samp_id in samples:
-            group_map[samp_id] = self.getMetadataMap().getCategoryValue(
+            group_map[samp_id] = self.MetadataMap.getCategoryValue(
                     samp_id, category)
 
         # Calculate the R statistic with the grouping found in the current
@@ -374,7 +394,7 @@ class Anosim(CategoryStats):
                 # preserve ordering in case the user's random function doesn't
                 # change the order of the items in the list.
                 grouping_random = [group_map[sample] for sample in samples]
-                grouping_random = self.getRandomFunction()(grouping_random)
+                grouping_random = self.RandomFunction(grouping_random)
                 for j, sample in enumerate(samples):
                     group_map[sample] = grouping_random[j]
                 perm_stats.append(self._anosim(group_map))
@@ -400,19 +420,19 @@ class Anosim(CategoryStats):
                 contain a key for each sample ID in the current distance
                 matrix
         """
-        dm = self.getDistanceMatrices()[0]
-        dm_size = dm.getSize()
+        dm = self.DistanceMatrices[0]
+        dm_size = dm.Size
 
         # Create grouping matrix, where a one means that the two samples are in
         # the same group (e.g. control) and a zero means that they aren't.
         within_between = zeros((dm_size, dm_size))
-        for i, i_sample in enumerate(dm.getSampleIds()):
-            for j, j_sample in enumerate(dm.getSampleIds()):
+        for i, i_sample in enumerate(dm.SampleIds):
+            for j, j_sample in enumerate(dm.SampleIds):
                 if group_map[i_sample] == group_map[j_sample]:
                     within_between[i][j] = 1
 
         # Extract upper triangle from the distance and grouping matrices.
-        distances = dm.getDataMatrix()[tri(dm_size) == 0]
+        distances = dm.DataMatrix[tri(dm_size) == 0]
         grouping = within_between[tri(dm_size) == 0]
 
         # Sort extracted data.
@@ -511,6 +531,7 @@ class Anosim(CategoryStats):
         divisor = num_samps * ((num_samps - 1) / 4)
         return (r_B - r_W) / divisor
 
+
 class Permanova(CategoryStats):
     """This code is heavily based on Andrew Cochran's original procedural version."""
 
@@ -529,25 +550,8 @@ class Permanova(CategoryStats):
                 during calculation of the p-value. It must return a value and
                 must be callable
         """
-        super(Permanova, self).__init__(mdmap, [dm], [cat], num_dms=1)
-        self.setRandomFunction(random_fn)
-
-    def getRandomFunction(self):
-        """Returns the randomization function used in p-value calculations."""
-        return self._random_fn
-
-    def setRandomFunction(self, random_fn):
-        """Setter for the randomization function used in p-value calcs.
-
-        Arguments:
-            random_fn - the function to use when randomizing the grouping
-                during calculation of the p-value. It must return a value and
-                must be callable
-        """
-        if hasattr(random_fn, '__call__'):
-            self._random_fn = random_fn
-        else:
-            raise TypeError("The supplied function reference is not callable.")
+        super(Permanova, self).__init__(mdmap, [dm], [cat], num_dms=1,
+                                        random_fn=random_fn)
 
     def __call__(self, num_perms=999):
         """Runs PERMANOVA on the current distance matrix and sample grouping.
@@ -563,19 +567,20 @@ class Permanova(CategoryStats):
                 p-value
         """
         results = super(Permanova, self).__call__(num_perms)
-        category = self.getCategories()[0]
-        samples = self.getDistanceMatrices()[0].getSampleIds()
+        category = self.Categories[0]
+        samples = self.DistanceMatrices[0].SampleIds
 
         # Create the group map, which maps sample ID to category value (e.g.
         # sample 1 to 'control' and sample 2 to 'fast').
         group_map = {}
         for samp_id in samples:
-            group_map[samp_id] = self.getMetadataMap().getCategoryValue(
+            group_map[samp_id] = self.MetadataMap.getCategoryValue(
                     samp_id, category)
 
         # Calculate the R statistic with the grouping found in the current
         # metadata map.
-        r_stat = self._permanova(samples,self.getDistanceMatrices()[0].getDataMatrix(),group_map)
+        r_stat = self._permanova(samples, self.DistanceMatrices[0].DataMatrix,
+                                 group_map)
 
         if num_perms > 0:
             # Calculate the p-value based on the number of permutations.
@@ -585,10 +590,12 @@ class Permanova(CategoryStats):
                 # preserve ordering in case the user's random function doesn't
                 # change the order of the items in the list.
                 grouping_random = [group_map[sample] for sample in samples]
-                grouping_random = self.getRandomFunction()(grouping_random)
+                grouping_random = self.RandomFunction(grouping_random)
                 for j, sample in enumerate(samples):
                     group_map[sample] = grouping_random[j]
-                perm_stats.append(self._permanova(samples,self.getDistanceMatrices()[0].getDataMatrix(),group_map))
+                perm_stats.append(self._permanova(samples,
+                                  self.DistanceMatrices[0].DataMatrix,
+                                  group_map))
             # Calculate the p-value.
             p_value = (sum(perm_stats >= r_stat) + 1) / (num_perms + 1)
         else:
@@ -599,28 +606,25 @@ class Permanova(CategoryStats):
         results['p_value'] = p_value
         return results
 
-
     def _permanova(self, samples, distmtx, grouping):
         """Computes PERMANOVA pseudo-f-statistic
 
            PARAMETERS
-       grouping: a Metamap object
+        grouping: a Metamap object
         """
-
 
         # Local Vars
         unique_n = []       # number of samples in each group
         group_map = {}
         map = {}
-        metaMap = self.getMetadataMap()
+        metaMap = self.MetadataMap
 
-        #make map
-        for sample in metaMap.getSampleIds():
+        # make map
+        for sample in metaMap.SampleIds:
                 subkey = {}
-                for cat in metaMap.getCategoryNames():
+                for cat in metaMap.CategoryNames:
                     subkey[cat] = metaMap.getCategoryValue(sample, cat)
                 map[sample] = subkey
-
 
         # Extract the unique list of group labels
         gl_unique = unique(array(grouping.values()))
@@ -644,12 +648,12 @@ class Permanova(CategoryStats):
         gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute f value
-        result = self._compute_f_value(distances,gropuing,len(distmtx),number_groups,unique_n)
+        result = self._compute_f_value(distances, gropuing, len(distmtx),
+                                       number_groups, unique_n)
         return result
 
-
-    def permanova_p_test(self, samples, distmtx, group_list, ntrials=9999,\
-                     randomfun=random.permutation):
+    def permanova_p_test(self, samples, distmtx, group_list, ntrials=9999,
+                         randomfun=random.permutation):
         """Performs the calculations for the permutation test
 
         PARAMETERS
@@ -685,7 +689,6 @@ class Permanova(CategoryStats):
        
         p_value = (sum(f_value_permunations >= f_value) + 1) / (ntrials + 1)
         return f_value, p_value
-
 
     def _compute_f_value(self, distances, groupings, number_samples, number_groups, unique_n):
         """Performs the calculations for the f value
@@ -735,12 +738,12 @@ class BioEnv(CategoryStats):
         """
 
         res = super(BioEnv, self).__call__(num_perms)
-        cats = self.getCategories()
-        dm = self.getDistanceMatrices()[0]
+        cats = self.Categories
+        dm = self.DistanceMatrices[0]
         dm_flat = dm.flatten()
         dm_flat_ranked = self._get_rank(dm_flat)
 
-        row_count = dm.getSize()
+        row_count = dm.Size
         col_count = len(cats)
         sum = 0
         stats = [(-777, '') for c in range(col_count+1)]
@@ -773,7 +776,7 @@ class BioEnv(CategoryStats):
     def _derive_euclidean_dm(self, cat_mat, dim):
         """Returns an n x n, euclidean distance matrix, where n = len(cats) """
 
-        dm_labels = self.getDistanceMatrices()[0].getSampleIds()
+        dm_labels = self.DistanceMatrices[0].SampleIds
         res_mat = []
         for i in range(dim):
             res_mat.append([0 for k in range(dim)])
@@ -794,11 +797,11 @@ class BioEnv(CategoryStats):
         from category values, the number of columns for each category is
         determined by the current combination(combo)."""
 
-        dm = self.getDistanceMatrices()[0]
-        md_map = self.getMetadataMap()
+        dm = self.DistanceMatrices[0]
+        md_map = self.MetadataMap
         res = []
         for i in combo:
-            res.append(md_map.getCategoryValues(dm.getSampleIds(), cats[i]))
+            res.append(md_map.getCategoryValues(dm.SampleIds, cats[i]))
 
         return zip(*res)
 
@@ -914,21 +917,6 @@ class DistanceBasedRda(CategoryStats):
         super(DistanceBasedRda, self).__init__(metadata_map, [dm], [category],
                                                num_dms=1)
 
-    def getCategory(self):
-        """Returns the single category of interest to this analysis."""
-        return self.getCategories()[0]
-
-    def setCategory(self, cat):
-        """Sets the category of interest to this analysis.
-
-        Arguments:
-          cat - the category name (string). Must be present in the mapping
-              file
-        """
-        if not isinstance(cat, str):
-            raise TypeError("The supplied category must be a string.")
-        self.setCategories([cat])
-
     def __call__(self, num_perms=999):
         """Runs a distance-based redundancy analysis over the current data.
 
@@ -943,18 +931,18 @@ class DistanceBasedRda(CategoryStats):
         results = super(DistanceBasedRda, self).__call__()
         results['method_name'] = "Distance-Based Redundancy Analysis"
 
-        mdmap = self.getMetadataMap()
-        dm = self.getDistanceMatrices()[0]
-        k = dm.getSize() - 1
+        mdmap = self.MetadataMap
+        dm = self.DistanceMatrices[0]
+        k = dm.Size - 1
         inertia_str = "Distance squared"
 
-        if dm.getMax() >= 4:
+        if dm.max() >= 4:
             inertia_str = "mean " + inertia_str
             adjust = 1
         else:
             adjust = sqrt(k)
 
-        points, eigs = principal_coordinates_analysis(dm.getDataMatrix())
+        points, eigs = principal_coordinates_analysis(dm.DataMatrix)
 
         # Order the axes in descending order based on eigenvalue. This code is
         # taken from QIIME's principal_coordinates.py library.
@@ -977,7 +965,7 @@ class DistanceBasedRda(CategoryStats):
         if adjust == 1:
             eigs <- eigs / k
 
-        group_membership = [mdmap.getCategoryValue(sid, self.getCategory()) \
+        group_membership = [mdmap.getCategoryValue(sid, self.Categories[0]) \
                             for sid in dm.SampleIds]
         self._compute_rda(points, group_membership)
 
@@ -1150,13 +1138,15 @@ class MantelCorrelogram(CorrelationStats):
         """
         super(MantelCorrelogram, self).__init__([eco_dm, geo_dm], num_dms=2,
                                                 min_dm_size=3)
-        self.setAlpha(alpha)
+        self.Alpha = alpha
 
-    def getAlpha(self):
+    @property
+    def Alpha(self):
         """Returns the alpha value."""
         return self._alpha
 
-    def setAlpha(self, alpha):
+    @Alpha.setter
+    def Alpha(self, alpha):
         """Sets the alpha value.
 
         Arguments:
@@ -1190,9 +1180,9 @@ class MantelCorrelogram(CorrelationStats):
         mantel.correlog in R's vegan package.
         """
         results = super(MantelCorrelogram, self).__call__(num_perms)
-        eco_dm = self.getDistanceMatrices()[0]
-        geo_dm = self.getDistanceMatrices()[1]
-        dm_size = eco_dm.getSize()
+        eco_dm = self.DistanceMatrices[0]
+        geo_dm = self.DistanceMatrices[1]
+        dm_size = eco_dm.Size
 
         # Find the number of lower triangular elements (excluding the
         # diagonal).
@@ -1322,7 +1312,7 @@ class MantelCorrelogram(CorrelationStats):
 
         # Create the matrix of distance classes. Every element in the matrix
         # tells what distance class the original element belongs to.
-        size = dm.getSize()
+        size = dm.Size
         dist_class_matrix = empty([size, size], dtype=int)
         for i in range(size):
             for j in range(size):
@@ -1386,7 +1376,7 @@ class MantelCorrelogram(CorrelationStats):
         signif_classes = []
         signif_stats = []
         for idx, p_val in enumerate(corrected_p_vals):
-            if p_val <= self.getAlpha():
+            if p_val <= self.Alpha:
                 signif_classes.append(class_indices[idx])
                 signif_stats.append(mantel_stats[idx])
         ax.plot(signif_classes, signif_stats, 'ks', mfc='k')
@@ -1415,7 +1405,26 @@ class Mantel(CorrelationStats):
                 test). Can be "two sided", "less", or "greater"
         """
         super(Mantel, self).__init__([dm1, dm2], num_dms=2, min_dm_size=3)
-        self.setTailType(tail_type)
+        self.TailType = tail_type
+
+    @property
+    def TailType(self):
+        """Returns the tail type being used for the Mantel test."""
+        return self._tail_type
+
+    @TailType.setter
+    def TailType(self, tail_type):
+        """Sets the tail type that will be used for the Mantel test.
+
+        Arguments:
+            tail_type - the tail type to use when calculating the p-value.
+                Valid types are 'two sided', 'less', or 'greater'.
+        """
+        if tail_type not in ("two sided", "greater", "less"):
+            raise ValueError("Unrecognized alternative hypothesis (tail "
+                             "type). Must be either 'two sided', 'greater', "
+                             "or 'less'.")
+        self._tail_type = tail_type
 
     def __call__(self, num_perms=999):
         """Runs a Mantel test over the current distance matrices.
@@ -1443,13 +1452,13 @@ class Mantel(CorrelationStats):
         results = self._mantel_test(num_perms)
 
         resultsDict['method_name'] = "Mantel"
-        resultsDict['dm1'] = self.getDistanceMatrices()[0]
-        resultsDict['dm2'] = self.getDistanceMatrices()[1]
+        resultsDict['dm1'] = self.DistanceMatrices[0]
+        resultsDict['dm2'] = self.DistanceMatrices[1]
         resultsDict['num_perms'] = num_perms
         resultsDict['p_value'] = results[0]
         resultsDict['r_value'] = results[1]
         resultsDict['perm_stats'] = results[2]
-        resultsDict['tail_type'] = self.getTailType()
+        resultsDict['tail_type'] = self.TailType
 
         return resultsDict
 
@@ -1472,8 +1481,8 @@ class Mantel(CorrelationStats):
         Arguments:
             n - the number of permutations
         """
-        m1, m2 = self.getDistanceMatrices()
-        alt = self.getTailType()
+        m1, m2 = self.DistanceMatrices
+        alt = self.TailType
 
         # Get a flattened list of lower-triangular matrix elements (excluding
         # the diagonal) in column-major order. Use these values to calculate
@@ -1485,9 +1494,8 @@ class Mantel(CorrelationStats):
         better = 0
         perm_stats = []
         for i in range(n):
-            m1_perm_data = permute_2d(m1, permutation(m1.getSize()))
-            m1_perm = DistanceMatrix(m1_perm_data, m1.getSampleIds(),
-                m1.getSampleIds())
+            m1_perm_data = permute_2d(m1, permutation(m1.Size))
+            m1_perm = DistanceMatrix(m1_perm_data, m1.SampleIds, m1.SampleIds)
             m1_perm_flat = m1_perm.flatten()
             r = pearson(m1_perm_flat, m2_flat)
 
@@ -1500,23 +1508,6 @@ class Mantel(CorrelationStats):
                     better += 1
             perm_stats.append(r)
         return (better + 1) / (n + 1), orig_stat, perm_stats
-
-    def getTailType(self):
-        """Returns the tail type being used for the Mantel test."""
-        return self._tail_type
-
-    def setTailType(self, tail_type):
-        """Sets the tail type that will be used for the Mantel test.
-
-        Arguments:
-            tail_type - the tail type to use when calculating the p-value.
-                Valid types are 'two sided', 'less', or 'greater'.
-        """
-        if tail_type not in ("two sided", "greater", "less"):
-            raise ValueError("Unrecognized alternative hypothesis (tail "
-                             "type). Must be either 'two sided', 'greater', "
-                             "or 'less'.")
-        self._tail_type = tail_type
 
 
 class PartialMantel(CorrelationStats):
@@ -1564,11 +1555,7 @@ class PartialMantel(CorrelationStats):
         res['mantel_r'] = None
         res['mantel_p'] = None
 
-        dm1 = self.getDistanceMatrices()[0]
-        dm2 = self.getDistanceMatrices()[1]
-        cdm = self.getDistanceMatrices()[2]
-        dm_sizes = dm1.getSize()
-
+        dm1, dm2, cdm = self.DistanceMatrices
         dm1_flat = dm1.flatten()
         dm2_flat = dm2.flatten()
         cdm_flat = cdm.flatten()
@@ -1588,7 +1575,7 @@ class PartialMantel(CorrelationStats):
         for i in range(0, num_perms):
             # Permute the first distance matrix and calculate new
             # r and p-values.
-            p1 = permute_2d(dm1, permutation(dm1.getSize()))
+            p1 = permute_2d(dm1, permutation(dm1.Size))
             dm1_perm = DistanceMatrix(p1, dm1.SampleIds, dm1.SampleIds)
             dm1_perm_flat = dm1_perm.flatten()
             rval1 = pearson(dm1_perm_flat, dm2_flat)
