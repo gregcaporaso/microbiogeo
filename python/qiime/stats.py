@@ -580,8 +580,7 @@ class Permanova(CategoryStats):
 
         # Calculate the R statistic with the grouping found in the current
         # metadata map.
-        r_stat = self._permanova(samples, self.DistanceMatrices[0].DataMatrix,
-                                 group_map)
+        r_stat = self._permanova(group_map)
 
         if num_perms > 0:
             # Calculate the p-value based on the number of permutations.
@@ -594,9 +593,7 @@ class Permanova(CategoryStats):
                 grouping_random = self.RandomFunction(grouping_random)
                 for j, sample in enumerate(samples):
                     group_map[sample] = grouping_random[j]
-                perm_stats.append(self._permanova(samples,
-                                  self.DistanceMatrices[0].DataMatrix,
-                                  group_map))
+                perm_stats.append(self._permanova(group_map))
             # Calculate the p-value.
             p_value = (sum(perm_stats >= r_stat) + 1) / (num_perms + 1)
         else:
@@ -607,14 +604,15 @@ class Permanova(CategoryStats):
         results['p_value'] = p_value
         return results
 
-    def _permanova(self, samples, distmtx, grouping):
+    def _permanova(self, grouping):
         """Computes PERMANOVA pseudo-f-statistic
 
            PARAMETERS
         grouping: a Metamap object
         """
-
-        # Local Vars
+        samples = self.DistanceMatrices[0].SampleIds
+        dm = self.DistanceMatrices[0]                                           
+        dm_size = dm.Size 
         unique_n = []       # number of samples in each group
         group_map = {}
 
@@ -628,7 +626,7 @@ class Permanova(CategoryStats):
             unique_n.append(grouping.values().count(i_string))
 
         # Create grouping matrix
-        grouping_matrix = -1 * ones((len(distmtx),len(distmtx)))
+        grouping_matrix = -1 * ones((dm_size,dm_size))
         for i, i_sample in enumerate(samples):
             grouping_i = grouping[i_sample]
             for j, j_sample in enumerate(samples):
@@ -636,11 +634,11 @@ class Permanova(CategoryStats):
                     grouping_matrix[i][j] = group_map[grouping[i_sample]]
 
         # Extract upper triangle
-        distances = distmtx[tri(len(distmtx)) == 0]
+        distances = dm[tri(dm_size) == 0]
         groups = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute f value
-        result = self._compute_f_value(distances, groups, len(distmtx),
+        result = self._compute_f_value(distances, groups, dm_size,
                                        number_groups, unique_n)
         return result
 

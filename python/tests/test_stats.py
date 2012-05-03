@@ -619,22 +619,19 @@ class PermanovaTests(TestHelper):
     def test_permanova1(self):
         """permanova should return 4.4"""
         exp = 4.4
-        obs = self.permanova_plain._permanova(self.distmtx_samples,\
-         self.distmtx.DataMatrix,self.map)
+        obs = self.permanova_plain._permanova(self.map)
         self.assertEqual(obs, exp)
 
     def test_permanova2(self):
         """Should result in 2"""
         exp = 2
-        obs = self.permanova_tie._permanova(self.distmtx_tie_samples,\
-         self.distmtx_tie.DataMatrix,self.map)
+        obs = self.permanova_tie._permanova(self.map)
         self.assertEqual(obs, exp)
 
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = self.permanova_non_sym._permanova(self.distmtx_non_sym_samples,\
-         self.distmtx_non_sym.DataMatrix, self.map_non_sym)
+        obs = self.permanova_non_sym._permanova(self.map_non_sym)
         self.assertFloatEqual(obs, exp)
 
     def test_compute_f1(self):
