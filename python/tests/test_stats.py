@@ -627,10 +627,9 @@ class PermanovaTests(TestHelper):
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = round(self.permanova_non_sym._permanova(\
-         self.distmtx_non_sym_samples,self.distmtx_non_sym.DataMatrix,\
-         self.map_non_sym),5)
-        self.assertEqual(obs, exp)
+        obs = self.permanova_non_sym._permanova(self.distmtx_non_sym_samples,\
+         self.distmtx_non_sym.DataMatrix, self.map_non_sym)
+        self.assertFloatEqual(obs, exp)
 
     def test_compute_f1(self):
         """Should return 4.4, testing just function"""
@@ -641,39 +640,6 @@ class PermanovaTests(TestHelper):
         result = self.permanova_plain._compute_f_value(distances,grouping,4,2,
          [2,2])
         self.assertEqual(result, 4.4)
-
-    def test_p_test(self):
-        """P-value should be .5 for this test"""
-        nrs = NonRandomShuffler()
-        self.permanova_plain.RandomFunction = nrs.permutation
-
-        exp_result = 4.4
-        exp_p_val = 0.5
-
-        # Create the group map, which maps sample ID to category value (e.g.
-        # sample 1 to 'control' and sample 2 to 'fast').
-
-        group_list = {}
-        grouping = self.permanova_plain.DistanceMatrices[0].SampleIds
-
-        #make map
-        map = {}
-        for sample in self.permanova_plain.MetadataMap.SampleIds:
-                subkey = {}
-                for cat in self.permanova_plain.MetadataMap.CategoryNames:
-                    subkey[cat] = self.permanova_plain.MetadataMap.\
-                     getCategoryValue(sample, cat)     
-                map[sample] = subkey
-
-        for sample in map:
-            group_list[sample] = map[sample]["Treatment"]
-     
-        obs_result, obs_p_val = self.permanova_plain.permanova_p_test(\
-         self.distmtx_samples, self.distmtx.DataMatrix, group_list, 3,\
-         nrs.permutation)
-
-        self.assertFloatEqual(obs_result, exp_result)
-        self.assertFloatEqual(obs_p_val, exp_p_val)
 
     def test_call_plain(self):
         """Test __call__() on plain dm."""

@@ -617,15 +617,6 @@ class Permanova(CategoryStats):
         # Local Vars
         unique_n = []       # number of samples in each group
         group_map = {}
-        map = {}
-        metaMap = self.MetadataMap
-
-        # make map
-        for sample in metaMap.SampleIds:
-                subkey = {}
-                for cat in metaMap.CategoryNames:
-                    subkey[cat] = metaMap.getCategoryValue(sample, cat)
-                map[sample] = subkey
 
         # Extract the unique list of group labels
         gl_unique = unique(array(grouping.values()))
@@ -652,45 +643,6 @@ class Permanova(CategoryStats):
         result = self._compute_f_value(distances, groups, len(distmtx),
                                        number_groups, unique_n)
         return result
-
-    def permanova_p_test(self, samples, distmtx, group_list, ntrials=9999,
-                         randomfun=random.permutation):
-        """Performs the calculations for the permutation test
-
-        PARAMETERS
-        samples: names of the samples
-        distmtx: the data
-        group_list: listing of the grouping information
-        ntrials: how many trials to run, default 9999
-
-        RETURNS
-        f_value: the value of permanova
-        p_value: permutation factor
-
-        """
-        # Array to store permutation values
-        f_value_permutations = zeros(ntrials)
-
-        # Calculate the F-Value
-        f_value = self._permanova(samples,distmtx,group_list)
-
-        # Run p-tests
-        for i in xrange(ntrials):
-
-            # Randomize Grouping
-            grouping_random = []
-            for sample in samples:
-                grouping_random.append(group_list[sample])
-            grouping_random = randomfun(grouping_random)
-
-            # Calculate p-values
-            for j, sample in enumerate(samples):
-                group_list[sample] = grouping_random[j]
-            f_value_permutations[i] = self._permanova(samples,distmtx,\
-             group_list)
-       
-        p_value = (sum(f_value_permutations >= f_value) + 1) / (ntrials + 1)
-        return f_value, p_value
 
     def _compute_f_value(self, distances, groupings, number_samples,\
      number_groups, unique_n):
