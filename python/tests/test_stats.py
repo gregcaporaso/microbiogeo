@@ -537,6 +537,7 @@ class PermanovaTests(TestHelper):
        """Define some useful data to use in testing."""
        super(PermanovaTests, self).setUp()
 
+       # Some distance matrices to help test Permanova.
        self.distmtx_str = ["\tsam1\tsam2\tsam3\tsam4",
         "sam1\t0\t1\t5\t4",
         "sam2\t1\t0\t3\t2",
@@ -564,6 +565,9 @@ class PermanovaTests(TestHelper):
         self.distmtx_non_sym_str)
        self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
 
+       # Some group maps to help test Permanova, data_map can be used with 
+       # distmtx and distmtx_tie while data_map_non_sym can only be used 
+       # with distmtx_non_sym.
        self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
          \tTreatment\tDOB\tDescription",
         "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
@@ -591,6 +595,7 @@ class PermanovaTests(TestHelper):
        self.data_map_non_sym = MetadataMap.parseMetadataMap(\
         self.data_map_non_sym_str)
 
+       # Formatting the two data_maps to meet permanova requirments.
        self.map = {}
        for samp_id in self.data_map.SampleIds:
            self.map[samp_id] = self.data_map.getCategoryValue(
@@ -601,6 +606,7 @@ class PermanovaTests(TestHelper):
            self.map_non_sym[samp_id] = self.data_map_non_sym.getCategoryValue(
                samp_id, 'Treatment')
 
+       # Creating instances of Permanova to run the tests on.
        self.permanova_plain = Permanova(self.data_map, self.distmtx,\
         'Treatment')
        self.permanova_tie = Permanova(self.data_map, self.distmtx_tie,\
@@ -643,7 +649,7 @@ class PermanovaTests(TestHelper):
 
     def test_call_plain(self):
         """Test __call__() on plain dm."""
-        # These results were verified with R.
+        # These p_values were verified with R.
         exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'r_value': 4.4}
         obs = self.permanova_plain()
 
@@ -653,7 +659,7 @@ class PermanovaTests(TestHelper):
 
     def test_call_tie(self):
         """Test __call__() on dm with ties in ranks."""
-        # These results were verified with R.
+        # These p_values were verified with R.
         exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'r_value': 2}
         obs = self.permanova_tie()
 
@@ -663,7 +669,7 @@ class PermanovaTests(TestHelper):
 
     def test_call_non_sym(self):
         """Test __call__() on non_sym dm with no permutations."""
-        # These results were verified with R.
+        # These p_values were verified with R.
         exp = {'method_name': 'PERMANOVA', 'p_value': 'NA', 'r_value': 3.58462}
         obs = self.permanova_non_sym(0)
 
