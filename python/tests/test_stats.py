@@ -1227,8 +1227,8 @@ class PartialMantelTests(TestHelper):
         self.small_pm_diff2 = PartialMantel(
             DistanceMatrix(array([[0,1,2,3,1.4],
                                   [1,0,1.5,1.6,1.7],
-                                  [2,1.5,0,8,1.9],
-                                  [3,1.6,8,0,1.0],
+                                  [2,1.5,0,0.8,1.9],
+                                  [3,1.6,0.8,0,1.0],
                                   [1.4,1.7,1.9,1.0,0]]), smpl_ids, smpl_ids),
             DistanceMatrix(array([[0,1,2,3,4.1],
                                   [1,0,5,6,7],
@@ -1291,9 +1291,9 @@ class PartialMantelTests(TestHelper):
         exp_method_name = 'Partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
-        exp_mantel_r = 0.0345287327249
+        exp_mantel_r = -0.350624881409
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertTrue(obs['mantel_p'] > 0.4)
+        self.assertTrue(obs['mantel_p'] > 0.8)
 
 
 if __name__ == "__main__":
