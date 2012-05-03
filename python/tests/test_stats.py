@@ -1027,6 +1027,45 @@ class MantelCorrelogramTests(TestHelper):
         self.assertRaises(ValueError, self.mc._find_break_points, 0, 1, 0)
         self.assertRaises(ValueError, self.mc._find_break_points, 0, 1, -1)
 
+    def test_correct_p_values(self):
+        """Test p-value correction for a small list of p-values."""
+        exp = [0.003, 0.006, 0.003]
+        obs = self.mc._correct_p_values([0.001, 0.002, 0.001])
+        self.assertFloatEqual(obs, exp)
+
+    def test_correct_p_values_all_None(self):
+        """Test p-value correction for all None p-values."""
+        exp = [None, None]
+        obs = self.mc._correct_p_values([None, None])
+        self.assertEqual(obs, exp)
+
+    def test_correct_p_values_mixed(self):
+        """Test p-value correction for mixture of None and valid p-values."""
+        exp = [None, 0.008, 0.01, None]
+        obs = self.mc._correct_p_values([None, 0.004, 0.005, None])
+        self.assertFloatEqual(obs, exp)
+
+    def test_correct_p_values_no_change(self):
+        """Test p-value correction where none is needed."""
+        exp = [None, 0.008]
+        obs = self.mc._correct_p_values([None, 0.008])
+        self.assertFloatEqual(obs, exp)
+        exp = [0.007]
+        obs = self.mc._correct_p_values([0.007])
+        self.assertFloatEqual(obs, exp)
+
+    def test_correct_p_values_large_correction(self):
+        """Test p-value correction that exceeds 1.0."""
+        exp = [1, None, 0.03, 0.03]
+        obs = self.mc._correct_p_values([0.5, None, 0.01, 0.01])
+        self.assertFloatEqual(obs, exp)
+
+    def test_correct_p_values_empty(self):
+        """Test p-value correction on empty list."""
+        exp = []
+        obs = self.mc._correct_p_values([])
+        self.assertFloatEqual(obs, exp)
+
     def test_generate_correlogram(self):
         """Test creating a correlogram plot."""
         obs_fig = self.mc._generate_correlogram([0, 1, 2], [-0.9, 0, 0.9],

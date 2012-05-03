@@ -1216,14 +1216,8 @@ class MantelCorrelogram(CorrelationStats):
                     results['mantel_r'].append(None)
                     results['mantel_p'].append(None)
 
-        # Correct p-values for multiple testing using Bonferroni correction
-        # (non-progressive).
-        num_tests = len([p_val for p_val in results['mantel_p'] \
-                         if p_val is not None])
-        corrected_p_vals = [min(p * num_tests, 1) \
-                            for p in results['mantel_p'][0:num_tests]]
-        corrected_p_vals.extend([None] * (num_classes - num_tests))
-        results['mantel_p_corr'] = corrected_p_vals
+        # Correct p-values for multiple testing.
+        results['mantel_p_corr'] = self._correct_p_values(results['mantel_p'])
 
         # Construct a correlogram of distance class versus mantel correlation
         # statistic and fill in each point that is statistically significant.
@@ -1307,6 +1301,29 @@ class MantelCorrelogram(CorrelationStats):
         epsilon = finfo(float).eps
         break_points[0] = break_points[0] - epsilon
         return break_points
+
+    def _correct_p_values(self, p_vals):
+        """Corrects p-values for multiple testing using Bonferroni correction.
+
+        This method of correction is non-progressive. If any of the p-values
+        are None, they are not counted towards the number of tests used in the
+        correction.
+
+        Returns a list of Bonferroni-corrected p-values for those that are not
+        None. Those that are None are simply returned. The ordering of p-values
+        is maintained.
+
+        Arguments:
+            p_vals - list of p-values (of type float or None)
+        """
+        num_tests = len([p_val for p_val in p_vals if p_val is not None])
+        corrected_p_vals = []
+        for p_val in p_vals:
+            if p_val is not None:
+                corrected_p_vals.append(min(p_val * num_tests, 1))
+            else:
+                corrected_p_vals.append(p_val)
+        return corrected_p_vals
 
     def _generate_correlogram(self, class_indices, mantel_stats,
                               corrected_p_vals):
