@@ -565,8 +565,8 @@ class PermanovaTests(TestHelper):
         self.distmtx_non_sym_str)
        self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
 
-       # Some group maps to help test Permanova, data_map can be used with 
-       # distmtx and distmtx_tie while data_map_non_sym can only be used 
+       # Some group maps to help test Permanova, data_map can be used with
+       # distmtx and distmtx_tie while data_map_non_sym can only be used
        # with distmtx_non_sym.
        self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
          \tTreatment\tDOB\tDescription",
@@ -787,6 +787,7 @@ class BioEnvTests(TestHelper):
 
     def test_vector_dist(self):
         """Test the _vector_dist helper method"""
+        pass
 
 
 class DistanceBasedRdaTests(TestHelper):
@@ -1222,6 +1223,24 @@ class PartialMantelTests(TestHelper):
             smpl_ids, smpl_ids), DistanceMatrix(array([[10, 7, 13], [9, 7, 0],
             [10, 2, 8]]), smpl_ids, smpl_ids))
 
+        smpl_ids = ['s1', 's2', 's3', 's4', 's5']
+        self.small_pm_diff2 = PartialMantel(
+            DistanceMatrix(array([[0,1,2,3,1.4],
+                                  [1,0,1.5,1.6,1.7],
+                                  [2,1.5,0,8,1.9],
+                                  [3,1.6,8,0,1.0],
+                                  [1.4,1.7,1.9,1.0,0]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[0,1,2,3,4.1],
+                                  [1,0,5,6,7],
+                                  [2,5,0,8,9],
+                                  [3,6,8,0,10],
+                                  [4.1,7,9,10,0]]), smpl_ids, smpl_ids),
+            DistanceMatrix(array([[0,1,2,3,4],
+                                  [1,0,5,6,7],
+                                  [2,5,0,8,9.1],
+                                  [3,6,8,0,10],
+                                  [4,7,9.1,10,0]]), smpl_ids, smpl_ids))
+
     def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
         dms = [self.overview_dm, self.overview_dm, self.overview_dm]
@@ -1267,6 +1286,14 @@ class PartialMantelTests(TestHelper):
         exp_mantel_r = 0.99999999999999734
         self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
         self.assertTrue(obs['mantel_p'] > 0.25 and obs['mantel_p'] < 0.4)
+
+        obs = self.small_pm_diff2()
+        exp_method_name = 'Partial Mantel'
+        self.assertEqual(obs['method_name'], exp_method_name)
+
+        exp_mantel_r = 0.0345287327249
+        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        self.assertTrue(obs['mantel_p'] > 0.4)
 
 
 if __name__ == "__main__":

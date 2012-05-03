@@ -533,7 +533,7 @@ class Anosim(CategoryStats):
 
 
 class Permanova(CategoryStats):
-    """This code is heavily based on Andrew Cochran's original 
+    """This code is heavily based on Andrew Cochran's original
        procedural version."""
 
     def __init__(self, mdmap, dm, cat, random_fn=permutation):
@@ -611,8 +611,8 @@ class Permanova(CategoryStats):
         grouping: a Metamap object
         """
         samples = self.DistanceMatrices[0].SampleIds
-        dm = self.DistanceMatrices[0]                                           
-        dm_size = dm.Size 
+        dm = self.DistanceMatrices[0]
+        dm_size = dm.Size
         unique_n = []       # number of samples in each group
         group_map = {}
 
@@ -703,13 +703,15 @@ class BioEnv(CategoryStats):
             if i < 11:
                 combo = list(combinate([j for j in range(0,col_count)], i))[1:]
             else:
-                combo = list(combinate([j for j in range(0,col_count+1)], i))[0:1]
+                combo = list(combinate([j for j in range(0,col_count+1)],
+                             i))[0:1]
 
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
                 cat_dm = self._derive_euclidean_dm(cat_mat, row_count)
                 cat_dm_flat_ranked = self._get_rank(cat_dm.flatten())
-                r = self._spearman_correlation(dm_flat_ranked, cat_dm_flat_ranked, ranked=True)
+                r = self._spearman_correlation(dm_flat_ranked,
+                                               cat_dm_flat_ranked, ranked=True)
                 if r > stats[i][0]:
                     stats[i] = (r, ','.join(str(s+1) for s in combo[c]))
 
