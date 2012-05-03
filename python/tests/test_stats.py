@@ -550,7 +550,8 @@ class PermanovaTests(TestHelper):
         "sam2\t1\t0\t3\t2",
         "sam3\t5\t3\t0\t3",
         "sam4\t4\t2\t3\t0"]
-       self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(self.distmtx_tie_str)
+       self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(\
+        self.distmtx_tie_str)
        self.distmtx_tie_samples = self.distmtx_tie.SampleIds
 
        self.distmtx_non_sym_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
@@ -559,55 +560,76 @@ class PermanovaTests(TestHelper):
         "sam3\t7\t5\t0\t2\t6",
         "sam4\t2\t4\t2\t0\t2",
         "sam5\t1\t1\t6\t6\t0"]
-       self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(self.distmtx_non_sym_str)
+       self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(\
+        self.distmtx_non_sym_str)
        self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
 
-       self.mapping_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
-        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354",
-        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._355",
-        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\tControl_mouse_I.D._356",
-        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\tControl_mouse_I.D._481"]
-       self.mapping = MetadataMap.parseMetadataMap(self.mapping_str)
+       self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
+         \tTreatment\tDOB\tDescription",
+        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+         \tControl_mouse_I.D._354",
+        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+         \tControl_mouse_I.D._355",
+        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
+         \tControl_mouse_I.D._356",
+        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\
+          \tControl_mouse_I.D._481"]
+       self.data_map = MetadataMap.parseMetadataMap(self.data_map_str)
 
-       self.mapping_non_sym_str=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
-        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._354",
-        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\tControl_mouse_I.D._355",
-        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\tControl_mouse_I.D._356",
-        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\tControl_mouse_I.D._481",
-        "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\tcontrolmouseid"]
-       self.mapping_non_sym = MetadataMap.parseMetadataMap(self.mapping_non_sym_str)
+       self.data_map_non_sym_str=["#SampleID\tBarcodeSequence\
+         \tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
+        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+         \tControl_mouse_I.D._354",
+        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
+         \tControl_mouse_I.D._355",
+        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
+         \tControl_mouse_I.D._356",
+        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\
+         \tControl_mouse_I.D._481",
+        "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\
+         \tcontrolmouseid"]
+       self.data_map_non_sym = MetadataMap.parseMetadataMap(\
+        self.data_map_non_sym_str)
 
-       self.mapping_map = {}
-       for samp_id in self.mapping.SampleIds:
-           self.mapping_map[samp_id] = self.mapping.getCategoryValue(
+       self.map = {}
+       for samp_id in self.data_map.SampleIds:
+           self.map[samp_id] = self.data_map.getCategoryValue(
                samp_id, 'Treatment')
 
-       self.mapping_map_non_sym = {}
-       for samp_id in self.mapping_non_sym.SampleIds:
-           self.mapping_map_non_sym[samp_id] = self.mapping_non_sym.getCategoryValue(
+       self.map_non_sym = {}
+       for samp_id in self.data_map_non_sym.SampleIds:
+           self.map_non_sym[samp_id] = self.data_map_non_sym.getCategoryValue(
                samp_id, 'Treatment')
 
-       self.permanova_plain = Permanova(self.mapping, self.distmtx, 'Treatment')
-       self.permanova_tie = Permanova(self.mapping, self.distmtx_tie, 'Treatment')
-       self.permanova_non_sym = Permanova(self.mapping_non_sym, self.distmtx_non_sym, 'Treatment')
-       self.permanova_overview = Permanova(self.overview_map, self.overview_dm, 'Treatment')
+       self.permanova_plain = Permanova(self.data_map, self.distmtx,\
+        'Treatment')
+       self.permanova_tie = Permanova(self.data_map, self.distmtx_tie,\
+        'Treatment')
+       self.permanova_non_sym = Permanova(self.data_map_non_sym,\
+        self.distmtx_non_sym, 'Treatment')
+       self.permanova_overview = Permanova(self.overview_map,\
+        self.overview_dm,'Treatment')
 
     def test_permanova1(self):
         """permanova should return 4.4"""
         exp = 4.4
-        obs = self.permanova_plain._permanova(self.distmtx_samples,self.distmtx.DataMatrix,self.mapping_map)
+        obs = self.permanova_plain._permanova(self.distmtx_samples,\
+         self.distmtx.DataMatrix,self.map)
         self.assertEqual(obs, exp)
 
     def test_permanova2(self):
         """Should result in 2"""
         exp = 2
-        obs = self.permanova_tie._permanova(self.distmtx_tie_samples,self.distmtx_tie.DataMatrix,self.mapping_map)
+        obs = self.permanova_tie._permanova(self.distmtx_tie_samples,\
+         self.distmtx_tie.DataMatrix,self.map)
         self.assertEqual(obs, exp)
 
     def test_permanova3(self):
         """Should result in 3.58462"""
         exp = 3.58462
-        obs = round(self.permanova_non_sym._permanova(self.distmtx_non_sym_samples,self.distmtx_non_sym.DataMatrix,self.mapping_map_non_sym),5)
+        obs = round(self.permanova_non_sym._permanova(\
+         self.distmtx_non_sym_samples,self.distmtx_non_sym.DataMatrix,\
+         self.map_non_sym),5)
         self.assertEqual(obs, exp)
 
     def test_compute_f1(self):
@@ -616,7 +638,8 @@ class PermanovaTests(TestHelper):
         grouping = [0,-1,-1,-1,-1,1]
         distances = array(distances)
         grouping = array(grouping)
-        result = self.permanova_plain._compute_f_value(distances,grouping,4,2,[2,2])
+        result = self.permanova_plain._compute_f_value(distances,grouping,4,2,
+         [2,2])
         self.assertEqual(result, 4.4)
 
     def test_p_test(self):
@@ -638,13 +661,16 @@ class PermanovaTests(TestHelper):
         for sample in self.permanova_plain.MetadataMap.SampleIds:
                 subkey = {}
                 for cat in self.permanova_plain.MetadataMap.CategoryNames:
-                    subkey[cat] = self.permanova_plain.MetadataMap.getCategoryValue(sample, cat)     
+                    subkey[cat] = self.permanova_plain.MetadataMap.\
+                     getCategoryValue(sample, cat)     
                 map[sample] = subkey
 
         for sample in map:
             group_list[sample] = map[sample]["Treatment"]
      
-        obs_result, obs_p_val = self.permanova_plain.permanova_p_test(self.distmtx_samples, self.distmtx.DataMatrix, group_list, 3, nrs.permutation)
+        obs_result, obs_p_val = self.permanova_plain.permanova_p_test(\
+         self.distmtx_samples, self.distmtx.DataMatrix, group_list, 3,\
+         nrs.permutation)
 
         self.assertFloatEqual(obs_result, exp_result)
         self.assertFloatEqual(obs_p_val, exp_p_val)
@@ -662,8 +688,7 @@ class PermanovaTests(TestHelper):
     def test_call_tie(self):
         """Test __call__() on dm with ties in ranks."""
         # These results were verified with R.
-        exp = {'method_name': 'PERMANOVA', 'p_value': "?",
-               'r_value': 2}
+        exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'r_value': 2}
         obs = self.permanova_tie()
 
         self.assertEqual(obs['method_name'], exp['method_name'])

@@ -533,7 +533,8 @@ class Anosim(CategoryStats):
 
 
 class Permanova(CategoryStats):
-    """This code is heavily based on Andrew Cochran's original procedural version."""
+    """This code is heavily based on Andrew Cochran's original 
+       procedural version."""
 
     def __init__(self, mdmap, dm, cat, random_fn=permutation):
         """Initializes an instance with the specified analysis parameters.
@@ -645,16 +646,16 @@ class Permanova(CategoryStats):
 
         # Extract upper triangle
         distances = distmtx[tri(len(distmtx)) == 0]
-        gropuing = grouping_matrix[tri(len(grouping_matrix)) == 0]
+        groups = grouping_matrix[tri(len(grouping_matrix)) == 0]
 
         # Compute f value
-        result = self._compute_f_value(distances, gropuing, len(distmtx),
+        result = self._compute_f_value(distances, groups, len(distmtx),
                                        number_groups, unique_n)
         return result
 
     def permanova_p_test(self, samples, distmtx, group_list, ntrials=9999,
                          randomfun=random.permutation):
-        """Performs the calculations for the permutation test
+        ""Performs the calculations for the permutation test
 
         PARAMETERS
         samples: names of the samples
@@ -666,9 +667,9 @@ class Permanova(CategoryStats):
         f_value: the value of permanova
         p_value: permutation factor
 
-        """
+        ""
         # Array to store permutation values
-        f_value_permunations = zeros(ntrials)
+        f_value_permutations = zeros(ntrials)
 
         # Calculate the F-Value
         f_value = self._permanova(samples,distmtx,group_list)
@@ -685,12 +686,14 @@ class Permanova(CategoryStats):
             # Calculate p-values
             for j, sample in enumerate(samples):
                 group_list[sample] = grouping_random[j]
-            f_value_permunations[i] = self._permanova(samples,distmtx,group_list)
+            f_value_permutations[i] = self._permanova(samples,distmtx,\
+             group_list)
        
-        p_value = (sum(f_value_permunations >= f_value) + 1) / (ntrials + 1)
+        p_value = (sum(f_value_permutations >= f_value) + 1) / (ntrials + 1)
         return f_value, p_value
 
-    def _compute_f_value(self, distances, groupings, number_samples, number_groups, unique_n):
+    def _compute_f_value(self, distances, groupings, number_samples,\
+     number_groups, unique_n):
         """Performs the calculations for the f value
 
            PARAMETERS
@@ -717,7 +720,6 @@ class Permanova(CategoryStats):
         s_A = s_T - s_W
         f = (s_A/(a-1))/(s_W/(N-a))
         return f
-
 
 class BioEnv(CategoryStats):
     """Class for BioEnv analysis."""
