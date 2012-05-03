@@ -36,7 +36,7 @@ The Mantel r statistic of [foo] indicates that there is strong positive correlat
 
 Partial Mantel Test
 -------------------
-The partial Mantel test is used to estimate the correlation between two matrices, A and B, while controlling for the effect of a control matrix C. The partial Mantel test is a first-order correlation analysis that utilizes three distance (dissimilarity) matrices. This builds on the simple Mantel test by adding a third "control" matrix. The goal is to test the correlation between matrices A and B while controlling the effect of a third matrix C, in order to remove spurious correlations. Only the first distance matrix is permuted so that the correlation structure between the second and third matrices is kept constant.
+The partial Mantel test is used to estimate the correlation between two matrices, A and B, while controlling for the effect of a control matrix C. The partial Mantel test is a first-order correlation analysis that utilizes three distance (dissimilarity) matrices. This builds on the simple Mantel test by adding a third "control" matrix. The goal is to test the correlation between matrices A and B while controlling the effect of a third matrix C, in order to remove spurious correlations. Only the first distance matrix is permuted so that the correlation structure between the second and first matrices is kept constant.
 
 To illustrate the use of the partial Mantel test, we will determine if there is significant correlation between the unweighted and weighted UniFrac distance matrices, using the pH distance matrix as the control matrix. Run the following command:
 

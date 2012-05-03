@@ -21,11 +21,11 @@ if (is.element('QIIME_DIR', names(envvars))) {
 
 # Make option list and parse command line.
 option_list1 <- list(
-    make_option(c("-d1", "--distmat1"), type="character",
+    make_option(c("-a", "--distmat1"), type="character",
         help="Input distance matrix [required]."),
-    make_option(c("-d2", "--distmat2"), type="character",
+    make_option(c("-b", "--distmat2"), type="character",
         help="Input distance matrix [required]."),
-    make_option(c("-d3", "--distmat3"), type="character",
+    make_option(c("-c", "--distmat3"), type="character",
         help="Input distance matrix [required]."),
     make_option(c("-m", "--mapfile"), type="character",
         help="Input metadata mapping file [required]."),
@@ -47,4 +47,4 @@ distmat1 <- load.qiime.distance.matrix(opts$distmat1)
 distmat2 <- load.qiime.distance.matrix(opts$distmat2)
 distmat3 <- load.qiime.distance.matrix(opts$distmat3)
 
-print(mantel.partial(distmat1, distmat2, distmat3, method="pearson", permutations=9999, strata))
+print(mantel.partial(distmat1, distmat2, distmat3, method="pearson", permutations=999))

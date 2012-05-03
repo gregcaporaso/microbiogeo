@@ -1522,7 +1522,7 @@ class PartialMantel(CorrelationStats):
 
         # Calculate permuted r-values and p-values, storing
         # them for use in the calculation of the final statistic.
-        perm_stats = [0 for i in range(num_perms)]
+        perm_stats = []
         numerator = 0
         for i in range(0, num_perms):
             # Permute the first distance matrix and calculate new
@@ -1537,7 +1537,7 @@ class PartialMantel(CorrelationStats):
             # Sum the permuted statistics for calculation of the final
             # statistic.
             if perm_stats[-1] >= orig_stat:
-              numerator += perm_stats[-1]
+              numerator += 1
         # Load the final statistics into the result dictionary.
         res['mantel_r'] = orig_stat
         res['mantel_p'] = (numerator + 1) / (num_perms + 1)
