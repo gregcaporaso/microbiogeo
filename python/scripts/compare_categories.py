@@ -196,7 +196,6 @@ def main():
         bioenv = BioEnv(dm, md_map, categories)
         #relies on the __call__ property and returns the results
         bioenv_results = bioenv(opts.num_permutations)
-        #start writing results to file
         output_file = open(opts.output_dir+"/best_results.txt", 'w+')
         output_file.write("Method Name:\tNum_Vars:\t")
         output_file.write("\n")
@@ -205,11 +204,13 @@ def main():
         output_file.write("\n")
         output_file.write("Variables:\t")
         output_file.write("\n")
-        output_file.write(str(bioenv_results["vars"]) + "\t")
+        for variable in bioenv_results["vars"]:
+            output_file.write(str(variable) + "\t")
         output_file.write("\n")
         output_file.write("RHO_Values:\t")
         output_file.write("\n")
-        output_file.write(str(bioenv_results["bioenv_rho_vals"]) + "\t")
+        for rho_val in bioenv_results["bioenv_rho_vals"]:
+            output_file.write(str(rho_val) + "\t")
         output_file.write("\n")
         output_file.close()
     elif opts.method == 'dfa':
