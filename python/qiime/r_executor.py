@@ -87,7 +87,8 @@ class RExecutor(CommandLineApplication):
 
         command = self._commandline_join(
             [   cd_command, base_command,
-                '--args'
+                '--args',
+                '--source_dir', R_source_dir,
             ] + command_args + [' < %s ' %(rscript)]
             )
 
