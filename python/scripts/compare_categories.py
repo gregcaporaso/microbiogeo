@@ -110,13 +110,81 @@ is used to explain the variability between samples. Thus, RDA is similar to \
 PCoA except that it is constrained, while PCoA is unconstrained (you must \
 specify which category should be used to explain the variability in your data).
 """
+
 script_info['script_usage'] = []
-script_info['output_description']= ""
+
+script_info['script_usage'].append(("Adonis",
+"Performs the Adonis statistical method on a distance matrix and mapping file "
+"using the HOST_SUBJECT_ID category and 999 permutations. Then it outputs the "
+"results to the 'adonis' directory. The full file path will be: "
+"./adonis/adonis_results.txt",
+"%prog --method adonis -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o adonis -n 999"))
+
+script_info['script_usage'].append(("Anosim",
+"Performs the Anosim statistical method on a distance matrix and mapping file "
+"using the HOST_SUBJECT_ID category and 999 perutations. Then it outputs the \
+results to the 'anosim' directory. The full file path will be: \
+./anosim/anosim_results.txt",
+"%prog --method anosim -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim -n 999"))
+
+script_info['script_usage'].append(("BEST",
+"Performs the BEST statistical method on a distance matrix and mapping file "
+"using the LATITUDE and LONGITUDE categories. Then it outputs the results to \
+the 'best' directory. The full file path will be: ./best/best_results.txt",
+"%prog --method best -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c LATITUDE,LONGITUDE -o best"))
+
+#-------------------------------------------------------------------------
+#TODO FIX THIS LATER SOMETHING SOMETHING BIOM FILE MESSING WITH THIS
+script_info['script_usage'].append(("DFA",
+"Performs the DFA statistical method on a distance matrix and mapping file "
+"using the HOST_SUBJECT_ID category. Then it outputs the results to \
+the 'dfa' directory. The full file path will be: ./dfa/dfa_results.txt",
+"%prog --method dfa  -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o dfa"))
+#-------------------------------------------------------------------------
+
+script_info['script_usage'].append(("Moran's I",
+"Performs the Moran's I statistical method on a distance matrix and mapping \
+file using the PH category. Then it outputs the results to the 'morans_i' \
+directory. The full file path will be: ./morans_i/Morans_I_results.txt",
+"%prog --method morans_i -i  datasets/88_soils/unweighted_unifrac_dm.txt -m \
+datasets/88_soils/map.txt -c PH -o morans_i"))
+
+script_info['output_description']= """
+Adonis: 
+One file is created and outputs the results into it. The results will be:\
+Analysis of variance(AOV) table, degrees of freedom, sequential sums of \
+squares, mean squares, F statistics, partial R-squared and p-values, based \
+on the N permutations.
+
+Anosim: 
+
+Best: 
+
+DFA: 
+
+Moran's I: 
+
+MRPP: 
+
+Multicola: 
+
+PERMANOVA: 
+
+PERMDISP: 
+
+RDA: 
+
+"""
+
 script_info['required_options'] = [\
  # All methods use these
 make_option('--method', help='The category analysis method. Valid options: \
-    [adonis, anosim, bioenv, dfa, isa, lsa, morans_i, mrpp, multicola, \
-    permanova, permdisp, rda, rm_permanova]'),\
+    [adonis, anosim, best, dfa, morans_i, mrpp, multicola, \
+    permanova, permdisp, rda]'),\
  make_option('-i','--input_dm',help='This should be a distance matrix that is \
 being passed in, unless the method being performed is DFA. If that is the case \
 the DFA method requires that an otu table be passed in instead.'),\
@@ -165,16 +233,16 @@ def main():
     
     #cursory check to make sure all categories passed in are in mapping file
     maps = parse_mapping_file(open(opts.mapping_file,'U').readlines())
-    if opts.method != 'best':
-        for category in categories:
-            if not category in maps[1][1:]:
-                print "Category '%s' not found in mapping file columns:" % category
-                print maps[1][1:]
-                exit(1)
+    for category in categories:
+        if not category in maps[1][1:]:
+            print "Category '%s' not found in mapping file columns:" % category
+            print maps[1][1:]
+            exit(1)
 
     if opts.method == 'adonis':
         command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + first_category + " -o " + opts.output_dir]
+            " -c " + first_category + " -o " + opts.output_dir + " -n " + \
+            str(opts.num_permutations)]
         rex = RExecutor()
         rex(command_args, "adonis.r", output_dir=opts.output_dir)
     elif opts.method == 'anosim':
@@ -192,10 +260,11 @@ def main():
         output_file.write("\n")
         output_file.close()
     elif opts.method == 'best':
-        #makes a bioenv project
+        #makes a bioenv object 
         bioenv = BioEnv(dm, md_map, categories)
         #relies on the __call__ property and returns the results
-        bioenv_results = bioenv(opts.num_permutations)
+        bioenv_results = bioenv()
+        #writes the output to a file
         output_file = open(opts.output_dir+"/best_results.txt", 'w+')
         output_file.write("Method Name:\tNum_Vars:\t")
         output_file.write("\n")
@@ -214,10 +283,15 @@ def main():
         output_file.write("\n")
         output_file.close()
     elif opts.method == 'dfa':
+        #-----------------------------------------------------------------
+        #TODO TRY TO SEE IF THIS WILL WORK FOR MULTIPLE CATEGORIES
         command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
             " -c " + first_category + " -o " + opts.output_dir]
+        #command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
+            #" -c " + "".join(categories) + " -o " + opts.output_dir]
         rex = RExecutor()
         rex(command_args, "dfa.r", output_dir=opts.output_dir)
+        #-----------------------------------------------------------------
     elif opts.method == 'morans_i':
         command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
             " -c " + first_category + " -o " + opts.output_dir]
