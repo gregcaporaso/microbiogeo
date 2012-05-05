@@ -1,32 +1,27 @@
-# Runs vegan function RDA on QIIME distance file.
+# Runs vegan function capscale (DB-RDA) on QIIME distance matrix
+# usage:
+# R --slave --args --source_dir $QIIME_HOME/qiime/support_files/R/ -d unifrac.txt -m Fasting_Map.txt -c Treatment -o rda < rda.r
 #
-# Usage:
-# R --slave --args -d distance_matrix.txt -m mapping_file.txt -c Treatment < r/rda.r
+# print help string:
+# R --slave --args -h --source_dir $QIIME_HOME/qiime/support_files/R/ < rda.r
 #
-# Print help string:
-# R --slave --args -h < r/rda.r
-#
-# Requires environment variable QIIME_DIR pointing to top-level QIIME directory.
+# Requires command-line param --source_dir pointing to QIIME R source dir
 
-# Load libraries and source files.
-library('optparse', warn.conflicts=FALSE, quietly=TRUE)
-library('vegan', warn.conflicts=FALSE, quietly=TRUE)
-
-# TODO - remove me
-source('source/vegan/R/capscale.R')
-source('source/vegan/R/ordiGetData.R')
-source('source/vegan/R/ordiParseFormula.R')
-
-envvars <- as.list(Sys.getenv())
-if (is.element('QIIME_DIR', names(envvars))) {
-    qiimedir <- envvars[['QIIME_DIR']]
-    source(sprintf('%s/qiime/support_files/R/loaddata.r', qiimedir))
-} else {
-    stop("Please add QIIME_DIR environment variable pointing to the top-level QIIME directory.")
+# load libraries and source files
+args <- commandArgs(trailingOnly=TRUE)
+if(!is.element('--source_dir', args)){
+    stop("\n\nPlease use '--source_dir' to specify the R source code directory.\n\n")
 }
+sourcedir <- args[which(args == '--source_dir') + 1]
+source(sprintf('%s/loaddata.r',sourcedir))
+source(sprintf('%s/util.r',sourcedir))
+load.library('optparse')
+load.library('vegan')
 
 # Make option list and parse command line.
 option_list <- list(
+    make_option(c("--source_dir"), type="character",
+        help="Path to R source directory [required]."),
     make_option(c("-i", "--distmat"), type="character",
         help="Input distance matrix [required]."),
     make_option(c("-m", "--mapfile"), type="character",
@@ -36,7 +31,7 @@ option_list <- list(
     make_option(c("-o", "--outdir"), type="character", default='.',
         help="Output directory [default %default]")
 )
-opts <- parse_args(OptionParser(option_list = option_list), args = commandArgs(trailingOnly=TRUE))
+opts <- parse_args(OptionParser(option_list=option_list), args=args)
 
 # Make sure we have our required files.
 if (is.null(opts$mapfile)) stop('Please supply a mapping file.')
