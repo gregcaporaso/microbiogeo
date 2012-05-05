@@ -27,10 +27,13 @@ from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_distmat, fields_to_dict, \
                         parse_mapping_file, parse_mapping_file_to_dict
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.r_executor import RExecutor
+#from python.qiime.parse import DistanceMatrix, MetadataMap
+#from python.qiime.r_executor import RExecutor
+from parse import DistanceMatrix, MetadataMap
+from r_executor import RExecutor
 
-from python.qiime.stats import Anosim, Permanova
+#from python.qiime.stats import Anosim, Permanova
+from stats import Anosim, BioEnv, Permanova
 
 script_info = {}
 script_info['brief_description'] = """
@@ -132,9 +135,9 @@ script_info['optional_options'] = [\
 script_info['version'] = __version__
 
 def main():
-"""
-This is the entry point for the script to run.
-"""
+    """
+    This is the entry point for the script to run.
+    """
     option_parser, opts, args =\
     parse_command_line_parameters(**script_info)
 
@@ -162,11 +165,13 @@ This is the entry point for the script to run.
     
     #cursory check to make sure all categories passed in are in mapping file
     maps = parse_mapping_file(open(opts.mapping_file,'U').readlines())
-    for category in categories:
-        if not category in maps[1][1:]:
-            print "Category '%s' not found in mapping file columns:" % category
-            print maps[1][1:]
-            exit(1)
+    if opts.method != 'best':
+        for category in categories:
+            if not category in maps[1][1:]:
+                print "Category '%s' not found in mapping file columns:" % category
+                print maps[1][1:]
+                exit(1)
+
     if opts.method == 'adonis':
         command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
             " -c " + first_category + " -o " + opts.output_dir]
@@ -187,7 +192,26 @@ This is the entry point for the script to run.
         output_file.write("\n")
         output_file.close()
     elif opts.method == 'best':
-        pass
+        #makes a bioenv project
+        bioenv = BioEnv(dm, md_map, categories)
+        #relies on the __call__ property and returns the results
+        bioenv_results = bioenv(opts.num_permutations)
+        #start writing results to file
+        output_file = open(opts.output_dir+"/best_results.txt", 'w+')
+        output_file.write("Method Name:\tNum_Vars:\t")
+        output_file.write("\n")
+        output_file.write(bioenv_results["method_name"]+"\t"+\
+            str(bioenv_results["num_vars"]) + "\t")
+        output_file.write("\n")
+        output_file.write("Variables:\t")
+        output_file.write("\n")
+        output_file.write(str(bioenv_results["vars"]) + "\t")
+        output_file.write("\n")
+        output_file.write("RHO_Values:\t")
+        output_file.write("\n")
+        output_file.write(str(bioenv_results["bioenv_rho_vals"]) + "\t")
+        output_file.write("\n")
+        output_file.close()
     elif opts.method == 'dfa':
         command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
             " -c " + first_category + " -o " + opts.output_dir]
@@ -208,7 +232,7 @@ This is the entry point for the script to run.
     elif opts.method == 'permanova':
         #makes a permanova object
         permanova_plain = Permanova(md_map, dm, first_category)
-        #relies on the __call__ property and
+        #relies on the __call__ property and returns the results
         permanova_results = permanova_plain(opts.num_permutations)
         #writes the results to the output dir
         output_file = open(opts.output_dir+"/permanova_results.txt", 'w+')
