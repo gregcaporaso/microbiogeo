@@ -196,7 +196,7 @@ class BioEnv(CategoryStats):
             method_name - name of the statistical method
         """
 
-        res = super(BioEnv, self).__call__(num_perms)
+        res = super(BioEnv, self).__call__()
         cats = self.Categories
         dm = self.DistanceMatrices[0]
         dm_flat = dm.flatten()
@@ -207,11 +207,7 @@ class BioEnv(CategoryStats):
         sum = 0
         stats = [(-777777777, '') for c in range(col_count+1)]
         for i in range(1, col_count+1):
-            if i < 11:
-                combo = list(combinate([j for j in range(1,col_count+1)], i))
-            # else:
-            #     combo = list(combinate([j for j in range(0,col_count+1)],
-            #                  i))[0:1]
+            combo = list(combinate([j for j in range(1,col_count+1)], i))
 
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
@@ -219,8 +215,8 @@ class BioEnv(CategoryStats):
                 cat_dm_flat_ranked = self._get_rank(cat_dm.flatten())
                 r = self._spearman_correlation(dm_flat_ranked,
                                                cat_dm_flat_ranked, ranked=True)
-                if r > stats[i][0]:
-                    stats[i] = (r, ','.join(str(s) for s in combo[c]))
+                if r > stats[i-1][0]:
+                    stats[i-1] = (r, ','.join(str(s) for s in combo[c]))
 
         # for s in stats[1:]:
         #     print s
@@ -229,7 +225,7 @@ class BioEnv(CategoryStats):
         res['method_name'] = 'BioEnv'
         res['num_vars'] = col_count
         res['vars'] = ['%s = %d' % (name,val+1) for val,name in enumerate(cats)]
-        res['bioenv_rho_vals'] = stats[1:]
+        res['bioenv_rho_vals'] = stats[:-1]
 
         return res
 
@@ -347,8 +343,8 @@ if __name__ == '__main__':
    # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
 
 
-    # cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
-    cats = ['LONGITUDE', 'LATITUDE']
+    cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
+    # cats = ['LONGITUDE', 'LATITUDE']
 
     bioenv = BioEnv(dm, md_map, cats)
     print bioenv()
