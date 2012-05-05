@@ -11,7 +11,7 @@ __status__ = "Release"
 
 import subprocess
 from os import remove, path, devnull
-from os.path import join, abspath, dirname
+from os.path import join
 from sys import stdout
 from time import sleep
 from tempfile import mkdtemp
@@ -50,7 +50,7 @@ class RExecutor(CommandLineApplication):
         help_str =\
         """
         Runs the specified r script using the specified command
-
+        
         Outputs:
             The results of the r script that is ran
         """
@@ -58,7 +58,7 @@ class RExecutor(CommandLineApplication):
 
     def __call__(self, command_args, script_name, output_dir=None, verbose=False):
         """Run the specified r script using the commands_args
-
+            
             returns a CommandLineAppResult object
         """
         input_handler = self.InputHandler
@@ -91,7 +91,7 @@ class RExecutor(CommandLineApplication):
             ] + command_args + [' < %s ' %(rscript)]
             )
 
-        if self.HaltExec:
+        if self.HaltExec: 
             raise AssertionError, "Halted exec with command:\n" + command
 
         # run command, wait for output, get exit status
@@ -100,7 +100,7 @@ class RExecutor(CommandLineApplication):
         proc.wait()
         exit_status = proc.returncode
 
-        # Determine if error should be raised due to exit status of
+        # Determine if error should be raised due to exit status of 
         # appliciation
         if not self._accept_exit_status(exit_status):
             if exit_status == 2:
@@ -118,10 +118,10 @@ class RExecutor(CommandLineApplication):
         out = None
         if not suppress_stdout:
             out = open(outfilepath,"r")
-        err = None
+        err = None        
         if not suppress_stderr:
             err = open(errfilepath,"r")
-
+        
 	if verbose:
             msg = '\n\nCommand Executed: %s'\
                 % (command) +\
@@ -131,34 +131,11 @@ class RExecutor(CommandLineApplication):
 
     # The methods below were taken from supervised_learning.py
 
-    def _get_result_paths(self, output_dir):
-        """Returns the filepaths for all result files"""
-        files = {
-            'features': 'feature_importance_scores.txt',
-            'summary': 'summary.txt',
-            'cv_probabilities': 'cv_probabilities.txt',
-            'mislabeling': 'mislabeling.txt',
-            'confusion_matrix': 'confusion_matrix.txt',
-        }
-        result_paths = {}
-        for name, file in files.iteritems():
-            result_paths[name] = ResultPath(
-                Path=path.join(output_dir, file), IsWritten=True)
-        return result_paths
-
     def _get_R_script_dir(self):
         """Returns the path to the qiime R source directory
         """
-
-        # script_dir = path.join(qiime_dir,'qiime','support_files','R')
-        # Dwan ADDED the next three lines.
-        current_file_path = abspath(__file__)
-        current_dir_path = dirname(current_file_path)
-        script_dir = path.join(dirname(current_dir_path), '..', 'r')
-        # The next two lines were the originals that Dwan replaced.
-        # qiime_dir = get_qiime_project_dir()
-        # script_dir = path.join(qiime_dir,'qiime','support_files','R')
-
+        qiime_dir = get_qiime_project_dir()
+        script_dir = path.join(qiime_dir,'qiime','support_files','R')
         return script_dir
 
     def _get_R_script_path(self):
@@ -189,7 +166,7 @@ class RExecutor(CommandLineApplication):
         Allows the program to conveniently access a subset of user-
         adjusted parameters, which are stored in the Parameters
         attribute.
-
+        
         Relies on the convention of providing dicts named according to
         "_<name>_parameters" and "_<name>_synonyms".  The main
         parameters object is expected to be initialized with the
