@@ -679,7 +679,7 @@ class BioEnv(CategoryStats):
 
         super(BioEnv, self).__init__(metadata_map, [dm], cats, num_dms=1)
 
-    def __call__(self, num_perms=999):
+    def __call__(self):
         """Runs the BioEnv analysis on a distance matrix using specified
         metadata map categories.
 
@@ -698,13 +698,13 @@ class BioEnv(CategoryStats):
         row_count = dm.Size
         col_count = len(cats)
         sum = 0
-        stats = [(-777, '') for c in range(col_count+1)]
-        for i in range(col_count+1):
+        stats = [(-777777777, '') for c in range(col_count+1)]
+        for i in range(1, col_count+1):
             if i < 11:
-                combo = list(combinate([j for j in range(0,col_count)], i))[1:]
-            else:
-                combo = list(combinate([j for j in range(0,col_count+1)],
-                             i))[0:1]
+                combo = list(combinate([j for j in range(1,col_count+1)], i))
+            # else:
+            #     combo = list(combinate([j for j in range(0,col_count+1)],
+            #                  i))[0:1]
 
             for c in range(len(combo)):
                 cat_mat = self._make_cat_mat(cats, combo[c])
@@ -713,7 +713,7 @@ class BioEnv(CategoryStats):
                 r = self._spearman_correlation(dm_flat_ranked,
                                                cat_dm_flat_ranked, ranked=True)
                 if r > stats[i][0]:
-                    stats[i] = (r, ','.join(str(s+1) for s in combo[c]))
+                    stats[i] = (r, ','.join(str(s) for s in combo[c]))
 
         # for s in stats[1:]:
         #     print s
@@ -755,7 +755,7 @@ class BioEnv(CategoryStats):
         md_map = self.MetadataMap
         res = []
         for i in combo:
-            res.append(md_map.getCategoryValues(dm.SampleIds, cats[i]))
+            res.append(md_map.getCategoryValues(dm.SampleIds, cats[i-1]))
 
         return zip(*res)
 
@@ -833,24 +833,26 @@ class BioEnv(CategoryStats):
         rho = numerator/denominator
         return rho
 
-#if __name__ == '__main__':
-    # dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
-    # md_map = MetadataMap.parseMetadataMap(open('vars.txt'))
-#    dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
-#    md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
-#
-#
-#    cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
-#
-#    bioenv = BioEnv(dm, md_map, cats)
-    # a = [1,2,4,3,1,6,7,8,10,4]
-    # b = [2,10,20,1,3,7,5,11,6,13]
-    # x = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
-    # y = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13, 5, 6, 99, 101)
-    # r = (1,2,4,5,2,2,4,3,1,4)
-    # s = (2,3,5,4,2,2,3,4,3,2)
-    # u = (1,2,3,4,5,6,7,8,9)
-    # v = (10, 11, 4, 2, 9, 33, 1, 5, 88)
+if __name__ == '__main__':
+    dm = DistanceMatrix.parseDistanceMatrix(open('unweighted_unifrac_dm.txt'))
+    md_map = MetadataMap.parseMetadataMap(open('map.txt'))
+   # dm = DistanceMatrix.parseDistanceMatrix(open('dm.txt'))
+   # md_map = MetadataMap.parseMetadataMap(open('vars2.txt'))
+
+
+    # cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
+    cats = ['LONGITUDE', 'LATITUDE']
+
+    bioenv = BioEnv(dm, md_map, cats)
+    print bioenv()
+#     a = [1,2,4,3,1,6,7,8,10,4]
+#     b = [2,10,20,1,3,7,5,11,6,13]
+#     x = (1,  2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
+#     y = (2, 10, 20, 1, 3, 7, 5, 11, 6, 13, 5, 6, 99, 101)
+#     r = (1,2,4,5,2,2,4,3,1,4)
+#     s = (2,3,5,4,2,2,3,4,3,2)
+#     u = (1,2,3,4,5,6,7,8,9)
+#     v = (10, 11, 4, 2, 9, 33, 1, 5, 88)
     # print bioenv._spearman_correlation(a,b)
     # print bioenv._spearman_correlation(x,y)
     # print bioenv._spearman_correlation(r,s)
