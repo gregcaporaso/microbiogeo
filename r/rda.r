@@ -11,6 +11,12 @@
 # Load libraries and source files.
 library('optparse', warn.conflicts=FALSE, quietly=TRUE)
 library('vegan', warn.conflicts=FALSE, quietly=TRUE)
+
+# TODO - remove me
+source('source/vegan/R/capscale.R')
+source('source/vegan/R/ordiGetData.R')
+source('source/vegan/R/ordiParseFormula.R')
+
 envvars <- as.list(Sys.getenv())
 if (is.element('QIIME_DIR', names(envvars))) {
     qiimedir <- envvars[['QIIME_DIR']]
