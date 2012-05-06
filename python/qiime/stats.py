@@ -36,8 +36,8 @@ from numpy import min as np_min, max as np_max
 from numpy.linalg import matrix_rank, qr, solve, svd
 from numpy.random import permutation
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
-
+from qiime.util import DistanceMatrix, MetadataMap
+from qiime.stats import CategoryStats
 
 class Permanova(CategoryStats):
     """This code is heavily based on Andrew Cochran's original

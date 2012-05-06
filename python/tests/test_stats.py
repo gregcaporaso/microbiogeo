@@ -14,13 +14,12 @@ __status__ = "Development"
 """Test suite for classes, methods and functions of the stats module."""
 
 from cogent.util.unit_test import TestCase, main
-from numpy import array, matrix, roll
+from numpy import array, matrix, roll, asarray
 from numpy.random import permutation
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.stats import (Anosim, Permanova, BioEnv, CategoryStats,
-    CorrelationStats, DistanceBasedRda, DistanceMatrixStats, MantelCorrelogram,
-    Mantel, PartialMantel)
+from qiime.util import DistanceMatrix, MetadataMap
+from qiime.stats import CategoryStats
+from python.qiime.stats import (Permanova, BioEnv, DistanceBasedRda)
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -373,7 +372,76 @@ class BioEnvTests(TestHelper):
 
     def test_vector_dist(self):
         """Test the _vector_dist helper method"""
-        pass
+        v1 = [1,4,2]
+        v2 = [-1,12,4]
+
+        exp = 8.48528137424
+        obs = self.bioenv._vector_dist(v1,v2)
+        self.assertFloatEqual(exp, obs)
+
+        v1 = [1,2,100,4,2]
+        v2 = [-1,12,4,12,99]
+
+        exp = 137.087563258
+        obs = self.bioenv._vector_dist(v1,v2)
+        self.assertFloatEqual(exp, obs)
+
+    def test_make_cat_mat(self):
+        """Test the _make_cat_mat method"""
+        exp = [('6.66', '46.8'),
+               ('7.27', '36.05'),
+               ('4.6', '44.86666667'),
+               ('5.68', '40.58333333'),
+               ('4.23', '68.63333333'),
+               ('5.74', '36.45')]
+
+        obs = self.bioenv._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1,3])
+        self.assertEqual(exp,obs)
+
+        exp = [('6.66', '-114', '46.8'),
+               ('7.27', '-111.7666667', '36.05'),
+               ('4.6', '-68.1', '44.86666667'),
+               ('5.68', '-105.3333333', '40.58333333'),
+               ('4.23', '-149.5833333', '68.63333333'),
+               ('5.74', '-118.1666667', '36.45')]
+
+        obs = self.bioenv._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1,2,3])
+        self.assertEqual(exp,obs)
+
+    def test_derive_euclidean_dm(self):
+        """Test the derive_euclidean_dm method."""
+        cat_mat = [('6.66', '46.8'),
+                   ('7.27', '36.05'),
+                   ('4.6', '44.86666667'),
+                   ('5.68', '40.58333333'),
+                   ('4.23', '68.63333333'),
+                   ('5.74', '36.45')]
+
+        exp = 0
+
+        dm_lbls = ['MT2.141698','CA1.141704','BB2.141659',
+            'CO2.141657','TL3.141709','SN3.141650']
+
+        mtx = [
+        [0.0,10.7672930674,2.82513322958,6.29343661968,
+            21.9681438519,10.3908084382],
+        [10.7672930674,0.0,9.21208506093,4.80408275125,
+        32.7248408842,1.58142340946],
+        [2.82513322958,9.21208506093,0.0,4.41739114202,
+        23.7695465697,8.49351975531],
+        [6.29343661968,4.80408275125,4.41739114202,0.0,
+        28.0874527147,4.13376879093],
+        [21.9681438519,32.7248408842,23.7695465697,
+        28.0874527147,0.0,32.2187374711],
+        [10.3908084382,1.58142340946,8.49351975531,
+        4.13376879093,32.2187374711,0.0]]
+
+        dm = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
+
+
+        print self.bioenv._derive_euclidean_dm(cat_mat,
+                                               self.bv_dm_88soils.Size)
+
 
 
 class DistanceBasedRdaTests(TestHelper):
@@ -382,8 +450,8 @@ class DistanceBasedRdaTests(TestHelper):
     def setUp(self):
         """Define some useful data to use in testing."""
         super(DistanceBasedRdaTests, self).setUp()
-        self.dbrda = DistanceBasedRda(self.overview_dm, self.overview_map,
-            "Treatment")
+        self.dbrda = DistanceBasedRda(self.overview_dm,
+                                      self.overview_map, "Treatment")
 
     def test_call(self):
         """Test running RDA over various inputs."""
