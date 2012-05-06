@@ -30,7 +30,7 @@ from qiime.parse import parse_distmat, fields_to_dict, \
 #from python.qiime.parse import DistanceMatrix, MetadataMap
 #from python.qiime.r_executor import RExecutor
 from parse import DistanceMatrix, MetadataMap
-from r_executor import RExecutor
+from qiime.r_executor import RExecutor
 
 #from python.qiime.stats import Anosim, Permanova
 from stats import Anosim, BioEnv, Permanova
@@ -153,6 +153,29 @@ directory. The full file path will be: ./morans_i/Morans_I_results.txt",
 "%prog --method morans_i -i  datasets/88_soils/unweighted_unifrac_dm.txt -m \
 datasets/88_soils/map.txt -c PH -o morans_i"))
 
+script_info['script_usage'].append(("MRPP", "Performs the MRPP statistical \
+method on a distance matrix and mapping file using the HOST_SUBJECT_ID \
+category. Then it outputs the results to the 'mrpp' directory. The full file \
+path will be: ./mrpp/mrpp_results.txt",
+"%prog --method mrpp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o mrpp -n 999"))
+
+script_info['script_usage'].append(("Multicola", "", ""))
+
+script_info['script_usage'].append(("PERMANOVA", "Performs the PERMANOVA \
+statistical method on a distance matrix and mapping file using the \
+HOST_SUBJECT_ID category. Then it outputs the results to the 'permanova' \
+directory. The full file path will be: ./permanova/permanova_results.txt",
+"%prog --method permanova -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova -n 999"))
+
+script_info['script_usage'].append(("PERMDISP", "Performs the PERMDISP \
+statistical method on a distance matrix and mapping file using the \
+HOST_SUBJECT_ID category. Then it outputs the results to the 'permdisp' \
+directory. The full file path will be: ./permdisp/betadisper_results.txt",
+"%prog --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp -n 999"))
+
 script_info['output_description']= """
 Adonis: 
 One file is created and outputs the results into it. The results will be:\
@@ -198,7 +221,7 @@ the DFA method requires that an otu table be passed in instead.'),\
 script_info['optional_options'] = [\
  # All methods use these
  make_option('-n','--num_permutations',help='the number of iterations to \
-     perform',default=100,type='int'),
+     perform',default=999,type='int'),
 ]
 script_info['version'] = __version__
 
@@ -299,7 +322,8 @@ def main():
         rex(command_args, "morans_i.r", output_dir=opts.output_dir)
     elif opts.method == 'mrpp':
         command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + first_category + " -o " + opts.output_dir]
+            " -c " + first_category + " -o " + opts.output_dir + \
+            " -n " + str(opts.num_permutations)]
         rex = RExecutor()
         rex(command_args, "mrpp.r", output_dir=opts.output_dir)
     elif opts.method == 'multicola':
