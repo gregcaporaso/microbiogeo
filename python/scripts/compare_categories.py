@@ -1,49 +1,44 @@
 #!/usr/bin/env python
-# File created on 22 Apr 2012
-"""
-This is a file that aggregates the compare category methods and provides \
-a consistent interface for using these statistical methods. 
-"""
 from __future__ import division
 
 __author__ = "Logan Knecht"
-__copyright__ = "Copyright 2012, The QIIME MiCOS project"
-__credits__ = ["Logan Knecht, Michael Dwan"]
+__copyright__ = "Copyright 2012, The QIIME project"
+__credits__ = ["Logan Knecht", "Michael Dwan", "Damien Coy", "Jai Ram Rideout",
+               "Levi McCracken"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
-__maintainer__ = "Logan Knecht"
-__email__ = "lgk7@nau.edu, mdwan.tgen@gmail.com"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
 __status__ = "Development"
 
 from os import path, makedirs, listdir
 
+from cogent.util.misc import create_dir
 from numpy import zeros
 from numpy.random import permutation
 
-from cogent.util.misc import create_dir
-
 from qiime.format import format_p_value_for_num_iters
-from qiime.util import parse_command_line_parameters, make_option
-from qiime.parse import parse_distmat, fields_to_dict, \
-                        parse_mapping_file, parse_mapping_file_to_dict
+from qiime.parse import (parse_distmat, fields_to_dict, parse_mapping_file,
+                         parse_mapping_file_to_dict)
+from qiime.r_executor import RExecutor
+from qiime.stats import Anosim, BioEnv, Permanova
+from qiime.util import (parse_command_line_parameters, make_option,
+                        DistanceMatrix, MetadataMap)
 
-from python.qiime.parse import DistanceMatrix, MetadataMap
-from python.qiime.r_executor import RExecutor
-
-from python.qiime.stats import Anosim, Permanova
+options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = """
-Analyzes distance matrices for information using statistical methods
+Analyzes distance matrices for statistical significance of sample grouping
 """
 script_info['script_description'] = """
-This script allows for the anaylsis of distance matrices using several \
+This script allows for the analysis of distance matrices using several \
 statistical methods. These methods are Adonis, Anosim, BEST, DFA, Moran's I, \
 MRPP, PERMANOVA, PERMDISP, RDA.
 
 Adonis - This method takes a distance matrix and mapping file. It then \
 identifies important points in the data and performs F-tests on the initial \
-data, and random permutations(via  shuffling) the category data. Then, \
+data, and random permutations (via shuffling) the category data. Then, \
 it finally returns the information that was identified in the samples. It's \
 stated that it partitions (or seperates the data) for this analysis in order\
  to find underlying relationships.
@@ -93,170 +88,167 @@ specify which category should be used to explain the variability in your data).
 """
 
 script_info['script_usage'] = []
-
 script_info['script_usage'].append(("Adonis",
 "Performs the Adonis statistical method on a distance matrix and mapping file "
 "using the HOST_SUBJECT_ID category and 999 permutations. Then it outputs the "
 "results to the 'adonis' directory. The full file path will be: "
 "./adonis/adonis_results.txt",
-"%prog --method adonis -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o adonis -n 999"))
+"%prog --method adonis -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o adonis -n 999"))
 
 script_info['script_usage'].append(("Anosim",
 "Performs the Anosim statistical method on a distance matrix and mapping file "
-"using the HOST_SUBJECT_ID category and 999 perutations. Then it outputs the \
-results to the 'anosim' directory. The full file path will be: \
-./anosim/anosim_results.txt",
-"%prog --method anosim -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim -n 999"))
+"using the HOST_SUBJECT_ID category and 999 perutations. Then it outputs the "
+"results to the 'anosim' directory. The full file path will be: "
+"./anosim/anosim_results.txt",
+"%prog --method anosim -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o anosim -n 999"))
 
 script_info['script_usage'].append(("BEST",
 "Performs the BEST statistical method on a distance matrix and mapping file "
-"using the LATITUDE and LONGITUDE categories. Then it outputs the results to \
-the 'best' directory. The full file path will be: ./best/best_results.txt",
-"%prog --method best -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c LATITUDE,LONGITUDE -o best"))
+"using the LATITUDE and LONGITUDE categories. Then it outputs the results to "
+"the 'best' directory. The full file path will be: ./best/best_results.txt",
+"%prog --method best -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c LATITUDE,LONGITUDE -o best"))
 
 script_info['script_usage'].append(("Moran's I",
-"Performs the Moran's I statistical method on a distance matrix and mapping \
-file using the PH category. Then it outputs the results to the 'morans_i' \
-directory. The full file path will be: ./morans_i/Morans_I_results.txt",
-"%prog --method morans_i -i  datasets/88_soils/unweighted_unifrac_dm.txt -m \
-datasets/88_soils/map.txt -c PH -o morans_i"))
+"Performs the Moran's I statistical method on a distance matrix and mapping "
+"file using the PH category. Then it outputs the results to the 'morans_i' "
+"directory. The full file path will be: ./morans_i/Morans_I_results.txt",
+"%prog --method morans_i -i  datasets/88_soils/unweighted_unifrac_dm.txt -m "
+"datasets/88_soils/map.txt -c PH -o morans_i"))
 
-script_info['script_usage'].append(("MRPP", "Performs the MRPP statistical \
-method on a distance matrix and mapping file using the HOST_SUBJECT_ID \
-category. Then it outputs the results to the 'mrpp' directory. The full file \
-path will be: ./mrpp/mrpp_results.txt",
-"%prog --method mrpp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o mrpp -n 999"))
+script_info['script_usage'].append(("MRPP", "Performs the MRPP statistical "
+"method on a distance matrix and mapping file using the HOST_SUBJECT_ID "
+"category. Then it outputs the results to the 'mrpp' directory. The full file "
+"path will be: ./mrpp/mrpp_results.txt",
+"%prog --method mrpp -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o mrpp -n 999"))
 
-script_info['script_usage'].append(("PERMANOVA", "Performs the PERMANOVA \
-statistical method on a distance matrix and mapping file using the \
-HOST_SUBJECT_ID category. Then it outputs the results to the 'permanova' \
-directory. The full file path will be: ./permanova/permanova_results.txt",
-"%prog --method permanova -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova -n 999"))
+script_info['script_usage'].append(("PERMANOVA", "Performs the PERMANOVA "
+"statistical method on a distance matrix and mapping file using the "
+"HOST_SUBJECT_ID category. Then it outputs the results to the 'permanova' "
+"directory. The full file path will be: ./permanova/permanova_results.txt",
+"%prog --method permanova -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permanova -n 999"))
 
-script_info['script_usage'].append(("PERMDISP", "Performs the PERMDISP \
-statistical method on a distance matrix and mapping file using the \
-HOST_SUBJECT_ID category. Then it outputs the results to the 'permdisp' \
-directory. The full file path will be: ./permdisp/betadisper_results.txt",
-"%prog --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp"))
+script_info['script_usage'].append(("PERMDISP", "Performs the PERMDISP "
+"statistical method on a distance matrix and mapping file using the "
+"HOST_SUBJECT_ID category. Then it outputs the results to the 'permdisp' "
+"directory. The full file path will be: ./permdisp/betadisper_results.txt",
+"%prog --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp"))
 
-script_info['script_usage'].append(("RDA", "Performs the RDA statistical \
-method on a distance matrix and mapping file using the HOST_SUBJECT_ID \
-category. Then it outputs the results to the 'rda' directory. The full \
-file path will be: ./RDA/rda_results.txt and ./RDA/rda_plot.txt",
-"%prog --method rda -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda"))
+script_info['script_usage'].append(("RDA", "Performs the RDA statistical "
+"method on a distance matrix and mapping file using the HOST_SUBJECT_ID "
+"category. Then it outputs the results to the 'rda' directory. The full "
+"file path will be: ./RDA/rda_results.txt and ./RDA/rda_plot.txt",
+"%prog --method rda -i datasets/keyboard/unweighted_unifrac_dm.txt -m "
+"datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda"))
 
 script_info['output_description']= """
-Adonis: 
-One file is created and outputs the results into it. The results will be:\
+Adonis:
+One file is created and outputs the results into it. The results will be: \
 Analysis of variance(AOV) table, degrees of freedom, sequential sums of \
 squares, mean squares, F statistics, partial R-squared and p-values, based \
 on the N permutations.
 
-Anosim: 
+Anosim:
 One file is output to the designated location under the name of \
 anosim_results.txt. The information in the file will be an R-value and \
 p-value.
 
-Best: 
+Best:
 This outputs one file 'best_results.txt' It will have teh method name, \
 The number of variables. The list of varibles supplied. And lastly, the \
 RHO values, which are ranked pearson correlations for the best combination \
 of variables that describe the community.
 
-Moran's I: 
+Moran's I:
 The output file is placed in a directory specified by -o. The file will be \
-a text file with 4 values: observed, expected, sd, and p.value.
-The observed value is Morans I index of x. This is computed based on the \
-values passed in to be compared with the weights.
-The expected value is the value of I under the null hypothesis.
-The sd is the standard deviation of I under the null hypothesis.
-P Value is the p-value of the test of the null hypothesis against the \
-alternative hypothesis specified in alternative
-Each of these values, except for the p-value, should be between -1 and 1.
+a text file with 4 values: observed, expected, sd, and p.value. The observed \
+value is Morans I index of x. This is computed based on the values passed in \
+to be compared with the weights. The expected value is the value of I under \
+the null hypothesis. The sd is the standard deviation of I under the null \
+hypothesis. P Value is the p-value of the test of the null hypothesis against \
+the alternative hypothesis specified in alternative. Each of these values, \
+except for the p-value, should be between -1 and 1.
 
-MRPP: 
+MRPP:
 The command in the previous section creates a single output file in the \
 directory specified by the -o arguement, if not it will be sent to the \
-directory location it was called from. The file will be named mrpp_results.txt.\
- The file will contain a dissimilarity index, the class mean and counts. It \
-will also conatin information about the chance corrected within-group \
-agreement A, as well as the result Based on observed delta, and expected \
-delta. There will also be the Significance of delta and the amount of permutations performed.
+directory location it was called from. The file will be named \
+mrpp_results.txt. The file will contain a dissimilarity index, the class mean \
+and counts. It will also conatin information about the chance corrected \
+within-group agreement A, as well as the result Based on observed delta, and \
+expected delta. There will also be the Significance of delta and the amount \
+of permutations performed.
 
-PERMANOVA: 
+PERMANOVA:
 Permanova returns one output file containing the the file passed in, the \
 F-value and the p-value.
 
-PERMDISP: 
+PERMDISP:
 This method returns one file that outputs an analysis of varaiance table. \
 Responses with the distances will be shown. There will be the strata \
 relationship, then the sample information as well. Lastly you will be \
 able to see the f-value and p-value.
 
-RDA: 
+RDA:
 RDA outputs a two files. One is calles rda_results.txt, the other file \
-is rda_plot.pdf. rda.txt contains the Inertia Proportion Rank, the Eigenvalues for constrained axes, and the Eigenvalues for unconstrained axes.
+is rda_plot.pdf. rda.txt contains the Inertia Proportion Rank, the \
+Eigenvalues for constrained axes, and the Eigenvalues for unconstrained axes.
 """
 
-script_info['required_options'] = [\
- # All methods use these
-make_option('--method', help='The category analysis method. Valid options: \
-    [adonis, anosim, best, morans_i, mrpp, multicola, \
-    permanova, permdisp, rda]'),\
- make_option('-i','--input_dm',help='This should be a distance matrix that is \
-being passed in.'),\
- make_option('-o','--output_dir',help='the output directory \
- [default: %default]', default='.'),\
- make_option('-m','--mapping_file', help='mapping file'),
- make_option('-c','--categories',help='A comma delimited list of categories \
-     from the mapping file(NOTE: many methods take just a single category, if\
-     multiple are passed only the first will be selected.)'),\
+script_info['required_options'] = [
+    # All methods use these
+    make_option('--method', help='The category analysis method. Valid '
+        'options: [adonis, anosim, best, morans_i, mrpp, permanova, '
+        'permdisp, rda]', type='choice', choices=['adonis', 'anosim', 'best',
+        'morans_i', 'mrpp', 'permanova', 'permdisp', 'rda']),
+    make_option('-i', '--input_dm', help='the input distance matrix'),
+    make_option('-o', '--output_dir', help='the output directory [default: '
+        '%default]', default='.'),
+    make_option('-m', '--mapping_file', help='the metadata mapping file'),
+    make_option('-c', '--categories', help='A comma-delimited list of '
+        'categories from the mapping file (NOTE: many methods take just a '
+        'single category, if multiple are passed only the first will be '
+        'selected.)'),
+    options_lookup['output_dir']
 ]
-script_info['optional_options'] = [\
- # All methods use these
- make_option('-n','--num_permutations',help='the number of iterations to \
-     perform',default=999,type='int'),
+script_info['optional_options'] = [
+    # Only some methods use permutations.
+    make_option('-n', '--num_permutations', help='the number of permutations '
+        'to perform. Only applies to adonis, anosim, mrpp, and permanova',
+        default=999, type='int')
 ]
 script_info['version'] = __version__
 
 def main():
-    """
-    This is the entry point for the script to run.
-    """
-    option_parser, opts, args =\
-    parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # Create the output dir if it doesn't already exist.
-    #TODO THIS DOESN'T WORK AT ALL AND WON'T CATCH ANY ERRORS FOR A DIR EXISTING
     try:
         if not path.exists(opts.output_dir):
             create_dir(opts.output_dir)
     except:
-        option_parser.error("Could not create or access output directory, it \
-            already exists. Please delete it and re-run the script"
-                                "specified with the -o option.")
+        option_parser.error("Could not create or access output directory "
+                            "specified with the -o option.")
 
-    #parse mapping file
+    # Parse the mapping file.
     md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file))
 
-    #separates all categerios into a list, then grabs the first category
+    # Separate all categories into a list, then grab the first category.
     categories = opts.categories.split(',')
     first_category = categories[0]
-    
-    #cursory check to make sure all categories passed in are in mapping file
+
+    # Cursory check to make sure all categories passed in are in mapping file.
     maps = parse_mapping_file(open(opts.mapping_file,'U').readlines())
     for category in categories:
         if not category in maps[1][1:]:
-            print "Category '%s' not found in mapping file columns:" % category
-            print maps[1][1:]
-            exit(1)
-
+            option_parser.error("Category '%s' not found in mapping file "
+                                "columns:" % category)
+    # Figure out which method we need to run.
     if opts.method == 'adonis':
         command_args = ["-d " + opts.input_dm + " -m " + opts.mapping_file + \
             " -c " + first_category + " -o " + opts.output_dir + " -n " + \
@@ -264,12 +256,11 @@ def main():
         rex = RExecutor()
         rex(command_args, "adonis.r", output_dir=opts.output_dir)
     elif opts.method == 'anosim':
-        #runs anosim
         anosim = Anosim(md_map, dm, first_category)
         anosim_results = anosim(opts.num_permutations)
-        #anosim has been run, now writing results to file
+
         output_file = open(opts.output_dir + "/" + opts.method + \
-            "_results.txt","w+")
+            "_results.txt", "w+")
         output_file.write("Method Name:\tR-value:\tP-value:")
         output_file.write("\n")
         output_file.write(anosim_results["method_name"]+"\t"+\
@@ -278,11 +269,9 @@ def main():
         output_file.write("\n")
         output_file.close()
     elif opts.method == 'best':
-        #makes a bioenv object 
         bioenv = BioEnv(dm, md_map, categories)
-        #relies on the __call__ property and returns the results
         bioenv_results = bioenv()
-        #writes the output to a file
+
         output_file = open(opts.output_dir+"/best_results.txt", 'w+')
         output_file.write("Method Name:\tNum_Vars:\t")
         output_file.write("\n")
@@ -312,11 +301,9 @@ def main():
         rex = RExecutor()
         rex(command_args, "mrpp.r", output_dir=opts.output_dir)
     elif opts.method == 'permanova':
-        #makes a permanova object
         permanova_plain = Permanova(md_map, dm, first_category)
-        #relies on the __call__ property and returns the results
         permanova_results = permanova_plain(opts.num_permutations)
-        #writes the results to the output dir
+
         output_file = open(opts.output_dir+"/permanova_results.txt", 'w+')
         output_file.write("Method Name:\tR-value:\tP-value:")
         output_file.write("\n")
@@ -336,8 +323,6 @@ def main():
             " -c " + first_category + " -o " + opts.output_dir]
         rex = RExecutor()
         rex(command_args, "rda.r", output_dir=opts.output_dir)
-    else:
-        print "Method '%s' not recognized" % opts.method
 
 if __name__ == "__main__":
     main()
