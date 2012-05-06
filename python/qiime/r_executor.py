@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
 __author__ = "Damien Coy"
-__copyright__ = "Copyright 2011, The QIIME Project"
+__copyright__ = "Copyright 2012, The QIIME Project"
 __credits__ = ["Damien Coy, Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.4.0"
-__maintainer__ = "Damien Coy"
-__email__ = "damien.coy@nau.edu"
-__status__ = "Release"
+__maintainer__ = "Jai Ram Rideout"
+__email__ = "jai.rideout@gmail.com"
+__status__ = "Development"
 
+import sys
 import subprocess
+
 from os import remove, path, devnull
 from os.path import join
 from sys import stdout
@@ -19,12 +21,10 @@ from qiime.util import get_tmp_filename
 from qiime.util import get_qiime_project_dir
 from qiime.format import format_otu_table
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
-    FilePath, ResultPath, ApplicationError
+     FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters
 from qiime.parse import parse_otu_table, parse_mapping_file
 from numpy import array, set_printoptions, nan
-
-import sys
 
 class RExecutor(CommandLineApplication):
     """RExecutor application controller
@@ -75,7 +75,7 @@ class RExecutor(CommandLineApplication):
             errfilepath = FilePath(self.getTmpFilename(self.TmpDir))
             errfile = open(errfilepath, 'w')
 
-	self._R_script = script_name
+	    self._R_script = script_name
         rscript = self._get_R_script_path()
         base_command = self._get_base_command()
         cd_command, base_command = base_command.split(';')
@@ -84,7 +84,6 @@ class RExecutor(CommandLineApplication):
 
         # Build up the command, consisting of a BaseCommand followed by
         # input and output (file) specifications
-
         command = self._commandline_join(
             [   cd_command, base_command,
                 '--args',
@@ -123,7 +122,7 @@ class RExecutor(CommandLineApplication):
         if not suppress_stderr:
             err = open(errfilepath,"r")
         
-	if verbose:
+	    if verbose:
             msg = '\n\nCommand Executed: %s'\
                 % (command) +\
                  ' \n\nR Command Output:\n%s'\
@@ -133,26 +132,22 @@ class RExecutor(CommandLineApplication):
     # The methods below were taken from supervised_learning.py
 
     def _get_R_script_dir(self):
-        """Returns the path to the qiime R source directory
-        """
+        """Returns the path to the qiime R source directory."""
         qiime_dir = get_qiime_project_dir()
         script_dir = path.join(qiime_dir,'qiime','support_files','R')
         return script_dir
 
     def _get_R_script_path(self):
-        """Returns the path to the R script to be executed
-        """
+        """Returns the path to the R script to be executed."""
         return path.join(self._get_R_script_dir(), self._R_script)
 
     def _commandline_join(self, tokens):
-        """Formats a list of tokens as a shell command
-        """
+        """Formats a list of tokens as a shell command."""
         commands = filter(None, map(str, tokens))
         return self._command_delimiter.join(commands).strip()
 
     def _accept_exit_status(self,exit_status):
-        """ Return False to raise an error due to exit_status !=0 of application
-        """
+        """ Return False to raise an error due to exit_status !=0."""
         if exit_status != 0:
             return False
         return True
@@ -162,7 +157,7 @@ class RExecutor(CommandLineApplication):
         return self.__extract_parameters('R')
 
     def __extract_parameters(self, name):
-        """Extracts parameters in self._<name>_parameters from self.Parameters
+        """Extracts parameters in self._<name>_parameters from self.Parameters.
 
         Allows the program to conveniently access a subset of user-
         adjusted parameters, which are stored in the Parameters
@@ -179,4 +174,3 @@ class RExecutor(CommandLineApplication):
         for key in result.keys():
             result[key] = self.Parameters[key]
         return result
-
