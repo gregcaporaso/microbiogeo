@@ -27,31 +27,26 @@ from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_distmat, fields_to_dict, \
                         parse_mapping_file, parse_mapping_file_to_dict
 
-#from python.qiime.parse import DistanceMatrix, MetadataMap
-#from python.qiime.r_executor import RExecutor
-from parse import DistanceMatrix, MetadataMap
-from qiime.r_executor import RExecutor
+from python.qiime.parse import DistanceMatrix, MetadataMap
+from python.qiime.r_executor import RExecutor
 
-#from python.qiime.stats import Anosim, Permanova
-from stats import Anosim, BioEnv, Permanova
+from python.qiime.stats import Anosim, Permanova
 
 script_info = {}
 script_info['brief_description'] = """
 Analyzes distance matrices for information using statistical methods
 """
 script_info['script_description'] = """
-This script allows for the anaylsis of distance matrices, (in the case of the \
-dfa method it's an otu table), using several statistical methods. These methods\
- are Adonis, Anosim, BEST, DFA, ISA(not implemented), LSA(not implemented), \
-Moran's I, MRPP, Multicola(not implemented), PERMANOVA, PERMDISP, RDA, and \
-Repeated Measures PERMANOVA(not implemented).
+This script allows for the anaylsis of distance matrices using several \
+statistical methods. These methods are Adonis, Anosim, BEST, DFA, Moran's I, \
+MRPP, PERMANOVA, PERMDISP, RDA.
 
 Adonis - This method takes a distance matrix and mapping file. It then \
 identifies important points in the data and performs F-tests on the initial \
 data, and random permutations(via  shuffling) the category data. Then, \
 it finally returns the information that was identified in the samples. It's \
 stated that it partitions (or seperates the data) for this analysis in order\
- to find underlying relationship.
+ to find underlying relationships.
 
 Anosim - This method takes in a distance matrix and a mapping file. \
 This method tests whether two or more categories are significantly \
@@ -66,21 +61,10 @@ samples in a distance matrix. For instance, the unifrac distance matrix and \
 pH and latitude (or any other number of variables) in soil samples, and ranks \
 them in order of which best explain patterns in the communities.
 
-DFA - This method takes in an OTU table and a mapping file. This method \
-is heavily related to ANOVA/MANOVA, except that it operates in the opposite \
-direction. ANOVA/MANOVA test whether categorical independent \
-variable(s) effectively predict continuous dependent variable(s). On the other \
-hand, DFA tests how well one or more independent continuous variables predicts \
-a categorical dependent variable. In a nutshell, DFA seeks to answer the \
-question 'Is this set of variables effective at predicting category/group \
-membership?'. When applied to ecology, DFA can answer the question 'Are these \
-species/OTUs effective at predicting category/group membership?' or 'What is \
-the best combination of species/OTUs for predicting category/group membersip?'
-
 Moran's I - This method takes in a distance matrix and mapping file. Then it \
-uses the geographical data to identify what type of spatial configuration the \
-samples have. Are they dispersed, clustered, or of no distinctly noticeable \
-configuration when compared to each other?
+uses the geographical data supplied to identify what type of spatial \
+configuration occurs in the samples. Are they dispersed, clustered, or of no \
+distinctly noticeable configuration when compared to each other?
 
 MRPP - This method takes in a distance matrix and a mapping file. It then \
 tests whether two or more categories are significantly different. You can \
@@ -93,10 +77,7 @@ determined through permutations.
 PERMANOVA - This method takes distance matrix and a mapping file. This method \
 is for testing the simultaneous response of one or more variables to one or \
 more factors in an ANOVA experimental design on the basis of any distance \
-metric. It returns a R value and a P value. The first thing it does is \
-calculate the distances between each pair of sampled units to obtain a \
-distance matrix. It then calculates the test-statistics from this according \
-to the relevant experimental design.
+metric. It returns a R value and a P value.
 
 PERMDISP - This method takes a distance matrix and a mapping file. \
 This method is a procedure for the analysis of multivariate homogeneity of \
@@ -136,16 +117,6 @@ the 'best' directory. The full file path will be: ./best/best_results.txt",
 "%prog --method best -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
 datasets/keyboard/map.txt -c LATITUDE,LONGITUDE -o best"))
 
-#-------------------------------------------------------------------------
-#TODO FIX THIS LATER SOMETHING SOMETHING BIOM FILE MESSING WITH THIS
-script_info['script_usage'].append(("DFA",
-"Performs the DFA statistical method on a distance matrix and mapping file "
-"using the HOST_SUBJECT_ID category. Then it outputs the results to \
-the 'dfa' directory. The full file path will be: ./dfa/dfa_results.txt",
-"%prog --method dfa  -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o dfa"))
-#-------------------------------------------------------------------------
-
 script_info['script_usage'].append(("Moran's I",
 "Performs the Moran's I statistical method on a distance matrix and mapping \
 file using the PH category. Then it outputs the results to the 'morans_i' \
@@ -160,8 +131,6 @@ path will be: ./mrpp/mrpp_results.txt",
 "%prog --method mrpp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
 datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o mrpp -n 999"))
 
-script_info['script_usage'].append(("Multicola", "", ""))
-
 script_info['script_usage'].append(("PERMANOVA", "Performs the PERMANOVA \
 statistical method on a distance matrix and mapping file using the \
 HOST_SUBJECT_ID category. Then it outputs the results to the 'permanova' \
@@ -174,7 +143,7 @@ statistical method on a distance matrix and mapping file using the \
 HOST_SUBJECT_ID category. Then it outputs the results to the 'permdisp' \
 directory. The full file path will be: ./permdisp/betadisper_results.txt",
 "%prog --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
-datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp -n 999"))
+datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp"))
 
 script_info['script_usage'].append(("RDA", "Performs the RDA statistical \
 method on a distance matrix and mapping file using the HOST_SUBJECT_ID \
@@ -190,36 +159,61 @@ squares, mean squares, F statistics, partial R-squared and p-values, based \
 on the N permutations.
 
 Anosim: 
+One file is output to the designated location under the name of \
+anosim_results.txt. The information in the file will be an R-value and \
+p-value.
 
 Best: 
-
-DFA: 
+This outputs one file 'best_results.txt' It will have teh method name, \
+The number of variables. The list of varibles supplied. And lastly, the \
+RHO values, which are ranked pearson correlations for the best combination \
+of variables that describe the community.
 
 Moran's I: 
+The output file is placed in a directory specified by -o. The file will be \
+a text file with 4 values: observed, expected, sd, and p.value.
+The observed value is Morans I index of x. This is computed based on the \
+values passed in to be compared with the weights.
+The expected value is the value of I under the null hypothesis.
+The sd is the standard deviation of I under the null hypothesis.
+P Value is the p-value of the test of the null hypothesis against the \
+alternative hypothesis specified in alternative
+Each of these values, except for the p-value, should be between -1 and 1.
 
 MRPP: 
-
-Multicola: 
+The command in the previous section creates a single output file in the \
+directory specified by the -o arguement, if not it will be sent to the \
+directory location it was called from. The file will be named mrpp_results.txt.\
+ The file will contain a dissimilarity index, the class mean and counts. It \
+will also conatin information about the chance corrected within-group \
+agreement A, as well as the result Based on observed delta, and expected \
+delta. There will also be the Significance of delta and the amount of permutations performed.
 
 PERMANOVA: 
+Permanova returns one output file containing the the file passed in, the \
+F-value and the p-value.
 
 PERMDISP: 
+This method returns one file that outputs an analysis of varaiance table. \
+Responses with the distances will be shown. There will be the strata \
+relationship, then the sample information as well. Lastly you will be \
+able to see the f-value and p-value.
 
 RDA: 
-
+RDA outputs a two files. One is calles rda_results.txt, the other file \
+is rda_plot.pdf. rda.txt contains the Inertia Proportion Rank, the Eigenvalues for constrained axes, and the Eigenvalues for unconstrained axes.
 """
 
 script_info['required_options'] = [\
  # All methods use these
 make_option('--method', help='The category analysis method. Valid options: \
-    [adonis, anosim, best, dfa, morans_i, mrpp, multicola, \
+    [adonis, anosim, best, morans_i, mrpp, multicola, \
     permanova, permdisp, rda]'),\
  make_option('-i','--input_dm',help='This should be a distance matrix that is \
-being passed in, unless the method being performed is DFA. If that is the case \
-the DFA method requires that an otu table be passed in instead.'),\
+being passed in.'),\
  make_option('-o','--output_dir',help='the output directory \
  [default: %default]', default='.'),\
- make_option('-m','--mapping_file', help='Mapping file'),
+ make_option('-m','--mapping_file', help='mapping file'),
  make_option('-c','--categories',help='A comma delimited list of categories \
      from the mapping file(NOTE: many methods take just a single category, if\
      multiple are passed only the first will be selected.)'),\
@@ -248,11 +242,6 @@ def main():
             already exists. Please delete it and re-run the script"
                                 "specified with the -o option.")
 
-    #parses dist mat for all methods not DFA
-    if opts.method != 'dfa':
-        dm_labels, dm_temp = parse_distmat(open(opts.input_dm, 'U'))
-        dm = DistanceMatrix(dm_temp, dm_labels, dm_labels)
-
     #parse mapping file
     md_map = MetadataMap.parseMetadataMap(open(opts.mapping_file))
 
@@ -280,7 +269,7 @@ def main():
         anosim_results = anosim(opts.num_permutations)
         #anosim has been run, now writing results to file
         output_file = open(opts.output_dir + "/" + opts.method + \
-            "_results.xt","w+")
+            "_results.txt","w+")
         output_file.write("Method Name:\tR-value:\tP-value:")
         output_file.write("\n")
         output_file.write(anosim_results["method_name"]+"\t"+\
@@ -311,16 +300,6 @@ def main():
             output_file.write(str(rho_val) + "\t")
         output_file.write("\n")
         output_file.close()
-    elif opts.method == 'dfa':
-        #-----------------------------------------------------------------
-        #TODO TRY TO SEE IF THIS WILL WORK FOR MULTIPLE CATEGORIES
-        command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
-            " -c " + first_category + " -o " + opts.output_dir]
-        #command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
-            #" -c " + "".join(categories) + " -o " + opts.output_dir]
-        rex = RExecutor()
-        rex(command_args, "dfa.r", output_dir=opts.output_dir)
-        #-----------------------------------------------------------------
     elif opts.method == 'morans_i':
         command_args = ["-i " + opts.input_dm + " -m " + opts.mapping_file + \
             " -c " + first_category + " -o " + opts.output_dir]
@@ -332,8 +311,6 @@ def main():
             " -n " + str(opts.num_permutations)]
         rex = RExecutor()
         rex(command_args, "mrpp.r", output_dir=opts.output_dir)
-    elif opts.method == 'multicola':
-        pass
     elif opts.method == 'permanova':
         #makes a permanova object
         permanova_plain = Permanova(md_map, dm, first_category)
