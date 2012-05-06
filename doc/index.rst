@@ -49,3 +49,4 @@ Progress Reports
    :maxdepth: 1
 
    notes/progress_report_1
+   notes/progress_report_2
