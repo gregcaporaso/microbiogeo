@@ -18,8 +18,7 @@ from numpy import array, matrix, roll, asarray
 from numpy.random import permutation
 
 from qiime.util import DistanceMatrix, MetadataMap
-from qiime.stats import CategoryStats
-from python.qiime.stats import (Permanova, BioEnv, DistanceBasedRda)
+from python.qiime.stats import (BioEnv, DistanceBasedRda)
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
@@ -116,154 +115,6 @@ class NonRandomShuffler(object):
         self.num_calls += 1
         return x
 
-
-class PermanovaTests(TestHelper):
-    def setUp(self):
-       """Define some useful data to use in testing."""
-       super(PermanovaTests, self).setUp()
-
-       # Some distance matrices to help test Permanova.
-       self.distmtx_str = ["\tsam1\tsam2\tsam3\tsam4",
-        "sam1\t0\t1\t5\t4",
-        "sam2\t1\t0\t3\t2",
-        "sam3\t5\t3\t0\t3",
-        "sam4\t4\t2\t3\t0"]
-       self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
-       self.distmtx_samples = self.distmtx.SampleIds
-
-       self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
-        "sam1\t0\t1\t1\t4",
-        "sam2\t1\t0\t3\t2",
-        "sam3\t5\t3\t0\t3",
-        "sam4\t4\t2\t3\t0"]
-       self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(\
-        self.distmtx_tie_str)
-       self.distmtx_tie_samples = self.distmtx_tie.SampleIds
-
-       self.distmtx_non_sym_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
-        "sam1\t0\t3\t7\t2\t1",
-        "sam2\t3\t0\t5\t4\t1",
-        "sam3\t7\t5\t0\t2\t6",
-        "sam4\t2\t4\t2\t0\t2",
-        "sam5\t1\t1\t6\t6\t0"]
-       self.distmtx_non_sym = DistanceMatrix.parseDistanceMatrix(\
-        self.distmtx_non_sym_str)
-       self.distmtx_non_sym_samples = self.distmtx_non_sym.SampleIds
-
-       # Some group maps to help test Permanova, data_map can be used with
-       # distmtx and distmtx_tie while data_map_non_sym can only be used
-       # with distmtx_non_sym.
-       self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
-         \tTreatment\tDOB\tDescription",
-        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-         \tControl_mouse_I.D._354",
-        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-         \tControl_mouse_I.D._355",
-        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
-         \tControl_mouse_I.D._356",
-        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\
-          \tControl_mouse_I.D._481"]
-       self.data_map = MetadataMap.parseMetadataMap(self.data_map_str)
-
-       self.data_map_non_sym_str=["#SampleID\tBarcodeSequence\
-         \tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
-        "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-         \tControl_mouse_I.D._354",
-        "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-         \tControl_mouse_I.D._355",
-        "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
-         \tControl_mouse_I.D._356",
-        "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\
-         \tControl_mouse_I.D._481",
-        "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\
-         \tcontrolmouseid"]
-       self.data_map_non_sym = MetadataMap.parseMetadataMap(\
-        self.data_map_non_sym_str)
-
-       # Formatting the two data_maps to meet permanova requirments.
-       self.map = {}
-       for samp_id in self.data_map.SampleIds:
-           self.map[samp_id] = self.data_map.getCategoryValue(
-               samp_id, 'Treatment')
-
-       self.map_non_sym = {}
-       for samp_id in self.data_map_non_sym.SampleIds:
-           self.map_non_sym[samp_id] = self.data_map_non_sym.getCategoryValue(
-               samp_id, 'Treatment')
-
-       # Creating instances of Permanova to run the tests on.
-       self.permanova_plain = Permanova(self.data_map, self.distmtx,\
-        'Treatment')
-       self.permanova_tie = Permanova(self.data_map, self.distmtx_tie,\
-        'Treatment')
-       self.permanova_non_sym = Permanova(self.data_map_non_sym,\
-        self.distmtx_non_sym, 'Treatment')
-       self.permanova_overview = Permanova(self.overview_map,\
-        self.overview_dm,'Treatment')
-
-    def test_permanova1(self):
-        """permanova should return 4.4"""
-        exp = 4.4
-        obs = self.permanova_plain._permanova(self.map)
-        self.assertEqual(obs, exp)
-
-    def test_permanova2(self):
-        """Should result in 2"""
-        exp = 2
-        obs = self.permanova_tie._permanova(self.map)
-        self.assertEqual(obs, exp)
-
-    def test_permanova3(self):
-        """Should result in 3.58462"""
-        exp = 3.58462
-        obs = self.permanova_non_sym._permanova(self.map_non_sym)
-        self.assertFloatEqual(obs, exp)
-
-    def test_compute_f1(self):
-        """Should return 4.4, testing just function"""
-        distances = [1,5,4,3,2,3]
-        grouping = [0,-1,-1,-1,-1,1]
-        distances = array(distances)
-        grouping = array(grouping)
-        result = self.permanova_plain._compute_f_value(distances,grouping,4,2,
-         [2,2])
-        self.assertEqual(result, 4.4)
-
-    def test_call_plain(self):
-        """Test __call__() on plain dm."""
-        # These p_values were verified with R.
-        exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'r_value': 4.4}
-        obs = self.permanova_plain()
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertTrue(obs['p_value'] > 0.28 and obs['p_value'] < 0.42)
-
-    def test_call_tie(self):
-        """Test __call__() on dm with ties in ranks."""
-        # These p_values were verified with R.
-        exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'r_value': 2}
-        obs = self.permanova_tie()
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertTrue(obs['p_value'] > 0.56 and obs['p_value'] < 0.75)
-
-    def test_call_non_sym(self):
-        """Test __call__() on non_sym dm with no permutations."""
-        # These p_values were verified with R.
-        exp = {'method_name': 'PERMANOVA', 'p_value': 'NA', 'r_value': 3.58462}
-        obs = self.permanova_non_sym(0)
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertEqual(obs['p_value'], exp['p_value'])
-
-    def test_call_incompatible_data(self):
-        """Should fail on incompatible mdmap/dm combo and bad perms."""
-        self.assertRaises(ValueError, self.permanova_plain, -1)
-        self.permanova_plain.DistanceMatrices = [self.single_ele_dm]
-        self.assertRaises(ValueError, self.permanova_plain)
 
 class BioEnvTests(TestHelper):
     """Tests for the BioEnv class."""
@@ -439,8 +290,8 @@ class BioEnvTests(TestHelper):
         dm = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
 
 
-        print self.bioenv._derive_euclidean_dm(cat_mat,
-                                               self.bv_dm_88soils.Size)
+        #print self.bioenv._derive_euclidean_dm(cat_mat,
+        #                                       self.bv_dm_88soils.Size)
 
 
 
