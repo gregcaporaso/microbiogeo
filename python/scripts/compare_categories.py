@@ -176,6 +176,12 @@ directory. The full file path will be: ./permdisp/betadisper_results.txt",
 "%prog --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m \
 datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o permdisp -n 999"))
 
+script_info['script_usage'].append(("RDA", "Performs the RDA statistical \
+method on a distance matrix and mapping file using the HOST_SUBJECT_ID \
+category. Then it outputs the results to the 'rda' directory. The full \
+file path will be: ./RDA/rda_results.txt and ./RDA/rda_plot.txt",
+"%prog --method rda -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda"))
+
 script_info['output_description']= """
 Adonis: 
 One file is created and outputs the results into it. The results will be:\
