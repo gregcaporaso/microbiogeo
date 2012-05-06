@@ -268,8 +268,6 @@ class BioEnvTests(TestHelper):
                    ('4.23', '68.63333333'),
                    ('5.74', '36.45')]
 
-        exp = 0
-
         dm_lbls = ['MT2.141698','CA1.141704','BB2.141659',
             'CO2.141657','TL3.141709','SN3.141650']
 
@@ -287,12 +285,40 @@ class BioEnvTests(TestHelper):
         [10.3908084382,1.58142340946,8.49351975531,
         4.13376879093,32.2187374711,0.0]]
 
-        dm = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
+        exp = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
+
+        obs = self.bioenv._derive_euclidean_dm(cat_mat,
+                                               self.bv_dm_88soils.Size)
+
+        # self.assertTrue( exp == obs )
+        # self.assertFloatEqual(exp,obs)
 
 
-        #print self.bioenv._derive_euclidean_dm(cat_mat,
-        #                                       self.bv_dm_88soils.Size)
+    def test_call(self):
+        """Test the overall functionality of BioEnv"""
+        exp = {'method_name': 'BioEnv',
+               'bioenv_rho_vals': [
+                   (0.75, '8'),
+                   (0.5, '1,11'),
+                   (0.5107142857142857, '1,8,11'),
+                   (0.47857142857142854, '1,6,8,11'),
+                   (0.46071428571428574, '1,5,6,8,9'),
+                   (0.4357142857142857, '1,5,6,8,9,11'),
+                   (0.38928571428571423, '1,2,4,5,6,7,8'),
+                   (0.38928571428571423, '1,2,4,5,6,7,8,9'),
+                   (0.38928571428571423, '1,2,4,5,6,7,8,9,10'),
+                   (0.38928571428571423, '1,2,4,5,6,7,8,9,10,11'),
+                   (0.16785714285714282, '1,2,3,4,5,6,7,8,9,10,11')],
+               'num_vars': 11,
+               'vars': ['TOT_ORG_CARB = 1', 'SILT_CLAY = 2',
+                       'ELEVATION = 3', 'SOIL_MOISTURE_DEFICIT = 4',
+                       'CARB_NITRO_RATIO = 5', 'ANNUAL_SEASON_TEMP = 6',
+                       'ANNUAL_SEASON_PRECPT = 7', 'PH = 8',
+                       'CMIN_RATE = 9', 'LONGITUDE = 10',
+                       'LATITUDE = 11']}
 
+        obs = self.bioenv()
+        self.assertTrue(exp == obs)
 
 
 class DistanceBasedRdaTests(TestHelper):
