@@ -94,7 +94,7 @@ When broken down the command sytanx means this: ::
 
   compare_categories.py - This is the script being run
 
-  --method adonis - This is the method to perform, in this case it's Adonis.
+  --method adonis - This is the method to perform, in this case it's 'adonis'.
 
   -i keyboard/unweighted_unifrac_dm.txt - This is the unweighted unifrac distance matrix being passed in for this statistical test.
 
@@ -152,7 +152,7 @@ When broken down the command sytanx means this: ::
 
   compare_categories.py - This is the script being run
 
-  --method anosim - This is the method to perform, in this case it's Anosim.
+  --method anosim - This is the method to perform, in this case it's 'anosim'.
 
   -i keyboard/unweighted_unifrac_dm.txt - This is the unweighted unifrac distance matrix being passed in for this statistical test.
 
@@ -183,6 +183,42 @@ TO DO: EXPLAINING RESULTS OF THIS METHOD FOR ANOSIM.
 
 BEST
 ----
+FIX THIS LATER
+
+:note: BEST REQUIRES THAT YOU PASS IN NUMERICAL DATA
+
+BEST looks at the numerical environmental variables that relate samples in a distance matrix. For instance, in the unifrac distance matrix there might be latitude and longitude, which will be ranked in order for the best pattern explanation regarding the communities used.
+
+
+The command to run 'BEST' will be: :: 
+  
+  compare_categories.py --method best -i keyboard/unweighted_unifrac_dm.txt -m keyboard/map.txt -c LATITUDE,LONGITUDE -o best
+
+When broken down the command sytanx means this: ::
+  
+  compare_categories.py - This is the script being run
+
+  --method best - This is the method to perform, in this case it's 'best'.
+
+  -i keyboard/unweighted_unifrac_dm.txt - This is the unweighted unifrac distance matrix being passed in for this statistical test.
+
+  -m keyboard/map.txt - This is the meta data mapping file, associated with this data set, being passed in.
+
+  -c LATITUDE,LONGITUDE - This specifies the category in the meta data mapping file to analyzed. In this case it's 'LATITUDE' and 'LONGITUDE'
+
+  -o best - This specifies the output directory to place the results of this method in. In this case it's 'best'
+
+The following image demonstrates the command being run.
+
+
+
+The output file will be labelled 'best_results.txt'. Upon opening the file or viewing its contents you will see the returned information. ::
+
+
+This information can be verified via the image below.
+
+
+TO DO: EXPLAINING RESULTS OF THIS METHOD FOR BEST.
 
 Moran's I
 ---------
