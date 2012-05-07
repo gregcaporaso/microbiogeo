@@ -40,6 +40,7 @@ Tutorials
 .. toctree::
    :maxdepth: 1
 
+   notes/category_comparison.rst
    notes/simulation_code_example
 
 Progress Reports
