@@ -108,7 +108,6 @@ When broken down the command sytanx means this: ::
 
 The following image demonstrates the command being run.
 
-
 .. image:: ../images/compare_category_tutorial/adonisKeyboardRun.png
   :align: center 
 
@@ -130,7 +129,7 @@ The output file will be labelled 'adonis_results.txt'. Upon opening the file or 
   ---
   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-This information can be verified via the information below.
+This information can be verified via the image below.
 
 .. image:: ../images/compare_category_tutorial/adonisKeyboardResultsView.png
   :align: center 
@@ -141,7 +140,46 @@ TO DO: EXPLAINING RESULTS OF THIS METHOD FOR ADONIS.
 
 Anosim
 ------
+ANOSIM is a method that tests whether two or more categories are significantly different. You can specify a category in the metadata mapping file to separate samples into groups and then test whether there are significant differences between those groups. For example, you might test whether Control samples are significantly different from Fast samples. Since ANOSIM is non-parametric, significance is determined through permutations.
 
+To demonstrate this process we will use the keyboard data set found above. 
+
+The command to run 'Anosim' will be: ::
+
+  compare_categories.py --method anosim -i keyboard/unweighted_unifrac_dm.txt -m keyboard/map.txt -c HOST_SUBJECT_ID -o anosim -n 999
+
+When broken down the command sytanx means this: ::
+
+  compare_categories.py - This is the script being run
+
+  --method anosim - This is the method to perform, in this case it's Anosim.
+
+  -i keyboard/unweighted_unifrac_dm.txt - This is the unweighted unifrac distance matrix being passed in for this statistical test.
+
+  -m keyboard/map.txt - This is the meta data mapping file, associated with this data set, being passed in.
+
+  -c HOST_SUBJECT_ID - This specifies the category in the meta data mapping file to analyzed. In this case it's 'HOST_SUBJECT_ID'
+
+  -o anosim - This specifies the output directory to place the results of this method in. In this case it's 'anosim'
+
+  -n 999 - This specifies the number of permutation that will be used when performing the Anosim statistical method.
+
+The following image demonstrates the command being run.
+
+.. image:: ../images/compare_category_tutorial/anosimKeyboardRun.png
+  :align: center
+
+The output file will be labelled 'anosim_results.txt'. Upon opening the file or viewing its contents you will see the returned information. ::
+
+  Method Name     R-value P-value
+  ANOSIM  0.794026410205  0.001
+
+This information can be verified via the image below.
+
+.. image:: ../images/compare_category_tutorial/anosimKeyboardResultsView.png
+  :align: center
+
+TO DO: EXPLAINING RESULTS OF THIS METHOD FOR ANOSIM.
 
 BEST
 ----
