@@ -8,7 +8,7 @@ Introduction
 
 The permutational multivariate analysis of variance (PERMANOVA) method is a computer program for testing 
 the simultaneous response of one or more variables to one or more factors in an ANOVA experimental design
-on the basis of any distance metric. It returns a R value and a P value.
+on the basis of any distance metric. It returns a F value and a P value.
 
 The first thing it does is calculate the distances between each pair of sampled units to obtain a distance matrix.
 It then calculates the test-statistics from this according to the relevant experimental design.
@@ -88,11 +88,11 @@ Output Files
 The command in the previous section creates a single output file named
 :file:`permanova_results.txt`. The resulting file should look like this: ::
 
-	Input_filepath						permanova_R_value	p_value
-	unweighted_unifrac_dm.txt                       	2.29665065171		0.009
+	Input_filepath						permanova_F_value	p_value
+	unweighted_unifrac_dm.txt           2.29665065171		0.009
 	
 The first field lists the distance matrix file that was used as input. The
-second field lists the R statistic that was computed, that this is the
+second field lists the F statistic that was computed, that this is the
 primary output of Permanova. The final field lists the p-value, which is .009 
 signifying reasonable accuracy.
 
@@ -122,10 +122,10 @@ on the Whole Body dataset.
 
 The following output file is created: ::
 
-	Input_filepath						permanova_R_value	p_value
+	Input_filepath						permanova_F_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	13.2670596158		0.001
 	
-The R value of 13.2670596158 indicates that the body sites are significantly different due to its 
+The F value of 13.2670596158 indicates that the body sites are significantly different due to its 
 relatively “large” ratio. This is a result that we would expect. The p-value of .001 indicates that the 
 result is significant.
 
@@ -145,10 +145,10 @@ analysis done on the Whole Body dataset.
 
 The following output file is created: ::
 
-	Input_filepath						permanova_R_value	p_value
+	Input_filepath						permanova_F_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	21.0188242485		0.001
 	
-The R value of 21.0188242485 indicates that the sexes are significantly different due to its 
+The F value of 21.0188242485 indicates that the sexes are significantly different due to its 
 relatively “large” ratio. This is a result that we would not expect because it is supposed to be a negative control. The p-value of .001 indicates that the 
 result is significant.
 
@@ -170,20 +170,20 @@ this category.
 
 The following output files were created: ::
 
-	Input_filepath							permanova_R_value	p_value
+	Input_filepath							permanova_F_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt	1.98060081904		0.031
 
 ::
 	
-	Input_filepath							permanova_R_value	p_value
+	Input_filepath							permanova_F_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt	1.81015551855		0.623
 
 ::
 		
-	Input_filepath							permanova_R_value	p_value
+	Input_filepath							permanova_F_value	p_value
 	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
 	
-The R values of 1.98060081904, 1.81015551855,and 1.73759470202 indicates that the body sites are not significantly different due to its 
+The F values of 1.98060081904, 1.81015551855,and 1.73759470202 indicates that the body sites are not significantly different due to its 
 relatively “small” ratio. This is a result that we would expect because the matricies are pre-shuffled. The p-values of 0.031, 0.623, and 0.929 indicates that the 
 results are insignificant.
 
@@ -205,10 +205,10 @@ done on the keyboard study dataset.
 
 The following output file is created: ::
 
-        Input_filepath                                          permanova_R_value       p_value
+        Input_filepath                                          permanova_F_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm.txt       5.17880475397           0.001
 	
-The R value of 5.17880475397 indicates that the host id's are significantly different due to its 
+The F value of 5.17880475397 indicates that the host id's are significantly different due to its 
 relatively “large” ratio. This is a result that we would expect. The p-value of 0.001 indicates that the 
 result is significant.
 
@@ -231,20 +231,20 @@ this category.
 
 The following output files are created: ::
 
-        Input_filepath                                                  permanova_R_value       p_value
+        Input_filepath                                                  permanova_F_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt    1.04303546137           0.31
 
 ::
 
-        Input_filepath                                                  permanova_R_value       p_value
+        Input_filepath                                                  permanova_F_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt    1.03699740907           0.317
 
 ::
 
-        Input_filepath                                                  permanova_R_value       p_value
+        Input_filepath                                                  permanova_F_value       p_value
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt    0.959082333436          0.648
 	
-The R values of 1.04303546137, 1.03699740907, and 0.959082333436 indicates that the shuffled host id's are not significantly different due to its 
+The F values of 1.04303546137, 1.03699740907, and 0.959082333436 indicates that the shuffled host id's are not significantly different due to its 
 relatively “small” ratio. This is a result that we would expect. The p-value of 0.31, 0.317, 0.648 and indicates that the 
 result are insignificant.
 
@@ -267,10 +267,10 @@ done on the Glen Canyon dataset.
 
 The following output file is created: ::
 
-        Input_filepath                                          permanova_R_value       p_value
+        Input_filepath                                          permanova_F_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm.txt    29.2130439798           0.001
 	
-The R value of 29.2130439798 indicates that there is significant differences between groups of samples based on whether they are currently wet, we can tell due to its 
+The F value of 29.2130439798 indicates that there is significant differences between groups of samples based on whether they are currently wet, we can tell due to its 
 relatively “large” ratio. This is a result that we would expect from previous experments. The p-value of 0.001 indicates that the 
 result is significant.
 
@@ -293,20 +293,20 @@ this category.
 
 The following output files are created: ::
 
-        Input_filepath                                                  permanova_R_value       p_value
+        Input_filepath                                                  permanova_F_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt 2.03268471405           0.332
 
 ::
 
-        Input_filepath                                                  permanova_R_value       p_value
+        Input_filepath                                                  permanova_F_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt 1.91859583429           0.448
 
 ::
 
-        Input_filepath                                                  permanova_R_value       p_value
+        Input_filepath                                                  permanova_F_value       p_value
         ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt 1.68346774545           0.902
 	
-The R value of 2.03268471405, 1.91859583429, and 1.68346774545 indicates that the results when CurrentlyWet is shuffled are not significantly different due to its 
+The F value of 2.03268471405, 1.91859583429, and 1.68346774545 indicates that the results when CurrentlyWet is shuffled are not significantly different due to its 
 relatively “small” ratio. This is a result that we would expect. The p-values of 0.332, 0.448, and 0.902 indicates that the 
 results are insignificant.
 
