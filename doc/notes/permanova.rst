@@ -126,7 +126,7 @@ The following output file is created: ::
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	13.2670596158		0.001
 	
 The F value of 13.2670596158 indicates that the body sites are significantly different due to its 
-relatively “large” ratio. This is a result that we would expect. The p-value of .001 indicates that the 
+relatively large ratio. This is a result that we would expect. The p-value of .001 indicates that the 
 result is significant.
 
 Test 2
@@ -149,7 +149,7 @@ The following output file is created: ::
 	../../datasets/whole_body/unweighted_unifrac_dm.txt	21.0188242485		0.001
 	
 The F value of 21.0188242485 indicates that the sexes are significantly different due to its 
-relatively “large” ratio. This is a result that we would not expect because it is supposed to be a negative control. The p-value of .001 indicates that the 
+relatively large ratio. This is a result that we would not expect because it is supposed to be a negative control. The p-value of .001 indicates that the 
 result is significant.
 
 Test 3
@@ -157,7 +157,7 @@ Test 3
 **Description:**
 
 This test uses three shuffled distance matrices and the BODY_SITE category to perform three negative control 
-tests. Since the labels of the distance matrices are shuffled, we don’t expect to see significant differences any more on 
+tests. Since the labels of the distance matrices are shuffled, we don't expect to see significant differences any more on 
 this category.
 
 **Commands:** ::
@@ -184,7 +184,7 @@ The following output files were created: ::
 	../../datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt	1.73759470202		0.929
 	
 The F values of 1.98060081904, 1.81015551855,and 1.73759470202 indicates that the body sites are not significantly different due to its 
-relatively “small” ratio. This is a result that we would expect because the matricies are pre-shuffled. The p-values of 0.031, 0.623, and 0.929 indicates that the 
+relatively small ratio. This is a result that we would expect because the matricies are pre-shuffled. The p-values of 0.031, 0.623, and 0.929 indicates that the 
 results are insignificant.
 
 Keyboard
@@ -209,7 +209,7 @@ The following output file is created: ::
         ../../datasets/keyboard/unweighted_unifrac_dm.txt       5.17880475397           0.001
 	
 The F value of 5.17880475397 indicates that the host id's are significantly different due to its 
-relatively “large” ratio. This is a result that we would expect. The p-value of 0.001 indicates that the 
+relatively large ratio. This is a result that we would expect. The p-value of 0.001 indicates that the 
 result is significant.
 
 Test 2
@@ -245,7 +245,7 @@ The following output files are created: ::
         ../../datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt    0.959082333436          0.648
 	
 The F values of 1.04303546137, 1.03699740907, and 0.959082333436 indicates that the shuffled host id's are not significantly different due to its 
-relatively “small” ratio. This is a result that we would expect. The p-value of 0.31, 0.317, 0.648 and indicates that the 
+relatively small ratio. This is a result that we would expect. The p-value of 0.31, 0.317, 0.648 and indicates that the 
 result are insignificant.
 
 Glen Canyon
@@ -271,7 +271,7 @@ The following output file is created: ::
         ../../datasets/glen_canyon/unweighted_unifrac_dm.txt    29.2130439798           0.001
 	
 The F value of 29.2130439798 indicates that there is significant differences between groups of samples based on whether they are currently wet, we can tell due to its 
-relatively “large” ratio. This is a result that we would expect from previous experments. The p-value of 0.001 indicates that the 
+relatively large ratio. This is a result that we would expect from previous experments. The p-value of 0.001 indicates that the 
 result is significant.
 
 Test 2
@@ -307,7 +307,7 @@ The following output files are created: ::
         ../../datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt 1.68346774545           0.902
 	
 The F value of 2.03268471405, 1.91859583429, and 1.68346774545 indicates that the results when CurrentlyWet is shuffled are not significantly different due to its 
-relatively “small” ratio. This is a result that we would expect. The p-values of 0.332, 0.448, and 0.902 indicates that the 
+relatively small ratio. This is a result that we would expect. The p-values of 0.332, 0.448, and 0.902 indicates that the 
 results are insignificant.
 
 References
