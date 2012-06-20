@@ -212,11 +212,9 @@ The following image demonstrates the command being run.
 
 
 
-The output file will be labelled 'best_results.txt'. Upon opening the file or viewing its contents you will see the returned information. ::
-
+The output file will be labelled 'best_results.txt'. Upon opening the file or viewing its contents you will see the returned information.
 
 This information can be verified via the image below.
-
 
 TO DO: EXPLAINING RESULTS OF THIS METHOD FOR BEST.
 

@@ -232,6 +232,108 @@ Test 2
 ~~~~~~
 **Description:**
 
+This test uses the same PH distance matrix used in the previous test, but three
+shuffled unifrac distance matrices are used as negative control tests. We don't
+expect to see spatial structure emerge from these runs.
+
+**Command:** ::
+
+    compare_distance_matrices.py -i datasets/88_soils/unweighted_unifrac_dm_shuffled_1.txt,datasets/88_soils/PH_dm.txt -o mantel_correlogram_out --method mantel_corr -g png -n 999
+    compare_distance_matrices.py -i datasets/88_soils/unweighted_unifrac_dm_shuffled_2.txt,datasets/88_soils/PH_dm.txt -o mantel_correlogram_out --method mantel_corr -g png -n 999
+    compare_distance_matrices.py -i datasets/88_soils/unweighted_unifrac_dm_shuffled_3.txt,datasets/88_soils/PH_dm.txt -o mantel_correlogram_out --method mantel_corr -g png -n 999
+
+**Results:**
+
+The following output files are created: ::
+
+    # Number of entries refers to the number of rows (or cols) retained in each
+    # distance matrix after filtering the distance matrices to include only those
+    # samples that were in both distance matrices. p-value contains the correct
+    # number of significant digits.
+    # Distance classes with values of None were in the second half of the distance
+    # classes and not all samples could be included in the distance class, so
+    # calculations were not performed.
+    DM1	DM2	Number of entries	Number of permutations	Class index	Number of distances	Mantel r statistic	p-value	p-value (Bonferroni corrected)	Tail type
+    datasets/88_soils/unweighted_unifrac_dm_shuffled_1.txt	datasets/88_soils/PH_dm.txt	77	999	0.185384615385	874	0.0117040917472	0.246	1.000	greater
+                                    0.556153846154	830	-0.0246767627813	0.118	0.826	less
+                                    0.926923076923	780	0.0171492534634	0.200	1.000	greater
+                                    1.29769230769	706	0.00602091547382	0.377	1.000	greater
+                                    1.66846153846	616	0.0259311313612	0.058	0.406	greater
+                                    2.03923076923	572	0.0107075340499	0.280	1.000	greater
+                                    2.41	458	-0.0390007560404	0.012	0.084	less
+                                    2.78076923077	326	None	None	None	None
+                                    3.15153846154	238	None	None	None	None
+                                    3.52230769231	202	None	None	None	None
+                                    3.89307692308	146	None	None	None	None
+                                    4.26384615385	82	None	None	None	None
+                                    4.63461538462	22	None	None	None	None
+
+.. image:: ../images/mantel_correlogram/88_soils_test_2_1.png
+   :align: center
+
+::
+
+    # Number of entries refers to the number of rows (or cols) retained in each
+    # distance matrix after filtering the distance matrices to include only those
+    # samples that were in both distance matrices. p-value contains the correct
+    # number of significant digits.
+    # Distance classes with values of None were in the second half of the distance
+    # classes and not all samples could be included in the distance class, so
+    # calculations were not performed.
+    DM1	DM2	Number of entries	Number of permutations	Class index	Number of distances	Mantel r statistic	p-value	p-value (Bonferroni corrected)	Tail type
+    datasets/88_soils/unweighted_unifrac_dm_shuffled_2.txt	datasets/88_soils/PH_dm.txt	77	999	0.185384615385	874	-0.0113962472496	0.286	1.000	less
+                                    0.556153846154	830	0.0204791297248	0.136	0.952	greater
+                                    0.926923076923	780	0.0168743209408	0.221	1.000	greater
+                                    1.29769230769	706	-0.000378631372461	0.502	1.000	less
+                                    1.66846153846	616	-0.0109216825005	0.258	1.000	less
+                                    2.03923076923	572	0.00561862629699	0.401	1.000	greater
+                                    2.41	458	0.00247185759408	0.436	1.000	greater
+                                    2.78076923077	326	None	None	None	None
+                                    3.15153846154	238	None	None	None	None
+                                    3.52230769231	202	None	None	None	None
+                                    3.89307692308	146	None	None	None	None
+                                    4.26384615385	82	None	None	None	None
+                                    4.63461538462	22	None	None	None	None
+
+.. image:: ../images/mantel_correlogram/88_soils_test_2_2.png
+   :align: center
+
+::
+
+    # Number of entries refers to the number of rows (or cols) retained in each
+    # distance matrix after filtering the distance matrices to include only those
+    # samples that were in both distance matrices. p-value contains the correct
+    # number of significant digits.
+    # Distance classes with values of None were in the second half of the distance
+    # classes and not all samples could be included in the distance class, so
+    # calculations were not performed.
+    DM1	DM2	Number of entries	Number of permutations	Class index	Number of distances	Mantel r statistic	p-value	p-value (Bonferroni corrected)	Tail type
+    datasets/88_soils/unweighted_unifrac_dm_shuffled_3.txt	datasets/88_soils/PH_dm.txt	77	999	0.185384615385	874	0.0100328177064	0.284	1.000	greater
+                                    0.556153846154	830	0.011222724826	0.274	1.000	greater
+                                    0.926923076923	780	0.0153068611516	0.222	1.000	greater
+                                    1.29769230769	706	0.00618158434264	0.387	1.000	greater
+                                    1.66846153846	616	-0.0266006483858	0.069	0.483	less
+                                    2.03923076923	572	-0.0361454280727	0.030	0.210	less
+                                    2.41	458	0.00624059476883	0.382	1.000	greater
+                                    2.78076923077	326	None	None	None	None
+                                    3.15153846154	238	None	None	None	None
+                                    3.52230769231	202	None	None	None	None
+                                    3.89307692308	146	None	None	None	None
+                                    4.26384615385	82	None	None	None	None
+                                    4.63461538462	22	None	None	None	None
+
+.. image:: ../images/mantel_correlogram/88_soils_test_2_3.png
+   :align: center
+
+The output of these three tests all give the results we were expecting from the
+negative control: there does not seem to be any spatial structure detected when
+using shuffled distance matrices. All of the Mantel statistics are very close
+to zero and none are significant.
+
+Test 3
+~~~~~~
+**Description:**
+
 This test uses a distance matrix containing difference in latitude for the
 distances (derived from the `LATITUDE` category in the mapping file using
 :file:`distance_matrix_from_mapping.py`). This test is a negative control
@@ -269,7 +371,7 @@ The following output files are created: ::
     ---
     Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-.. image:: ../images/mantel_correlogram/88_soils_test_2.png
+.. image:: ../images/mantel_correlogram/88_soils_test_3.png
    :align: center
 
 The output text file only shows two significant distance classes, and these are

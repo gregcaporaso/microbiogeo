@@ -169,6 +169,30 @@ The following output file is created: ::
 	unweighted_unifrac_dm_shuffled_3.txt	PH_dm.txt	77	0.339
 
 The p-value shows there is not a correlation between the two matrices.
+
+Test 5
+~~~~~~
+
+**Description:**
+
+This test compares the unweighted unifrac distance matrix with the LATITUDE distance matrix using mantel.
+
+**Command:** ::
+
+	compare_distance_matrices.py -i unweighted_unifrac_dm.txt,LATITUDE_dm.txt -o test5 -n 9999
+
+**Results:** 
+
+The following output file is created: ::
+
+    # Number of entries refers to the number of rows (or cols) retained in each
+    # distance matrix after filtering the distance matrices to include only those
+    # samples that were in both distance matrices. p-value contains the correct
+    # number of significant digits.
+    DM1	DM2	Number of entries	Mantel r statistic	p-value	Number of permutations	Tail type
+    datasets/88_soils/unweighted_unifrac_dm.txt	datasets/88_soils/LATITUDE_dm.txt	77	0.18980	0.0002	9999	two sided
+
+The p-value shows there is a correlation between the two matrices.
 	
 Glen Canyon
 ^^^^^^^^^^^
