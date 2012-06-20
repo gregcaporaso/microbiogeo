@@ -293,6 +293,111 @@ This is a negative control test.
 .. image:: ../images/morans_i/88_soils/shuffledData3/phResults.png
   :align: center
 
+LATITUDE Analysis - Original Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This is a negative control test.
+
+**Command:** ::
+ 
+    compare_categories.py --method morans_i -i datasets/88_soils/unweighted_unifrac_dm.txt -m datasets/88_soils/map.txt -c LATITUDE -o morans_i_out
+
+**Results:** ::
+
+    $observed
+    [1] -0.006144255
+
+    $expected
+    [1] -0.01639344
+
+    $sd
+    [1] 0.002284855
+
+    $p.value
+    [1] 7.267314e-06
+
+Glen Canyon
+^^^^^^^^^^^
+
+estimated_years_since_submerged_for_plotting - Original Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+This is a positive control test.
+
+**Command:** ::
+ 
+    compare_categories.py --method morans_i -n 999 -i datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c estimated_years_since_submerged_for_plotting -o morans_i_out
+
+**Results:** ::
+
+    $observed
+    [1] 0.03663765
+
+    $expected
+    [1] -0.01075269
+
+    $sd
+    [1] 0.002026233
+
+    $p.value
+    [1] 0
+
+estimated_years_since_submerged_for_plotting - Shuffled Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Description:**
+
+These are negative control tests.
+
+**Command:** ::
+ 
+    compare_categories.py --method morans_i -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt -m datasets/glen_canyon/map_25Jan2012.txt -c estimated_years_since_submerged_for_plotting -o morans_i_out
+    compare_categories.py --method morans_i -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt -m datasets/glen_canyon/map_25Jan2012.txt -c estimated_years_since_submerged_for_plotting -o morans_i_out
+    compare_categories.py --method morans_i -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt -m datasets/glen_canyon/map_25Jan2012.txt -c estimated_years_since_submerged_for_plotting -o morans_i_out
+  
+**Results:** ::
+
+    $observed
+    [1] -0.01072488
+
+    $expected
+    [1] -0.01075269
+
+    $sd
+    [1] 0.002026233
+
+    $p.value
+    [1] 0.9890499
+
+::
+
+    $observed
+    [1] -0.01275851
+
+    $expected
+    [1] -0.01075269
+
+    $sd
+    [1] 0.002026233
+
+    $p.value
+    [1] 0.3222093
+
+::
+
+    $observed
+    [1] -0.0114652
+
+    $expected
+    [1] -0.01075269
+
+    $sd
+    [1] 0.002026233
+
+    $p.value
+    [1] 0.7251046
+
 Results Analysis
 ----------------
 Morans I accepts as input the information being analysed and the variable being used to compare the samples. Its intention is to show the correlation between the samples and their location between each other. An important nuance is that the variables being used must be numerical values. The output from Morans I returns the observed and expected value, as well as the standard deviation and the p-value. The I value returned from Morans I should be between -1 and 1. This indicates the type of spatial geography that is being observed. The output received from testing Morans I against the 88 soils data sets matched the expected out, where the p-value for the original data showed significance, and the p-value for the shuffled data were all greater than .05. Overall this is a useful method that allows for the ability to infer the spatial relationship.
