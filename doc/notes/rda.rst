@@ -271,6 +271,112 @@ The plot doesn't really show grouping of samples based on sex. The output text
 shows that the `SEX` constraining variable explains only 0.6929% of the
 variability in the samples. These results are what we'd expect.
 
+Test 3
+~~~~~~
+**Description:**
+
+This test uses the `BODY_SITE` category with three shuffled distance matrices.
+We do not expect to see grouping of samples based on body site in the resulting
+plot.
+
+**Command:** ::
+
+    compare_categories.py --method rda -i datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt -m datasets/whole_body/map.txt -c BODY_SITE -o rda_output
+    compare_categories.py --method rda -i datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt -m datasets/whole_body/map.txt -c BODY_SITE -o rda_output
+    compare_categories.py --method rda -i datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt -m datasets/whole_body/map.txt -c BODY_SITE -o rda_output
+
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                    Inertia Proportion Rank
+    Total         159.17621                
+    Real Total    165.44129    1.00000     
+    Constrained     6.01504    0.03636   19
+    Unconstrained 159.42624    0.96364  371
+    Imaginary      -6.26508             213
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    1.25438 0.75405 0.62839 0.43759 0.40933 0.30193 0.27260 0.22559 0.22264 0.20888 
+      CAP11   CAP12   CAP13   CAP14   CAP15   CAP16   CAP17   CAP18   CAP19 
+    0.18437 0.17722 0.16618 0.16073 0.14860 0.13303 0.12340 0.11306 0.09308 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    22.109 15.686 11.616  6.796  4.856  4.118  2.868  2.817 
+    (Showed only 8 of all 371 unconstrained eigenvalues)
+
+.. image:: ../images/rda/whole_body_test_3_1.png
+   :align: center
+   :height: 600px
+   :width: 600px
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                    Inertia Proportion Rank
+    Total         159.17621                
+    Real Total    165.44129    1.00000     
+    Constrained     5.38679    0.03256   19
+    Unconstrained 160.05450    0.96744  371
+    Imaginary      -6.26508             213
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    1.38271 0.54748 0.47638 0.36795 0.32360 0.27671 0.26245 0.22565 0.19745 0.18654 
+      CAP11   CAP12   CAP13   CAP14   CAP15   CAP16   CAP17   CAP18   CAP19 
+    0.17411 0.16812 0.14466 0.13237 0.12705 0.10959 0.10331 0.09799 0.08266 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    21.897 15.966 11.812  6.790  4.881  4.176  2.897  2.835 
+    (Showed only 8 of all 371 unconstrained eigenvalues)
+
+.. image:: ../images/rda/whole_body_test_3_2.png
+   :align: center
+   :height: 600px
+   :width: 600px
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                    Inertia Proportion Rank
+    Total         159.17621                
+    Real Total    165.44129    1.00000     
+    Constrained     4.91953    0.02974   19
+    Unconstrained 160.52176    0.97026  371
+    Imaginary      -6.26508             213
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    0.92824 0.71286 0.43950 0.30075 0.28313 0.23922 0.22787 0.20940 0.19005 0.18279 
+      CAP11   CAP12   CAP13   CAP14   CAP15   CAP16   CAP17   CAP18   CAP19 
+    0.17583 0.15601 0.15023 0.14634 0.13792 0.13397 0.11478 0.10314 0.08748 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    22.346 15.693 12.002  6.790  4.880  4.234  2.923  2.802 
+    (Showed only 8 of all 371 unconstrained eigenvalues)
+
+.. image:: ../images/rda/whole_body_test_3_3.png
+   :align: center
+   :height: 600px
+   :width: 600px
+
+There doesn't appear to be a large amount of variability explained by
+`BODY_SITE` when shuffled distance matrices are used.
+
 References
 ----------
 .. _rdaref1:
