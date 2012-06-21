@@ -277,7 +277,7 @@ Test 3
 
 This test uses the `BODY_SITE` category with three shuffled distance matrices.
 We do not expect to see grouping of samples based on body site in the resulting
-plot.
+plots.
 
 **Command:** ::
 
@@ -376,6 +376,281 @@ The following output files are created: ::
 
 There doesn't appear to be a large amount of variability explained by
 `BODY_SITE` when shuffled distance matrices are used.
+
+Keyboard
+^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
+
+This test uses the `HOST_SUBJECT_ID` category as a positive control. We expect
+to see grouping of samples based on individual in the resulting plot.
+
+**Command:** ::
+
+    compare_categories.py --method rda -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda_out
+
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         21.60003                
+    Real Total    21.64008    1.00000     
+    Constrained    7.18171    0.33187   10
+    Unconstrained 14.45837    0.66813  104
+    Imaginary     -0.04005               6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    4.61852 1.12311 0.36352 0.24780 0.20336 0.17231 0.14435 0.11807 0.10825 0.08242 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    1.1336 0.7402 0.7189 0.5341 0.5118 0.4736 0.4140 0.3991 
+    (Showed only 8 of all 104 unconstrained eigenvalues)
+
+.. image:: ../images/rda/keyboard_test_1.png
+   :align: center
+
+The plot shows three clear groups of samples, where each group contains the
+samples for an individual. The output text shows that the `HOST_SUBJECT_ID`
+constraining variable explains 33.19% of the variability in the samples. These
+results seem to fall in line with previous results seen in PCoA plots.
+
+Test 2
+~~~~~~
+**Description:**
+
+This test uses the `HOST_SUBJECT_ID` category with three shuffled distance
+matrices. We do not expect to see grouping of samples based on individual in the
+resulting plots.
+
+**Command:** ::
+
+    compare_categories.py --method rda -i datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda_out
+    compare_categories.py --method rda -i datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda_out
+    compare_categories.py --method rda -i datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o rda_out
+
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         21.60003                
+    Real Total    21.64008    1.00000     
+    Constrained    1.97257    0.09115   10
+    Unconstrained 19.66751    0.90885  104
+    Imaginary     -0.04005               6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    0.73504 0.22784 0.19892 0.16400 0.14474 0.12638 0.11865 0.09814 0.09152 0.06736 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    4.3752 1.3406 1.0699 0.6430 0.5843 0.4855 0.4559 0.4495 
+    (Showed only 8 of all 104 unconstrained eigenvalues)
+
+.. image:: ../images/rda/keyboard_test_2_1.png
+   :align: center
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         21.60003                
+    Real Total    21.64008    1.00000     
+    Constrained    1.96717    0.09090   10
+    Unconstrained 19.67291    0.90910  104
+    Imaginary     -0.04005               6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    0.75724 0.23330 0.21369 0.15925 0.13431 0.11837 0.11181 0.09178 0.08875 0.05866 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    4.3288 1.3103 1.0572 0.6717 0.5954 0.5139 0.4897 0.4379 
+    (Showed only 8 of all 104 unconstrained eigenvalues)
+
+.. image:: ../images/rda/keyboard_test_2_2.png
+   :align: center
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         21.60003                
+    Real Total    21.64008    1.00000     
+    Constrained    1.82623    0.08439   10
+    Unconstrained 19.81385    0.91561  104
+    Imaginary     -0.04005               6
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+       CAP1    CAP2    CAP3    CAP4    CAP5    CAP6    CAP7    CAP8    CAP9   CAP10 
+    0.43621 0.33219 0.20952 0.16133 0.14827 0.13586 0.12058 0.10970 0.09097 0.08159 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    4.7816 1.1089 1.0661 0.6794 0.5883 0.5182 0.4941 0.4513 
+    (Showed only 8 of all 104 unconstrained eigenvalues)
+
+.. image:: ../images/rda/keyboard_test_2_3.png
+   :align: center
+
+There doesn't appear to be a large amount of variability explained by
+`HOST_SUBJECT_ID` when shuffled distance matrices are used, which is what we
+would expect.
+
+Glen Canyon
+^^^^^^^^^^^
+Test 1
+~~~~~~
+**Description:**
+
+This test uses the `CurrentlyWet` category as a positive control. We expect
+to see grouping of samples based on whether or not they are wet in the resulting
+plot.
+
+**Command:** ::
+
+    compare_categories.py --method rda -i datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o rda_out
+
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                  Inertia Proportion Rank
+    Total         15.1717     1.0000     
+    Constrained    3.5323     0.2328    1
+    Unconstrained 11.6395     0.7672   92
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+     CAP1 
+    3.532 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    1.4239 0.8082 0.4769 0.4267 0.3770 0.2911 0.2474 0.2418 
+    (Showed only 8 of all 92 unconstrained eigenvalues)
+
+.. image:: ../images/rda/glen_canyon_test_1.png
+   :align: center
+
+The plot shows two clear groups of samples, where one group contains the
+samples that are currently wet and the other contains samples that are not. The
+output text shows that the `CurrentlyWet` constraining variable explains 23.28%
+of the variability in the samples. These results seem to fall in line with
+previous results seen in PCoA plots.
+
+Test 2
+~~~~~~
+**Description:**
+
+This test uses the `CurrentlyWet` category with three shuffled distance
+matrices. We do not expect to see grouping of samples based on whether or not
+they are wet in the resulting plots.
+
+**Command:** ::
+
+    compare_categories.py --method rda -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o rda_out
+    compare_categories.py --method rda -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o rda_out
+    compare_categories.py --method rda -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o rda_out
+
+**Results:**
+
+The following output files are created: ::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         15.17174    1.00000     
+    Constrained    0.17157    0.01131    1
+    Unconstrained 15.00018    0.98869   92
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+      CAP1 
+    0.1716 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    3.7101 1.3615 0.7404 0.4472 0.4263 0.3606 0.2817 0.2445 
+    (Showed only 8 of all 92 unconstrained eigenvalues)
+
+.. image:: ../images/rda/glen_canyon_test_2_1.png
+   :align: center
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                   Inertia Proportion Rank
+    Total         15.17174    1.00000     
+    Constrained    0.15236    0.01004    1
+    Unconstrained 15.01938    0.98996   92
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+      CAP1 
+    0.1524 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    3.6732 1.4065 0.7409 0.4493 0.4248 0.3709 0.2811 0.2463 
+    (Showed only 8 of all 92 unconstrained eigenvalues)
+
+.. image:: ../images/rda/glen_canyon_test_2_2.png
+   :align: center
+
+::
+
+    Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+    factors.frame)
+
+                    Inertia Proportion Rank
+    Total         15.171743   1.000000     
+    Constrained    0.112111   0.007389    1
+    Unconstrained 15.059632   0.992611   92
+    Inertia is squared Unknown distance 
+
+    Eigenvalues for constrained axes:
+      CAP1 
+    0.1121 
+
+    Eigenvalues for unconstrained axes:
+      MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+    3.7049 1.4177 0.7392 0.4479 0.4232 0.3736 0.2812 0.2440 
+    (Showed only 8 of all 92 unconstrained eigenvalues)
+
+.. image:: ../images/rda/glen_canyon_test_2_3.png
+   :align: center
+
+There doesn't appear to be a large amount of variability explained by
+`CurrentlyWet` when shuffled distance matrices are used, which is what we would
+expect. It is hard to tell from the plots themselves, but the textual output
+verifies this.
 
 References
 ----------
