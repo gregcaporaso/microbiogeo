@@ -250,7 +250,7 @@ This test uses the original unweighted unifrac distance matrix and the Currently
 
 **Command:** ::
 
-	R --slave --args -d Glen\ Canyon/unweighted_unifrac_dm.txt -m Glen\ Canyon/map_25Jan2012.txt -c CurrentlyWet -o betadisper_positive < betadisper.r
+	compare_categories.py --method permdisp -i datasets/glen_canyon/unweighted_unifrac_dm.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o glen_canyon_positive_permdisp_results
 
 **Results:**
 
@@ -259,11 +259,9 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			  Df    Sum Sq   Mean Sq F value   Pr(>F)    
-	Groups     1 0.0060076 0.0060076  26.742 1.35e-06 ***
-	Residuals 92 0.0206680 0.0002247                     
-	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+		  Df   Sum Sq   Mean Sq F value Pr(>F)
+	Groups     1 0.003154 0.0031536   1.762 0.1877
+	Residuals 92 0.164659 0.0017898               
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -277,19 +275,17 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			  Df    Sum Sq   Mean Sq      F N.Perm Pr(>F)    
-	Groups     1 0.0060076 0.0060076 26.742    999  0.001 ***
-	Residuals 92 0.0206680 0.0002247                         
-	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+		  Df   Sum Sq   Mean Sq     F N.Perm Pr(>F)
+	Groups     1 0.003154 0.0031536 1.762    999  0.186
+	Residuals 92 0.164659 0.0017898                    
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-				No   Yes
-	No             0.001
-	Yes 1.3501e-06      
+		 No   Yes
+	No          0.195
+	Yes 0.18766          
 	
-The p-value indicates that the results are significant.
+The p-value indicates that the results are more significant than the negative tests.
 	
 Test 2
 ~~~~~~
@@ -300,7 +296,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the CurrentlyWe
 
 **Command:** ::
 
-	R --slave --args -d Glen\ Canyon/unweighted_unifrac_dm_shuffled_1.txt -m Glen\ Canyon/map_25Jan2012.txt -c CurrentlyWet -o betadisper_negative_1 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_1.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o glen_canyon_negative_permdisp_results_1
 
 **Results:**
 
@@ -309,9 +305,9 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			  Df   Sum Sq    Mean Sq F value Pr(>F)
-	Groups     1 0.000878 0.00087764  0.3079 0.5803
-	Residuals 92 0.262210 0.00285011               
+		  Df  Sum Sq   Mean Sq F value Pr(>F)
+	Groups     1 0.00162 0.0016154  0.1863  0.667
+	Residuals 92 0.79769 0.0086705               
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -325,15 +321,15 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			  Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)
-	Groups     1 0.000878 0.00087764 0.3079    999  0.589
-	Residuals 92 0.262210 0.00285011                     
+		  Df  Sum Sq   Mean Sq      F N.Perm Pr(>F)
+	Groups     1 0.00162 0.0016154 0.1863    999  0.666
+	Residuals 92 0.79769 0.0086705                     
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			No   Yes
-	No         0.586
-	Yes 0.5803      
+		 No   Yes
+	No          0.666
+	Yes 0.66701      
 
 The p-value indicates that the results are insignificant.
 	
@@ -346,7 +342,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the CurrentlyWe
 
 **Command:** ::
 
-	R --slave --args -d Glen\ Canyon/unweighted_unifrac_dm_shuffled_2.txt -m Glen\ Canyon/map_25Jan2012.txt -c CurrentlyWet -o betadisper_negative_2 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_2.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o glen_canyon_negative_permdisp_results_2
 
 **Results:**
 
@@ -355,9 +351,9 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			  Df   Sum Sq   Mean Sq F value Pr(>F)
-	Groups     1 0.002333 0.0023333  0.8033 0.3725
-	Residuals 92 0.267228 0.0029046               
+		  Df  Sum Sq   Mean Sq F value Pr(>F)
+	Groups     1 0.00004 0.0000404  0.0048 0.9452
+	Residuals 92 0.78170 0.0084967               
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -371,15 +367,15 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			  Df   Sum Sq   Mean Sq      F N.Perm Pr(>F)
-	Groups     1 0.002333 0.0023333 0.8033    999  0.381
-	Residuals 92 0.267228 0.0029046                     
+		  Df  Sum Sq   Mean Sq      F N.Perm Pr(>F)
+	Groups     1 0.00004 0.0000404 0.0048    999  0.942
+	Residuals 92 0.78170 0.0084967                     
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			 No   Yes
-	No          0.387
-	Yes 0.37245      
+		 No  Yes
+	No          0.94
+	Yes 0.94518        
 
 The p-value indicates that the results insignificant.
 	
@@ -392,7 +388,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the CurrentlyWe
 
 **Command:** ::
 
-	R --slave --args -d Glen\ Canyon/unweighted_unifrac_dm_shuffled_3.txt -m Glen\ Canyon/map_25Jan2012.txt -c CurrentlyWet -o betadisper_negative_3 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/glen_canyon/unweighted_unifrac_dm_shuffled_3.txt -m datasets/glen_canyon/map_25Jan2012.txt -c CurrentlyWet -o glen_canyon_negative_permdisp_results_3
 	
 **Results:**
 
@@ -401,9 +397,9 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			  Df   Sum Sq   Mean Sq F value Pr(>F)
-	Groups     1 0.001018 0.0010178  0.3552 0.5526
-	Residuals 92 0.263611 0.0028653               
+		  Df  Sum Sq   Mean Sq F value Pr(>F)
+	Groups     1 0.00516 0.0051590  0.5948 0.4425
+	Residuals 92 0.79792 0.0086731               
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -417,15 +413,15 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			  Df   Sum Sq   Mean Sq      F N.Perm Pr(>F)
-	Groups     1 0.001018 0.0010178 0.3552    999  0.526
-	Residuals 92 0.263611 0.0028653                     
+		  Df  Sum Sq   Mean Sq      F N.Perm Pr(>F)
+	Groups     1 0.00516 0.0051590 0.5948    999  0.443
+	Residuals 92 0.79792 0.0086731                     
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			 No   Yes
-	No          0.526
-	Yes 0.55264      
+		 No   Yes
+	No          0.445
+	Yes 0.44254             
 	
 The p-value indicates that the results are insignificant.
 	
@@ -441,20 +437,20 @@ This test uses the original unweighted unifrac distance matrix and the HOST_SUBJ
 
 **Command:** ::
 
-	R --slave --args -d Keyboard/unweighted_unifrac_dm.txt -m Keyboard/map.txt -c HOST_SUBJECT_ID -o betadisper_positive < betadisper.r
+	compare_categories.py --method permdisp -i datasets/keyboard/unweighted_unifrac_dm.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o keyboard_positive_permdisp_results
 
 **Results:**
 
 The following results were written to the output file: ::
 
 	Analysis of Variance Table
-
+	
 	Response: Distances
-			   Df    Sum Sq    Mean Sq F value    Pr(>F)    
-	Groups     10 0.0089615 0.00089615  4.4126 3.586e-05 ***
-	Residuals 104 0.0211214 0.00020309                      
+		   Df  Sum Sq  Mean Sq F value    Pr(>F)    
+	Groups     10 0.81031 0.081031  36.751 < 2.2e-16 ***
+	Residuals 104 0.22931 0.002205                      
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -468,26 +464,26 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df    Sum Sq    Mean Sq      F N.Perm Pr(>F)   
-	Groups     10 0.0089615 0.00089615 4.4126    999  0.002 **
-	Residuals 104 0.0211214 0.00020309                        
+		   Df  Sum Sq  Mean Sq      F N.Perm Pr(>F)    
+	Groups     10 0.81031 0.081031 36.751    999  0.001 ***
+	Residuals 104 0.22931 0.002205                         
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			 F1 L1 L3       M1       M2       M3       M9 R1 U1 U2 U3
-	F1                0.736000 0.403000 0.241000 0.159000            
-	L1                                                               
-	L3                                                               
-	M1 0.718987                0.243000 0.098000 0.127000            
-	M2 0.388167       0.298617          0.691000 0.065000            
-	M3 0.225243       0.110657 0.693715          0.016000            
-	M9 0.158122       0.147042 0.074368 0.018900                     
-	R1                                                               
-	U1                                                               
-	U2                                                               
-	U3                                                  
+		   F1 L1 L3         M1         M2         M3         M9 R1 U1 U2 U3
+	F1                  3.9800e-01 1.9100e-01 2.6700e-01 9.1000e-01            
+	L1                                                                         
+	L3                                                                         
+	M1 3.7767e-01                  1.6100e-01 1.8000e-02 1.2000e-01            
+	M2 2.1166e-01       2.1787e-01            1.0000e-03 4.0000e-03            
+	M3 3.1179e-01       1.4740e-03 1.0126e-08            8.2000e-02            
+	M9 9.3542e-01       1.1021e-01 3.5387e-03 6.7247e-02                       
+	R1                                                                         
+	U1                                                                         
+	U2                                                                         
+	U3                                                                                                               
 
 The p-value indicates that the results are significant.	
 
@@ -500,7 +496,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the HOST_SUBJEC
 
 **Command:** ::
 
-	R --slave --args -d Keyboard/unweighted_unifrac_dm_shuffled_1.txt -m Keyboard/map.txt -c HOST_SUBJECT_ID -o betadisper_negative_1 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/keyboard/unweighted_unifrac_dm_shuffled_1.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o keyboard_negative_permdisp_results_1
 
 **Results:**
 
@@ -509,11 +505,11 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq F value    Pr(>F)    
-	Groups     10 0.024535 0.00245353  4.4774 2.968e-05 ***
-	Residuals 104 0.056990 0.00054798                      
+		   Df  Sum Sq Mean Sq F value    Pr(>F)    
+	Groups     10 1.07966 0.10797  41.200 < 2.2e-16 ***
+	Residuals 104 0.27253 0.00262                      
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -527,26 +523,26 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)    
-	Groups     10 0.024535 0.00245353 4.4774    999  0.001 ***
-	Residuals 104 0.056990 0.00054798                         
+		   Df  Sum Sq Mean Sq      F N.Perm Pr(>F)    
+	Groups     10 1.07966 0.10797 41.200    999  0.001 ***
+	Residuals 104 0.27253 0.00262                         
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			  F1 L1 L3        M1        M2        M3        M9 R1 U1 U2 U3
-	F1                 0.3710000 0.2000000 0.0680000 0.3010000            
-	L1                                                                    
-	L3                                                                    
-	M1 0.3554280                 0.0310000 0.0010000 0.0550000            
-	M2 0.1838147       0.0306839           0.8610000 0.7230000            
-	M3 0.0588469       0.0014799 0.8623054           0.7980000            
-	M9 0.2662109       0.0551588 0.7268720 0.8137601                      
-	R1                                                                    
-	U1                                                                    
-	U2                                                                    
-	U3                                                                    
+		   F1 L1 L3         M1         M2         M3         M9 R1 U1 U2 U3
+	F1                  3.2200e-01 1.0000e-02 2.6000e-02 2.0000e-02            
+	L1                                                                         
+	L3                                                                         
+	M1 3.2691e-01                  5.0000e-03 9.0000e-03 8.0000e-03            
+	M2 2.6932e-03       3.8059e-05            5.5900e-01 4.0900e-01            
+	M3 1.2583e-02       4.0305e-04 5.5574e-01            8.1100e-01            
+	M9 9.7747e-03       1.8902e-04 3.7458e-01 7.9932e-01                       
+	R1                                                                         
+	U1                                                                         
+	U2                                                                         
+	U3                                                                         
 
 The p-value indicates that the results are significant.
 
@@ -559,7 +555,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the HOST_SUBJEC
 
 **Command:** ::
 
-	R --slave --args -d Keyboard/unweighted_unifrac_dm_shuffled_2.txt -m Keyboard/map.txt -c HOST_SUBJECT_ID -o betadisper_negative_2 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/keyboard/unweighted_unifrac_dm_shuffled_2.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o keyboard_negative_permdisp_results_2
 
 **Results:**
 
@@ -568,11 +564,11 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq F value    Pr(>F)    
-	Groups     10 0.024182 0.00241823  3.5249 0.0004881 ***
-	Residuals 104 0.071348 0.00068604                      
+		   Df  Sum Sq  Mean Sq F value    Pr(>F)    
+	Groups     10 1.08893 0.108893  42.434 < 2.2e-16 ***
+	Residuals 104 0.26688 0.002566                      
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -586,26 +582,26 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)    
-	Groups     10 0.024182 0.00241823 3.5249    999  0.001 ***
-	Residuals 104 0.071348 0.00068604                         
+		   Df  Sum Sq  Mean Sq      F N.Perm Pr(>F)    
+	Groups     10 1.08893 0.108893 42.434    999  0.001 ***
+	Residuals 104 0.26688 0.002566                         
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			 F1 L1 L3       M1       M2       M3       M9 R1 U1 U2 U3
-	F1                0.353000 0.969000 0.776000 0.951000            
-	L1                                                               
-	L3                                                               
-	M1 0.346654                0.025000 0.006000 0.060000            
-	M2 0.960319       0.016261          0.485000 0.726000            
-	M3 0.757185       0.004107 0.488713          0.351000            
-	M9 0.943114       0.050123 0.737238 0.351259                     
-	R1                                                               
-	U1                                                               
-	U2                                                               
-	U3                                                               
+		   F1 L1 L3         M1         M2         M3         M9 R1 U1 U2 U3
+	F1                  1.9300e-01 1.2600e-01 5.7000e-02 1.4400e-01            
+	L1                                                                         
+	L3                                                                         
+	M1 2.0791e-01                  5.0000e-03 3.0000e-03 7.0000e-03            
+	M2 1.4750e-01       1.9806e-06            2.0200e-01 6.0000e-01            
+	M3 5.9335e-02       3.8031e-07 1.9174e-01            5.7100e-01            
+	M9 1.7403e-01       5.8180e-05 5.9153e-01 5.6234e-01                       
+	R1                                                                         
+	U1                                                                         
+	U2                                                                         
+	U3                                                                                                                                    
 
 The p-value indicates that the results are significant.
 
@@ -618,7 +614,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the HOST_SUBJEC
 
 **Command:** ::
 
-	R --slave --args -d Keyboard/unweighted_unifrac_dm_shuffled_3.txt -m Keyboard/map.txt -c HOST_SUBJECT_ID -o betadisper_negative_3 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/keyboard/unweighted_unifrac_dm_shuffled_3.txt -m datasets/keyboard/map.txt -c HOST_SUBJECT_ID -o keyboard_negative_permdisp_results_3
 
 **Results:**
 
@@ -627,11 +623,11 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq F value    Pr(>F)    
-	Groups     10 0.024199 0.00241989  3.7129 0.0002801 ***
-	Residuals 104 0.067783 0.00065176                      
+		   Df  Sum Sq  Mean Sq F value    Pr(>F)    
+	Groups     10 1.06059 0.106059  46.827 < 2.2e-16 ***
+	Residuals 104 0.23555 0.002265                      
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -645,26 +641,26 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)    
-	Groups     10 0.024199 0.00241989 3.7129    999  0.001 ***
-	Residuals 104 0.067783 0.00065176                         
+		   Df  Sum Sq  Mean Sq      F N.Perm Pr(>F)    
+	Groups     10 1.06059 0.106059 46.827    999  0.001 ***
+	Residuals 104 0.23555 0.002265                         
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-			F1 L1 L3      M1      M2      M3      M9 R1 U1 U2 U3
-	F1               0.96500 0.36700 0.35400 0.13000            
-	L1                                                          
-	L3                                                          
-	M1 0.96735               0.47100 0.47400 0.20500            
-	M2 0.36282       0.47355         0.76700 0.27500            
-	M3 0.33691       0.44413 0.78665         0.16500            
-	M9 0.12918       0.21136 0.28776 0.15521                    
-	R1                                                          
-	U1                                                          
-	U2                                                          
-	U3                               
+		  F1 L1 L3        M1        M2        M3        M9 R1 U1 U2 U3
+	F1                 0.8600000 0.0160000 0.0190000 0.0230000            
+	L1                                                                    
+	L3                                                                    
+	M1 0.8341713                 0.0360000 0.0450000 0.0350000            
+	M2 0.0029092       0.0085542           0.6310000 0.6030000            
+	M3 0.0033429       0.0089829 0.6263920           0.3360000            
+	M9 0.0034822       0.0099070 0.5808124 0.3261826                      
+	R1                                                                    
+	U1                                                                    
+	U2                                                                    
+	U3                                                                    
 
 The p-value indicates that the results are significant.	
 
@@ -680,7 +676,7 @@ This test uses the original unweighted unifrac distance matrix and the BODY_SITE
 
 **Command:** ::
 
-	R --slave --args -d Whole\ Body/unweighted_unifrac_dm.txt -m Whole\ Body/map.txt -c BODY_SITE -o betadisper_positive < betadisper.r
+	compare_categories.py --method permdisp -i datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c BODY_SITE -o  whole_body_positive_permdisp_results
 
 **Results:**
 
@@ -689,11 +685,11 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq   Mean Sq F value    Pr(>F)    
-	Groups     19 0.092975 0.0048934  22.892 < 2.2e-16 ***
-	Residuals 565 0.120776 0.0002138                      
+		   Df Sum Sq  Mean Sq F value    Pr(>F)    
+	Groups     19 2.5948 0.136569  42.752 < 2.2e-16 ***
+	Residuals 565 1.8048 0.003194                      
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -707,264 +703,264 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq   Mean Sq      F N.Perm Pr(>F)    
-	Groups     19 0.092975 0.0048934 22.892    999  0.001 ***
-	Residuals 565 0.120776 0.0002138                         
+		   Df Sum Sq  Mean Sq      F N.Perm Pr(>F)    
+	Groups     19 2.5948 0.136569 42.752    999  0.001 ***
+	Residuals 565 1.8048 0.003194                         
 	---
-	Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-									 UBERON:ear canal UBERON:feces
-	UBERON:ear canal                                    1.0000e-03
-	UBERON:feces                           7.0921e-11             
-	UBERON:glans penis                     5.2830e-01   1.0172e-12
-	UBERON:hair                            9.8369e-01   9.8136e-17
-	UBERON:labia minora                    7.0630e-01   1.2191e-10
-	UBERON:mouth                           3.4896e-04   2.9259e-02
-	UBERON:nose                            9.6989e-01   2.3641e-15
-	UBERON:nostril                         5.4606e-01   4.5769e-16
-	UBERON:nostrils                        6.4419e-01   7.9374e-16
-	UBERON:skin of arm                     8.9785e-01   9.4252e-22
-	UBERON:skin of finger                  4.3878e-03   3.9370e-12
-	UBERON:skin of forearm                 8.3154e-04   4.2747e-08
-	UBERON:tongue                          1.9110e-08   8.1147e-01
-	UBERON:urine                           3.3623e-01   3.6922e-14
-	UBERON:zone of skin of abdomen         4.7309e-01   3.1765e-22
-	UBERON:zone of skin of foot            4.9330e-01   1.3516e-13
-	UBERON:zone of skin of hand            9.6965e-05   9.1352e-13
-	UBERON:zone of skin of head            7.9705e-01   1.9681e-20
-	UBERON:zone of skin of knee            1.9000e-06   1.4137e-12
-	UBERON:zone of skin of outer ear       7.2754e-02   6.8148e-28
-									 UBERON:glans penis UBERON:hair
-	UBERON:ear canal                         5.2400e-01  9.8600e-01
-	UBERON:feces                             1.0000e-03  1.0000e-03
-	UBERON:glans penis                                   3.4600e-01
-	UBERON:hair                              3.6136e-01            
-	UBERON:labia minora                      8.2297e-01  5.9163e-01
-	UBERON:mouth                             8.0518e-05  1.6235e-06
-	UBERON:nose                              4.2323e-01  9.4077e-01
-	UBERON:nostril                           6.9718e-01  4.4414e-01
-	UBERON:nostrils                          6.4347e-01  5.3491e-01
-	UBERON:skin of arm                       3.1778e-01  8.4270e-01
-	UBERON:skin of finger                    4.4064e-02  2.3261e-04
-	UBERON:skin of forearm                   5.7989e-03  1.6493e-05
-	UBERON:tongue                            1.0720e-09  5.7338e-13
-	UBERON:urine                             1.7974e-01  3.0509e-01
-	UBERON:zone of skin of abdomen           8.1279e-01  2.7965e-01
-	UBERON:zone of skin of foot              7.8801e-01  4.3252e-01
-	UBERON:zone of skin of hand              1.5732e-02  2.8212e-06
-	UBERON:zone of skin of head              2.2295e-01  7.8098e-01
-	UBERON:zone of skin of knee              6.7749e-06  5.0286e-10
-	UBERON:zone of skin of outer ear         1.5410e-02  4.6130e-02
-									 UBERON:labia minora UBERON:mouth UBERON:nose
-	UBERON:ear canal                          6.9500e-01   1.0000e-03  9.6700e-01
-	UBERON:feces                              1.0000e-03   2.1000e-02  1.0000e-03
-	UBERON:glans penis                        8.4400e-01   1.0000e-03  4.4200e-01
-	UBERON:hair                               6.0800e-01   1.0000e-03  9.3700e-01
-	UBERON:labia minora                                    3.0000e-03  6.4400e-01
-	UBERON:mouth                              5.0377e-04               1.0000e-03
-	UBERON:nose                               6.4790e-01   6.2234e-06            
-	UBERON:nostril                            9.4961e-01   3.5844e-06  5.1009e-01
-	UBERON:nostrils                           8.9607e-01   4.1740e-06  6.0458e-01
-	UBERON:skin of arm                        5.8305e-01   8.5397e-09  9.2451e-01
-	UBERON:skin of finger                     3.7129e-02   3.8930e-04  5.4673e-04
-	UBERON:skin of forearm                    7.1244e-03   1.3987e-02  4.6927e-05
-	UBERON:tongue                             3.8368e-08   8.6365e-02  6.7536e-12
-	UBERON:urine                              2.9047e-01   1.4300e-05  2.8182e-01
-	UBERON:zone of skin of abdomen            8.7543e-01   3.7728e-09  3.5476e-01
-	UBERON:zone of skin of foot               9.9897e-01   5.2351e-05  4.8594e-01
-	UBERON:zone of skin of hand               1.0398e-02   5.0891e-04  7.9937e-06
-	UBERON:zone of skin of head               4.2111e-01   3.4007e-08  7.1837e-01
-	UBERON:zone of skin of knee               2.2705e-05   1.5893e-03  4.3363e-09
-	UBERON:zone of skin of outer ear          5.2309e-02   1.1184e-11  3.9893e-02
-									 UBERON:nostril UBERON:nostrils
-	UBERON:ear canal                     5.4800e-01      6.4800e-01
-	UBERON:feces                         1.0000e-03      1.0000e-03
-	UBERON:glans penis                   7.1300e-01      6.4700e-01
-	UBERON:hair                          4.8200e-01      5.3700e-01
-	UBERON:labia minora                  9.5500e-01      8.9000e-01
+		                         UBERON:ear canal UBERON:feces
+	UBERON:ear canal                                    4.4200e-01
+	UBERON:feces                           4.6703e-01             
+	UBERON:glans penis                     9.2269e-01   5.8869e-01
+	UBERON:hair                            2.9577e-01   1.0502e-01
+	UBERON:labia minora                    4.6547e-01   1.2309e-02
+	UBERON:mouth                           3.0444e-05   8.1281e-22
+	UBERON:nose                            9.6453e-01   3.6454e-01
+	UBERON:nostril                         9.3498e-01   3.1264e-01
+	UBERON:nostrils                        1.9969e-01   6.3745e-06
+	UBERON:skin of arm                     5.8680e-01   8.6330e-01
+	UBERON:skin of finger                  7.3413e-01   2.0283e-02
+	UBERON:skin of forearm                 8.7177e-01   2.5248e-01
+	UBERON:tongue                          4.0432e-10   1.2830e-31
+	UBERON:urine                           1.6228e-02   1.2239e-04
+	UBERON:zone of skin of abdomen         7.6712e-01   7.4643e-01
+	UBERON:zone of skin of foot            1.0107e-04   4.8215e-11
+	UBERON:zone of skin of hand            3.3643e-01   7.8337e-01
+	UBERON:zone of skin of head            3.3284e-01   3.3459e-01
+	UBERON:zone of skin of knee            3.3201e-01   5.9994e-01
+	UBERON:zone of skin of outer ear       9.4726e-03   3.7176e-05
+		                         UBERON:glans penis UBERON:hair
+	UBERON:ear canal                         9.2500e-01  2.8600e-01
+	UBERON:feces                             5.5400e-01  9.6000e-02
+	UBERON:glans penis                                   2.7700e-01
+	UBERON:hair                              2.9565e-01            
+	UBERON:labia minora                      3.7729e-01  4.1527e-02
+	UBERON:mouth                             9.8813e-07  1.6117e-11
+	UBERON:nose                              9.2368e-01  1.4849e-01
+	UBERON:nostril                           9.3114e-01  1.0019e-01
+	UBERON:nostrils                          7.0899e-02  1.0141e-04
+	UBERON:skin of arm                       7.1483e-01  4.2161e-01
+	UBERON:skin of finger                    5.4488e-01  6.5167e-03
+	UBERON:skin of forearm                   9.6913e-01  3.2223e-02
+	UBERON:tongue                            4.1893e-10  3.7905e-17
+	UBERON:urine                             5.7014e-02  1.5190e-01
+	UBERON:zone of skin of abdomen           8.3580e-01  2.0885e-01
+	UBERON:zone of skin of foot              6.1790e-04  4.5561e-03
+	UBERON:zone of skin of hand              4.7629e-01  1.0440e-01
+	UBERON:zone of skin of head              4.4564e-01  6.0786e-01
+	UBERON:zone of skin of knee              3.6348e-01  1.0568e-01
+	UBERON:zone of skin of outer ear         2.0701e-02  2.9813e-01
+		                         UBERON:labia minora UBERON:mouth UBERON:nose
+	UBERON:ear canal                          4.9400e-01   1.0000e-03  9.6200e-01
+	UBERON:feces                              8.0000e-03   1.0000e-03  3.5900e-01
+	UBERON:glans penis                        3.8600e-01   1.0000e-03  9.1800e-01
+	UBERON:hair                               4.3000e-02   1.0000e-03  1.4200e-01
+	UBERON:labia minora                                    2.0000e-03  2.7600e-01
+	UBERON:mouth                              6.4891e-04               1.0000e-03
+	UBERON:nose                               2.8123e-01   1.1077e-08            
+	UBERON:nostril                            1.9200e-01   5.4186e-11  9.7457e-01
+	UBERON:nostrils                           9.0577e-01   3.6008e-11  4.2741e-02
+	UBERON:skin of arm                        1.3607e-01   1.0669e-09  5.3749e-01
+	UBERON:skin of finger                     2.0815e-01   1.2757e-14  5.6159e-01
+	UBERON:skin of forearm                    7.1926e-02   5.7802e-17  8.8394e-01
+	UBERON:tongue                             1.6838e-06   1.3896e-02  5.5519e-14
+	UBERON:urine                              4.8876e-03   7.1717e-14  6.8408e-03
+	UBERON:zone of skin of abdomen            1.4692e-01   2.7055e-11  6.9658e-01
+	UBERON:zone of skin of foot               3.0948e-06   1.3613e-27  3.4290e-06
+	UBERON:zone of skin of hand               3.8491e-03   4.2418e-27  2.4330e-01
+	UBERON:zone of skin of head               4.0950e-02   3.2674e-13  2.4563e-01
+	UBERON:zone of skin of knee               2.0380e-03   8.2393e-28  1.7760e-01
+	UBERON:zone of skin of outer ear          1.1439e-04   8.2544e-26  1.3170e-03
+		                         UBERON:nostril UBERON:nostrils
+	UBERON:ear canal                     9.3900e-01      2.0200e-01
+	UBERON:feces                         3.1700e-01      1.0000e-03
+	UBERON:glans penis                   9.1500e-01      5.4000e-02
+	UBERON:hair                          1.0000e-01      1.0000e-03
+	UBERON:labia minora                  1.9400e-01      9.1700e-01
 	UBERON:mouth                         1.0000e-03      1.0000e-03
-	UBERON:nose                          5.4100e-01      6.2100e-01
-	UBERON:nostril                                       9.0600e-01
-	UBERON:nostrils                      9.0932e-01                
-	UBERON:skin of arm                   4.3891e-01      5.5419e-01
-	UBERON:skin of finger                1.1299e-03      1.3746e-03
-	UBERON:skin of forearm               5.3088e-05      7.9106e-05
-	UBERON:tongue                        1.3483e-12      2.5948e-12
-	UBERON:urine                         3.9401e-02      1.0177e-01
-	UBERON:zone of skin of abdomen       7.6539e-01      6.7780e-01
-	UBERON:zone of skin of foot          9.1018e-01      8.4083e-01
-	UBERON:zone of skin of hand          8.4170e-06      2.9934e-05
-	UBERON:zone of skin of head          1.9027e-01      2.9318e-01
-	UBERON:zone of skin of knee          8.3639e-09      8.9881e-09
-	UBERON:zone of skin of outer ear     3.9525e-04      3.3584e-03
-									 UBERON:skin of arm UBERON:skin of finger
-	UBERON:ear canal                         8.8000e-01            3.0000e-03
-	UBERON:feces                             1.0000e-03            1.0000e-03
-	UBERON:glans penis                       3.2600e-01            3.6000e-02
-	UBERON:hair                              8.6100e-01            1.0000e-03
-	UBERON:labia minora                      6.0800e-01            4.2000e-02
+	UBERON:nose                          9.7300e-01      4.6000e-02
+	UBERON:nostril                                       2.8000e-02
+	UBERON:nostrils                      2.2153e-02                
+	UBERON:skin of arm                   4.5306e-01      9.3573e-03
+	UBERON:skin of finger                4.7183e-01      2.0926e-02
+	UBERON:skin of forearm               9.0753e-01      4.7778e-04
+	UBERON:tongue                        3.8781e-19      3.0294e-15
+	UBERON:urine                         4.2379e-04      2.6698e-06
+	UBERON:zone of skin of abdomen       6.9015e-01      2.7637e-03
+	UBERON:zone of skin of foot          1.0358e-08      3.0026e-14
+	UBERON:zone of skin of hand          1.7919e-01      4.0282e-07
+	UBERON:zone of skin of head          1.5769e-01      3.6122e-04
+	UBERON:zone of skin of knee          1.5286e-01      5.8629e-09
+	UBERON:zone of skin of outer ear     9.9823e-05      7.8190e-11
+		                         UBERON:skin of arm UBERON:skin of finger
+	UBERON:ear canal                         5.7900e-01            7.1700e-01
+	UBERON:feces                             8.6000e-01            1.3000e-02
+	UBERON:glans penis                       6.9400e-01            5.1500e-01
+	UBERON:hair                              4.3200e-01            4.0000e-03
+	UBERON:labia minora                      1.4200e-01            2.1300e-01
 	UBERON:mouth                             1.0000e-03            1.0000e-03
-	UBERON:nose                              9.1800e-01            1.0000e-03
-	UBERON:nostril                           4.3500e-01            2.0000e-03
-	UBERON:nostrils                          5.6600e-01            2.0000e-03
-	UBERON:skin of arm                                             1.0000e-03
-	UBERON:skin of finger                    1.0833e-05                      
-	UBERON:skin of forearm                   2.3364e-07            1.5539e-01
-	UBERON:tongue                            3.8901e-17            2.2204e-09
-	UBERON:urine                             1.2405e-01            3.2015e-05
-	UBERON:zone of skin of abdomen           2.6311e-01            1.8168e-03
-	UBERON:zone of skin of foot              4.0209e-01            3.9845e-03
-	UBERON:zone of skin of hand              1.3756e-08            6.9669e-01
-	UBERON:zone of skin of head              5.4531e-01            4.2034e-06
-	UBERON:zone of skin of knee              3.7791e-13            5.5803e-03
-	UBERON:zone of skin of outer ear         4.0678e-03            4.9576e-11
-									 UBERON:skin of forearm UBERON:tongue
-	UBERON:ear canal                             2.0000e-03    1.0000e-03
-	UBERON:feces                                 1.0000e-03    8.0800e-01
-	UBERON:glans penis                           1.0000e-02    1.0000e-03
-	UBERON:hair                                  1.0000e-03    1.0000e-03
-	UBERON:labia minora                          1.1000e-02    1.0000e-03
-	UBERON:mouth                                 1.7000e-02    8.1000e-02
-	UBERON:nose                                  1.0000e-03    1.0000e-03
-	UBERON:nostril                               1.0000e-03    1.0000e-03
-	UBERON:nostrils                              1.0000e-03    1.0000e-03
-	UBERON:skin of arm                           1.0000e-03    1.0000e-03
-	UBERON:skin of finger                        1.3700e-01    1.0000e-03
+	UBERON:nose                              5.3300e-01            5.5500e-01
+	UBERON:nostril                           4.7700e-01            4.7500e-01
+	UBERON:nostrils                          1.2000e-02            2.4000e-02
+	UBERON:skin of arm                                             1.3000e-01
+	UBERON:skin of finger                    1.4376e-01                      
+	UBERON:skin of forearm                   4.4993e-01            2.5820e-01
+	UBERON:tongue                            1.1189e-17            9.3587e-22
+	UBERON:urine                             9.0740e-03            1.8513e-05
+	UBERON:zone of skin of abdomen           7.8918e-01            2.1091e-01
+	UBERON:zone of skin of foot              1.4563e-05            1.9922e-12
+	UBERON:zone of skin of hand              9.7285e-01            5.3697e-03
+	UBERON:zone of skin of head              6.3052e-01            1.9369e-02
+	UBERON:zone of skin of knee              9.2382e-01            1.6985e-03
+	UBERON:zone of skin of outer ear         1.3609e-02            9.5388e-08
+		                         UBERON:skin of forearm UBERON:tongue
+	UBERON:ear canal                             8.7200e-01    1.0000e-03
+	UBERON:feces                                 2.6100e-01    1.0000e-03
+	UBERON:glans penis                           9.7400e-01    1.0000e-03
+	UBERON:hair                                  2.8000e-02    1.0000e-03
+	UBERON:labia minora                          6.3000e-02    1.0000e-03
+	UBERON:mouth                                 1.0000e-03    1.5000e-02
+	UBERON:nose                                  8.9900e-01    1.0000e-03
+	UBERON:nostril                               9.1000e-01    1.0000e-03
+	UBERON:nostrils                              2.0000e-03    1.0000e-03
+	UBERON:skin of arm                           4.6900e-01    1.0000e-03
+	UBERON:skin of finger                        2.3500e-01    1.0000e-03
 	UBERON:skin of forearm                                     1.0000e-03
-	UBERON:tongue                                3.1911e-06              
-	UBERON:urine                                 5.9563e-06    3.5196e-11
-	UBERON:zone of skin of abdomen               4.2037e-05    4.4352e-17
-	UBERON:zone of skin of foot                  3.0044e-04    1.1156e-10
-	UBERON:zone of skin of hand                  2.0933e-01    6.9328e-10
-	UBERON:zone of skin of head                  1.5240e-07    3.7477e-16
-	UBERON:zone of skin of knee                  4.2781e-01    1.4055e-09
-	UBERON:zone of skin of outer ear             1.9562e-12    1.9919e-22
-									 UBERON:urine UBERON:zone of skin of abdomen
-	UBERON:ear canal                   3.3100e-01                     4.4600e-01
-	UBERON:feces                       1.0000e-03                     1.0000e-03
-	UBERON:glans penis                 1.7200e-01                     8.2900e-01
-	UBERON:hair                        3.3700e-01                     2.7400e-01
-	UBERON:labia minora                2.8100e-01                     8.7000e-01
+	UBERON:tongue                                8.3044e-23              
+	UBERON:urine                                 3.3783e-04    1.3054e-25
+	UBERON:zone of skin of abdomen               6.2517e-01    3.2151e-15
+	UBERON:zone of skin of foot                  5.4854e-10    2.7671e-43
+	UBERON:zone of skin of hand                  1.4111e-01    1.4827e-40
+	UBERON:zone of skin of head                  1.2625e-01    1.4433e-22
+	UBERON:zone of skin of knee                  5.5579e-02    1.7496e-34
+	UBERON:zone of skin of outer ear             1.1628e-05    1.1267e-39
+		                         UBERON:urine UBERON:zone of skin of abdomen
+	UBERON:ear canal                   1.6000e-02                     7.6500e-01
+	UBERON:feces                       1.0000e-03                     7.5300e-01
+	UBERON:glans penis                 6.1000e-02                     8.4900e-01
+	UBERON:hair                        1.5500e-01                     2.2800e-01
+	UBERON:labia minora                7.0000e-03                     1.4300e-01
 	UBERON:mouth                       1.0000e-03                     1.0000e-03
-	UBERON:nose                        2.6300e-01                     3.4700e-01
-	UBERON:nostril                     4.5000e-02                     7.9200e-01
-	UBERON:nostrils                    9.8000e-02                     6.8700e-01
-	UBERON:skin of arm                 1.3500e-01                     2.6000e-01
-	UBERON:skin of finger              1.0000e-03                     3.0000e-03
-	UBERON:skin of forearm             1.0000e-03                     1.0000e-03
+	UBERON:nose                        5.0000e-03                     7.1400e-01
+	UBERON:nostril                     1.0000e-03                     6.9900e-01
+	UBERON:nostrils                    1.0000e-03                     2.0000e-03
+	UBERON:skin of arm                 6.0000e-03                     7.9100e-01
+	UBERON:skin of finger              1.0000e-03                     2.1400e-01
+	UBERON:skin of forearm             1.0000e-03                     6.3100e-01
 	UBERON:tongue                      1.0000e-03                     1.0000e-03
-	UBERON:urine                                                      9.4000e-02
-	UBERON:zone of skin of abdomen     1.0238e-01                               
-	UBERON:zone of skin of foot        6.6989e-03                     8.7032e-01
-	UBERON:zone of skin of hand        1.2493e-09                     3.5528e-04
-	UBERON:zone of skin of head        2.2343e-01                     1.5466e-01
-	UBERON:zone of skin of knee        1.8788e-09                     4.8468e-11
-	UBERON:zone of skin of outer ear   6.3640e-01                     2.8249e-03
-									 UBERON:zone of skin of foot
-	UBERON:ear canal                                  5.0100e-01
-	UBERON:feces                                      1.0000e-03
-	UBERON:glans penis                                7.9400e-01
-	UBERON:hair                                       4.6000e-01
-	UBERON:labia minora                               1.0000e+00
-	UBERON:mouth                                      2.0000e-03
-	UBERON:nose                                       5.1000e-01
-	UBERON:nostril                                    8.9500e-01
-	UBERON:nostrils                                   8.2700e-01
-	UBERON:skin of arm                                4.1100e-01
-	UBERON:skin of finger                             4.0000e-03
-	UBERON:skin of forearm                            1.0000e-03
-	UBERON:tongue                                     1.0000e-03
-	UBERON:urine                                      9.0000e-03
-	UBERON:zone of skin of abdomen                    8.6900e-01
-	UBERON:zone of skin of foot                                 
-	UBERON:zone of skin of hand                       1.4322e-05
-	UBERON:zone of skin of head                       1.4724e-01
-	UBERON:zone of skin of knee                       4.3105e-07
-	UBERON:zone of skin of outer ear                  2.9003e-05
-									 UBERON:zone of skin of hand
+	UBERON:urine                                                      2.7000e-02
+	UBERON:zone of skin of abdomen     2.0556e-02                               
+	UBERON:zone of skin of foot        5.0033e-01                     2.3277e-05
+	UBERON:zone of skin of hand        1.1372e-05                     6.0591e-01
+	UBERON:zone of skin of head        1.2425e-02                     4.4204e-01
+	UBERON:zone of skin of knee        2.3048e-04                     4.2903e-01
+	UBERON:zone of skin of outer ear   1.1364e-01                     5.5141e-03
+		                         UBERON:zone of skin of foot
 	UBERON:ear canal                                  1.0000e-03
 	UBERON:feces                                      1.0000e-03
-	UBERON:glans penis                                1.3000e-02
-	UBERON:hair                                       1.0000e-03
-	UBERON:labia minora                               1.3000e-02
+	UBERON:glans penis                                2.0000e-03
+	UBERON:hair                                       6.0000e-03
+	UBERON:labia minora                               1.0000e-03
 	UBERON:mouth                                      1.0000e-03
 	UBERON:nose                                       1.0000e-03
 	UBERON:nostril                                    1.0000e-03
 	UBERON:nostrils                                   1.0000e-03
 	UBERON:skin of arm                                1.0000e-03
-	UBERON:skin of finger                             7.2100e-01
-	UBERON:skin of forearm                            2.0000e-01
-	UBERON:tongue                                     1.0000e-03
-	UBERON:urine                                      1.0000e-03
-	UBERON:zone of skin of abdomen                    2.0000e-03
-	UBERON:zone of skin of foot                       1.0000e-03
-	UBERON:zone of skin of hand                                 
-	UBERON:zone of skin of head                       5.6656e-10
-	UBERON:zone of skin of knee                       1.1382e-02
-	UBERON:zone of skin of outer ear                  2.2930e-19
-									 UBERON:zone of skin of head
-	UBERON:ear canal                                  7.9800e-01
-	UBERON:feces                                      1.0000e-03
-	UBERON:glans penis                                2.1200e-01
-	UBERON:hair                                       8.1600e-01
-	UBERON:labia minora                               4.2300e-01
-	UBERON:mouth                                      1.0000e-03
-	UBERON:nose                                       7.4400e-01
-	UBERON:nostril                                    2.3000e-01
-	UBERON:nostrils                                   2.9300e-01
-	UBERON:skin of arm                                5.5600e-01
 	UBERON:skin of finger                             1.0000e-03
 	UBERON:skin of forearm                            1.0000e-03
 	UBERON:tongue                                     1.0000e-03
-	UBERON:urine                                      2.3600e-01
-	UBERON:zone of skin of abdomen                    1.5400e-01
-	UBERON:zone of skin of foot                       1.5600e-01
-	UBERON:zone of skin of hand                       1.0000e-03
-	UBERON:zone of skin of head                                 
-	UBERON:zone of skin of knee                       7.4644e-13
-	UBERON:zone of skin of outer ear                  1.8548e-02
-									 UBERON:zone of skin of knee
-	UBERON:ear canal                                  1.0000e-03
-	UBERON:feces                                      1.0000e-03
-	UBERON:glans penis                                1.0000e-03
-	UBERON:hair                                       1.0000e-03
-	UBERON:labia minora                               1.0000e-03
-	UBERON:mouth                                      3.0000e-03
-	UBERON:nose                                       1.0000e-03
-	UBERON:nostril                                    1.0000e-03
+	UBERON:urine                                      4.9900e-01
+	UBERON:zone of skin of abdomen                    1.0000e-03
+	UBERON:zone of skin of foot                                 
+	UBERON:zone of skin of hand                       1.8751e-13
+	UBERON:zone of skin of head                       1.4751e-05
+	UBERON:zone of skin of knee                       4.5478e-11
+	UBERON:zone of skin of outer ear                  8.4740e-04
+		                         UBERON:zone of skin of hand
+	UBERON:ear canal                                  2.9500e-01
+	UBERON:feces                                      7.9900e-01
+	UBERON:glans penis                                4.5500e-01
+	UBERON:hair                                       1.1200e-01
+	UBERON:labia minora                               5.0000e-03
+	UBERON:mouth                                      1.0000e-03
+	UBERON:nose                                       2.4400e-01
+	UBERON:nostril                                    1.7600e-01
 	UBERON:nostrils                                   1.0000e-03
-	UBERON:skin of arm                                1.0000e-03
-	UBERON:skin of finger                             3.0000e-03
-	UBERON:skin of forearm                            3.9700e-01
+	UBERON:skin of arm                                9.6800e-01
+	UBERON:skin of finger                             4.0000e-03
+	UBERON:skin of forearm                            1.2600e-01
 	UBERON:tongue                                     1.0000e-03
 	UBERON:urine                                      1.0000e-03
-	UBERON:zone of skin of abdomen                    1.0000e-03
+	UBERON:zone of skin of abdomen                    6.4100e-01
 	UBERON:zone of skin of foot                       1.0000e-03
-	UBERON:zone of skin of hand                       6.0000e-03
-	UBERON:zone of skin of head                       1.0000e-03
+	UBERON:zone of skin of hand                                 
+	UBERON:zone of skin of head                       3.5927e-01
+	UBERON:zone of skin of knee                       7.9743e-01
+	UBERON:zone of skin of outer ear                  7.9520e-06
+		                         UBERON:zone of skin of head
+	UBERON:ear canal                                  3.2900e-01
+	UBERON:feces                                      3.6100e-01
+	UBERON:glans penis                                4.3600e-01
+	UBERON:hair                                       6.3800e-01
+	UBERON:labia minora                               3.9000e-02
+	UBERON:mouth                                      1.0000e-03
+	UBERON:nose                                       2.5700e-01
+	UBERON:nostril                                    1.7400e-01
+	UBERON:nostrils                                   1.0000e-03
+	UBERON:skin of arm                                6.5700e-01
+	UBERON:skin of finger                             1.8000e-02
+	UBERON:skin of forearm                            1.2800e-01
+	UBERON:tongue                                     1.0000e-03
+	UBERON:urine                                      1.0000e-02
+	UBERON:zone of skin of abdomen                    4.6200e-01
+	UBERON:zone of skin of foot                       1.0000e-03
+	UBERON:zone of skin of hand                       3.6500e-01
+	UBERON:zone of skin of head                                 
+	UBERON:zone of skin of knee                       4.7827e-01
+	UBERON:zone of skin of outer ear                  3.3027e-02
+		                         UBERON:zone of skin of knee
+	UBERON:ear canal                                  3.0600e-01
+	UBERON:feces                                      5.9400e-01
+	UBERON:glans penis                                3.6600e-01
+	UBERON:hair                                       1.0900e-01
+	UBERON:labia minora                               5.0000e-03
+	UBERON:mouth                                      1.0000e-03
+	UBERON:nose                                       1.8700e-01
+	UBERON:nostril                                    1.5300e-01
+	UBERON:nostrils                                   1.0000e-03
+	UBERON:skin of arm                                9.2000e-01
+	UBERON:skin of finger                             2.0000e-03
+	UBERON:skin of forearm                            4.7000e-02
+	UBERON:tongue                                     1.0000e-03
+	UBERON:urine                                      1.0000e-03
+	UBERON:zone of skin of abdomen                    4.4100e-01
+	UBERON:zone of skin of foot                       1.0000e-03
+	UBERON:zone of skin of hand                       7.8900e-01
+	UBERON:zone of skin of head                       4.8500e-01
 	UBERON:zone of skin of knee                                 
-	UBERON:zone of skin of outer ear                  8.6734e-20
-									 UBERON:zone of skin of outer ear
-	UBERON:ear canal                                            0.065
+	UBERON:zone of skin of outer ear                  5.2485e-05
+		                         UBERON:zone of skin of outer ear
+	UBERON:ear canal                                            0.009
 	UBERON:feces                                                0.001
-	UBERON:glans penis                                          0.014
-	UBERON:hair                                                 0.055
-	UBERON:labia minora                                         0.046
+	UBERON:glans penis                                          0.024
+	UBERON:hair                                                 0.316
+	UBERON:labia minora                                         0.001
 	UBERON:mouth                                                0.001
-	UBERON:nose                                                 0.041
-	UBERON:nostril                                              0.002
-	UBERON:nostrils                                             0.007
-	UBERON:skin of arm                                          0.007
+	UBERON:nose                                                 0.001
+	UBERON:nostril                                              0.001
+	UBERON:nostrils                                             0.001
+	UBERON:skin of arm                                          0.013
 	UBERON:skin of finger                                       0.001
 	UBERON:skin of forearm                                      0.001
 	UBERON:tongue                                               0.001
-	UBERON:urine                                                0.666
-	UBERON:zone of skin of abdomen                              0.008
+	UBERON:urine                                                0.114
+	UBERON:zone of skin of abdomen                              0.009
 	UBERON:zone of skin of foot                                 0.001
 	UBERON:zone of skin of hand                                 0.001
-	UBERON:zone of skin of head                                 0.022
+	UBERON:zone of skin of head                                 0.033
 	UBERON:zone of skin of knee                                 0.001
 	UBERON:zone of skin of outer ear                                 
 
@@ -979,7 +975,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the BODY_SITE c
 
 **Command:** ::
 
-	R --slave --args -d Whole\ Body/unweighted_unifrac_dm_shuffled_1.txt -m Whole\ Body/map.txt -c BODY_SITE -o betadisper_negative_1 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/whole_body/unweighted_unifrac_dm_shuffled_1.txt -m datasets/whole_body/map.txt -c BODY_SITE -o  whole_body_negative_permdisp_results_1
 
 **Results:**
 
@@ -988,9 +984,11 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq F value Pr(>F)
-	Groups     19 0.009105 0.00047923  0.9237 0.5532
-	Residuals 565 0.293125 0.00051880               
+		   Df Sum Sq   Mean Sq F value    Pr(>F)    
+	Groups     19 0.2600 0.0136828  2.3748 0.0009275 ***
+	Residuals 565 3.2554 0.0057617                      
+	---
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -1004,266 +1002,268 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)
-	Groups     19 0.009105 0.00047923 0.9237    999  0.572
-	Residuals 565 0.293125 0.00051880                     
+		   Df Sum Sq   Mean Sq      F N.Perm Pr(>F)    
+	Groups     19 0.2600 0.0136828 2.3748    999  0.001 ***
+	Residuals 565 3.2554 0.0057617                         
+	---
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1 
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-									 UBERON:ear canal UBERON:feces
-	UBERON:ear canal                                      0.475000
-	UBERON:feces                             0.464375             
-	UBERON:glans penis                       0.479368     0.106057
-	UBERON:hair                              0.608997     0.862392
-	UBERON:labia minora                      0.732379     0.938807
-	UBERON:mouth                             0.804742     0.610133
-	UBERON:nose                              0.885097     0.277488
-	UBERON:nostril                           0.297785     0.593561
-	UBERON:nostrils                          0.456901     0.858758
-	UBERON:skin of arm                       0.306992     0.636067
-	UBERON:skin of finger                    0.502670     0.947465
-	UBERON:skin of forearm                   0.572271     0.736379
-	UBERON:tongue                            0.902904     0.202145
-	UBERON:urine                             0.261478     0.559708
-	UBERON:zone of skin of abdomen           0.431273     0.730046
-	UBERON:zone of skin of foot              0.182610     0.342667
-	UBERON:zone of skin of hand              0.176138     0.324192
-	UBERON:zone of skin of head              0.623155     0.796835
-	UBERON:zone of skin of knee              0.294462     0.557057
-	UBERON:zone of skin of outer ear         0.624390     0.616991
-									 UBERON:glans penis UBERON:hair
-	UBERON:ear canal                           0.469000    0.611000
-	UBERON:feces                               0.104000    0.862000
-	UBERON:glans penis                                     0.035000
-	UBERON:hair                                0.037969            
-	UBERON:labia minora                        0.223167    0.967774
-	UBERON:mouth                               0.143752    0.696830
-	UBERON:nose                                0.245540    0.256096
-	UBERON:nostril                             0.044311    0.521140
-	UBERON:nostrils                            0.069082    0.723694
-	UBERON:skin of arm                         0.034900    0.531579
-	UBERON:skin of finger                      0.084757    0.897576
-	UBERON:skin of forearm                     0.032060    0.899276
-	UBERON:tongue                              0.377261    0.382896
-	UBERON:urine                               0.046247    0.531347
-	UBERON:zone of skin of abdomen             0.050148    0.574915
-	UBERON:zone of skin of foot                0.039632    0.402329
-	UBERON:zone of skin of hand                0.038464    0.388619
-	UBERON:zone of skin of head                0.185124    0.965359
-	UBERON:zone of skin of knee                0.071940    0.550065
-	UBERON:zone of skin of outer ear           0.144469    0.854787
-									 UBERON:labia minora UBERON:mouth UBERON:nose
-	UBERON:ear canal                            0.730000     0.785000    0.892000
-	UBERON:feces                                0.946000     0.614000    0.287000
-	UBERON:glans penis                          0.238000     0.156000    0.253000
-	UBERON:hair                                 0.963000     0.722000    0.273000
-	UBERON:labia minora                                      0.805000    0.479000
-	UBERON:mouth                                0.787023                 0.562000
-	UBERON:nose                                 0.474318     0.537941            
-	UBERON:nostril                              0.710934     0.339893    0.117387
-	UBERON:nostrils                             0.853577     0.508698    0.204524
-	UBERON:skin of arm                          0.722026     0.341720    0.108680
-	UBERON:skin of finger                       0.964381     0.629843    0.268176
-	UBERON:skin of forearm                      0.901162     0.734133    0.246657
-	UBERON:tongue                               0.555273     0.616823    0.961025
-	UBERON:urine                                0.714368     0.336816    0.117546
-	UBERON:zone of skin of abdomen              0.760404     0.414183    0.152136
-	UBERON:zone of skin of foot                 0.611759     0.246003    0.083308
-	UBERON:zone of skin of hand                 0.600483     0.236734    0.079593
-	UBERON:zone of skin of head                 0.953164     0.789362    0.431541
-	UBERON:zone of skin of knee                 0.724716     0.369625    0.151272
-	UBERON:zone of skin of outer ear            0.877153     0.850946    0.426549
-									 UBERON:nostril UBERON:nostrils
-	UBERON:ear canal                       0.308000        0.490000
-	UBERON:feces                           0.617000        0.879000
-	UBERON:glans penis                     0.042000        0.078000
-	UBERON:hair                            0.508000        0.722000
-	UBERON:labia minora                    0.718000        0.841000
-	UBERON:mouth                           0.347000        0.518000
-	UBERON:nose                            0.118000        0.221000
-	UBERON:nostril                                         0.793000
-	UBERON:nostrils                        0.778314                
-	UBERON:skin of arm                     0.952145        0.812703
-	UBERON:skin of finger                  0.559947        0.812016
-	UBERON:skin of forearm                 0.358656        0.589274
-	UBERON:tongue                          0.090955        0.220261
-	UBERON:urine                           0.982987        0.780808
-	UBERON:zone of skin of abdomen         0.957168        0.851416
-	UBERON:zone of skin of foot            0.775132        0.594466
-	UBERON:zone of skin of hand            0.749243        0.575334
-	UBERON:zone of skin of head            0.475962        0.714064
-	UBERON:zone of skin of knee            0.975991        0.769935
-	UBERON:zone of skin of outer ear       0.303128        0.562905
-									 UBERON:skin of arm UBERON:skin of finger
-	UBERON:ear canal                           0.332000              0.532000
-	UBERON:feces                               0.630000              0.947000
-	UBERON:glans penis                         0.032000              0.079000
-	UBERON:hair                                0.529000              0.913000
-	UBERON:labia minora                        0.734000              0.953000
-	UBERON:mouth                               0.349000              0.658000
-	UBERON:nose                                0.113000              0.289000
-	UBERON:nostril                             0.958000              0.577000
-	UBERON:nostrils                            0.830000              0.810000
-	UBERON:skin of arm                                               0.615000
-	UBERON:skin of finger                      0.592914                      
-	UBERON:skin of forearm                     0.371933              0.779539
-	UBERON:tongue                              0.098531              0.248242
-	UBERON:urine                               0.965699              0.541627
-	UBERON:zone of skin of abdomen             0.994167              0.679596
-	UBERON:zone of skin of foot                0.728657              0.358493
-	UBERON:zone of skin of hand                0.703681              0.341737
-	UBERON:zone of skin of head                0.508274              0.855446
-	UBERON:zone of skin of knee                0.929763              0.547416
-	UBERON:zone of skin of outer ear           0.336826              0.699842
-									 UBERON:skin of forearm UBERON:tongue
-	UBERON:ear canal                               0.593000      0.908000
-	UBERON:feces                                   0.769000      0.210000
-	UBERON:glans penis                             0.026000      0.395000
-	UBERON:hair                                    0.905000      0.386000
-	UBERON:labia minora                            0.915000      0.572000
-	UBERON:mouth                                   0.736000      0.642000
-	UBERON:nose                                    0.243000      0.956000
-	UBERON:nostril                                 0.352000      0.095000
-	UBERON:nostrils                                0.596000      0.245000
-	UBERON:skin of arm                             0.368000      0.095000
-	UBERON:skin of finger                          0.810000      0.263000
-	UBERON:skin of forearm                                       0.310000
-	UBERON:tongue                                  0.320265              
-	UBERON:urine                                   0.357202      0.063404
-	UBERON:zone of skin of abdomen                 0.447449      0.208862
-	UBERON:zone of skin of foot                    0.229412      0.028155
-	UBERON:zone of skin of hand                    0.217340      0.026109
-	UBERON:zone of skin of head                    0.962142      0.369137
-	UBERON:zone of skin of knee                    0.381047      0.082314
-	UBERON:zone of skin of outer ear               0.908972      0.347478
-									 UBERON:urine UBERON:zone of skin of abdomen
-	UBERON:ear canal                     0.270000                       0.447000
-	UBERON:feces                         0.564000                       0.748000
-	UBERON:glans penis                   0.042000                       0.048000
-	UBERON:hair                          0.551000                       0.580000
-	UBERON:labia minora                  0.716000                       0.762000
-	UBERON:mouth                         0.333000                       0.427000
-	UBERON:nose                          0.127000                       0.170000
-	UBERON:nostril                       0.980000                       0.948000
-	UBERON:nostrils                      0.766000                       0.858000
-	UBERON:skin of arm                   0.967000                       0.991000
-	UBERON:skin of finger                0.536000                       0.694000
-	UBERON:skin of forearm               0.327000                       0.438000
-	UBERON:tongue                        0.059000                       0.211000
-	UBERON:urine                                                        0.974000
-	UBERON:zone of skin of abdomen       0.968769                               
-	UBERON:zone of skin of foot          0.719219                       0.796552
-	UBERON:zone of skin of hand          0.689617                       0.778030
-	UBERON:zone of skin of head          0.433225                       0.624664
-	UBERON:zone of skin of knee          0.954878                       0.943106
-	UBERON:zone of skin of outer ear     0.246144                       0.484679
-									 UBERON:zone of skin of foot
-	UBERON:ear canal                                    0.178000
-	UBERON:feces                                        0.330000
-	UBERON:glans penis                                  0.036000
-	UBERON:hair                                         0.419000
-	UBERON:labia minora                                 0.624000
-	UBERON:mouth                                        0.242000
-	UBERON:nose                                         0.102000
-	UBERON:nostril                                      0.796000
-	UBERON:nostrils                                     0.621000
-	UBERON:skin of arm                                  0.735000
-	UBERON:skin of finger                               0.366000
-	UBERON:skin of forearm                              0.222000
-	UBERON:tongue                                       0.034000
-	UBERON:urine                                        0.697000
-	UBERON:zone of skin of abdomen                      0.794000
+		                         UBERON:ear canal UBERON:feces
+	UBERON:ear canal                                     0.0580000
+	UBERON:feces                            0.0618004             
+	UBERON:glans penis                      0.6888362    0.0205773
+	UBERON:hair                             0.3423893    0.5054131
+	UBERON:labia minora                     0.9581384    0.1463686
+	UBERON:mouth                            0.8883601    0.0174021
+	UBERON:nose                             0.8259411    0.0404160
+	UBERON:nostril                          0.1103653    0.9278009
+	UBERON:nostrils                         0.1019801    0.7814930
+	UBERON:skin of arm                      0.1191182    0.8698623
+	UBERON:skin of finger                   0.2467010    0.3757375
+	UBERON:skin of forearm                  0.7187030    0.0274418
+	UBERON:tongue                           0.9091165    0.0122678
+	UBERON:urine                            0.1112210    0.7961795
+	UBERON:zone of skin of abdomen          0.1561569    0.7513293
+	UBERON:zone of skin of foot             0.0355112    0.6186005
+	UBERON:zone of skin of hand             0.0514663    0.8192744
+	UBERON:zone of skin of head             0.7732816    0.0279813
+	UBERON:zone of skin of knee             0.0196908    0.3222223
+	UBERON:zone of skin of outer ear        0.2592380    0.1402208
+		                         UBERON:glans penis UBERON:hair
+	UBERON:ear canal                          0.7010000   0.3390000
+	UBERON:feces                              0.0200000   0.4960000
+	UBERON:glans penis                                    0.1150000
+	UBERON:hair                               0.1063323            
+	UBERON:labia minora                       0.5996063   0.3957491
+	UBERON:mouth                              0.6893747   0.1663916
+	UBERON:nose                               0.2620375   0.2276860
+	UBERON:nostril                            0.0345755   0.5873161
+	UBERON:nostrils                           0.0212736   0.4274816
+	UBERON:skin of arm                        0.0319633   0.6175236
+	UBERON:skin of finger                     0.0831564   0.9748348
+	UBERON:skin of forearm                    0.2960381   0.2858409
+	UBERON:tongue                             0.5134089   0.2310853
+	UBERON:urine                              0.0533612   0.6681297
+	UBERON:zone of skin of abdomen            0.0408069   0.4570704
+	UBERON:zone of skin of foot               0.0211119   0.3495896
+	UBERON:zone of skin of hand               0.0296219   0.4472614
+	UBERON:zone of skin of head               0.4246734   0.3283786
+	UBERON:zone of skin of knee               0.0077288   0.1910723
+	UBERON:zone of skin of outer ear          0.1049619   0.7551278
+		                         UBERON:labia minora UBERON:mouth UBERON:nose
+	UBERON:ear canal                           0.9630000    0.8950000   0.8430000
+	UBERON:feces                               0.1380000    0.0160000   0.0350000
+	UBERON:glans penis                         0.6230000    0.6740000   0.2560000
+	UBERON:hair                                0.3990000    0.1670000   0.2390000
+	UBERON:labia minora                                     0.8360000   0.8870000
+	UBERON:mouth                               0.8381557                0.6350000
+	UBERON:nose                                0.8763900    0.6024995            
+	UBERON:nostril                             0.1933516    0.0360349   0.0641959
+	UBERON:nostrils                            0.1432283    0.0269572   0.0312012
+	UBERON:skin of arm                         0.1929068    0.0374467   0.0632978
+	UBERON:skin of finger                      0.3537723    0.1106086   0.2059961
+	UBERON:skin of forearm                     0.8082748    0.5045231   0.8683008
+	UBERON:tongue                              0.9841120    0.7413796   0.8784521
+	UBERON:urine                               0.2385674    0.0451830   0.1009613
+	UBERON:zone of skin of abdomen             0.1933384    0.0516743   0.0503213
+	UBERON:zone of skin of foot                0.1269355    0.0113132   0.0308040
+	UBERON:zone of skin of hand                0.1597249    0.0181752   0.0480237
+	UBERON:zone of skin of head                0.8714306    0.5976492   0.9414590
+	UBERON:zone of skin of knee                0.0679258    0.0040474   0.0086909
+	UBERON:zone of skin of outer ear           0.4220288    0.1299103   0.3017238
+		                         UBERON:nostril UBERON:nostrils
+	UBERON:ear canal                      0.0980000       0.1000000
+	UBERON:feces                          0.9180000       0.7780000
+	UBERON:glans penis                    0.0360000       0.0270000
+	UBERON:hair                           0.5870000       0.4240000
+	UBERON:labia minora                   0.1800000       0.1410000
+	UBERON:mouth                          0.0350000       0.0320000
+	UBERON:nose                           0.0620000       0.0270000
+	UBERON:nostril                                        0.7430000
+	UBERON:nostrils                       0.7456414                
+	UBERON:skin of arm                    0.9475908       0.6966236
+	UBERON:skin of finger                 0.4795059       0.3329946
+	UBERON:skin of forearm                0.0563056       0.0367184
+	UBERON:tongue                         0.0345144       0.0314949
+	UBERON:urine                          0.8898789       0.6572355
+	UBERON:zone of skin of abdomen        0.7261029       0.9412218
+	UBERON:zone of skin of foot           0.6094781       0.9196342
+	UBERON:zone of skin of hand           0.7782185       0.9258778
+	UBERON:zone of skin of head           0.0654480       0.0565963
+	UBERON:zone of skin of knee           0.3430842       0.6198555
+	UBERON:zone of skin of outer ear      0.2383897       0.1659350
+		                         UBERON:skin of arm UBERON:skin of finger
+	UBERON:ear canal                          0.1030000             0.2570000
+	UBERON:feces                              0.8820000             0.3830000
+	UBERON:glans penis                        0.0320000             0.0890000
+	UBERON:hair                               0.6280000             0.9770000
+	UBERON:labia minora                       0.1790000             0.3520000
+	UBERON:mouth                              0.0320000             0.1150000
+	UBERON:nose                               0.0540000             0.2130000
+	UBERON:nostril                            0.9530000             0.4600000
+	UBERON:nostrils                           0.6750000             0.3200000
+	UBERON:skin of arm                                              0.5210000
+	UBERON:skin of finger                     0.5190176                      
+	UBERON:skin of forearm                    0.0619593             0.2166864
+	UBERON:tongue                             0.0407661             0.1378129
+	UBERON:urine                              0.9446466             0.5510415
+	UBERON:zone of skin of abdomen            0.6831720             0.3713897
+	UBERON:zone of skin of foot               0.5667198             0.2012059
+	UBERON:zone of skin of hand               0.7284500             0.2950442
+	UBERON:zone of skin of head               0.0760855             0.2265783
+	UBERON:zone of skin of knee               0.3111467             0.0886925
+	UBERON:zone of skin of outer ear          0.2748402             0.7196108
+		                         UBERON:skin of forearm UBERON:tongue
+	UBERON:ear canal                              0.6960000     0.9020000
+	UBERON:feces                                  0.0240000     0.0140000
+	UBERON:glans penis                            0.2850000     0.5230000
+	UBERON:hair                                   0.2940000     0.2470000
+	UBERON:labia minora                           0.8130000     0.9850000
+	UBERON:mouth                                  0.5090000     0.7460000
+	UBERON:nose                                   0.8670000     0.8810000
+	UBERON:nostril                                0.0500000     0.0360000
+	UBERON:nostrils                               0.0390000     0.0380000
+	UBERON:skin of arm                            0.0580000     0.0370000
+	UBERON:skin of finger                         0.2430000     0.1590000
+	UBERON:skin of forearm                                      0.7550000
+	UBERON:tongue                                 0.7359425              
+	UBERON:urine                                  0.0705184     0.0311412
+	UBERON:zone of skin of abdomen                0.0635432     0.0611634
+	UBERON:zone of skin of foot                   0.0126775     0.0035142
+	UBERON:zone of skin of hand                   0.0231759     0.0070529
+	UBERON:zone of skin of head                   0.9439340     0.7981608
+	UBERON:zone of skin of knee                   0.0036323     0.0014552
+	UBERON:zone of skin of outer ear              0.2939924     0.1473604
+		                         UBERON:urine UBERON:zone of skin of abdomen
+	UBERON:ear canal                    0.1080000                      0.1800000
+	UBERON:feces                        0.8050000                      0.7500000
+	UBERON:glans penis                  0.0590000                      0.0400000
+	UBERON:hair                         0.6800000                      0.4640000
+	UBERON:labia minora                 0.2280000                      0.1840000
+	UBERON:mouth                        0.0380000                      0.0580000
+	UBERON:nose                         0.1020000                      0.0510000
+	UBERON:nostril                      0.8790000                      0.7210000
+	UBERON:nostrils                     0.6770000                      0.9330000
+	UBERON:skin of arm                  0.9540000                      0.6710000
+	UBERON:skin of finger               0.5620000                      0.3770000
+	UBERON:skin of forearm              0.0650000                      0.0620000
+	UBERON:tongue                       0.0240000                      0.0740000
+	UBERON:urine                                                       0.6460000
+	UBERON:zone of skin of abdomen      0.6560159                               
+	UBERON:zone of skin of foot         0.4548529                      0.9960404
+	UBERON:zone of skin of hand         0.6269023                      0.8766239
+	UBERON:zone of skin of head         0.0619372                      0.0960377
+	UBERON:zone of skin of knee         0.2377532                      0.7385285
+	UBERON:zone of skin of outer ear    0.2573702                      0.2148275
+		                         UBERON:zone of skin of foot
+	UBERON:ear canal                                   0.0280000
+	UBERON:feces                                       0.6140000
+	UBERON:glans penis                                 0.0230000
+	UBERON:hair                                        0.3780000
+	UBERON:labia minora                                0.1180000
+	UBERON:mouth                                       0.0130000
+	UBERON:nose                                        0.0310000
+	UBERON:nostril                                     0.5870000
+	UBERON:nostrils                                    0.9180000
+	UBERON:skin of arm                                 0.5680000
+	UBERON:skin of finger                              0.1940000
+	UBERON:skin of forearm                             0.0070000
+	UBERON:tongue                                      0.0030000
+	UBERON:urine                                       0.4570000
+	UBERON:zone of skin of abdomen                     0.9940000
 	UBERON:zone of skin of foot                                 
-	UBERON:zone of skin of hand                         0.965504
-	UBERON:zone of skin of head                         0.267260
-	UBERON:zone of skin of knee                         0.785651
-	UBERON:zone of skin of outer ear                    0.110386
-									 UBERON:zone of skin of hand
-	UBERON:ear canal                                    0.177000
-	UBERON:feces                                        0.314000
-	UBERON:glans penis                                  0.041000
-	UBERON:hair                                         0.405000
-	UBERON:labia minora                                 0.613000
-	UBERON:mouth                                        0.235000
-	UBERON:nose                                         0.099000
-	UBERON:nostril                                      0.744000
-	UBERON:nostrils                                     0.595000
-	UBERON:skin of arm                                  0.706000
-	UBERON:skin of finger                               0.351000
-	UBERON:skin of forearm                              0.195000
-	UBERON:tongue                                       0.025000
-	UBERON:urine                                        0.671000
-	UBERON:zone of skin of abdomen                      0.780000
-	UBERON:zone of skin of foot                         0.970000
+	UBERON:zone of skin of hand                        0.7765505
+	UBERON:zone of skin of head                        0.0088502
+	UBERON:zone of skin of knee                        0.6055076
+	UBERON:zone of skin of outer ear                   0.0406187
+		                         UBERON:zone of skin of hand
+	UBERON:ear canal                                   0.0510000
+	UBERON:feces                                       0.8290000
+	UBERON:glans penis                                 0.0350000
+	UBERON:hair                                        0.4630000
+	UBERON:labia minora                                0.1440000
+	UBERON:mouth                                       0.0220000
+	UBERON:nose                                        0.0410000
+	UBERON:nostril                                     0.7700000
+	UBERON:nostrils                                    0.9010000
+	UBERON:skin of arm                                 0.7190000
+	UBERON:skin of finger                              0.3110000
+	UBERON:skin of forearm                             0.0300000
+	UBERON:tongue                                      0.0080000
+	UBERON:urine                                       0.6220000
+	UBERON:zone of skin of abdomen                     0.8790000
+	UBERON:zone of skin of foot                        0.7790000
 	UBERON:zone of skin of hand                                 
-	UBERON:zone of skin of head                         0.253792
-	UBERON:zone of skin of knee                         0.757453
-	UBERON:zone of skin of outer ear                    0.101739
-									 UBERON:zone of skin of head
-	UBERON:ear canal                                    0.629000
-	UBERON:feces                                        0.809000
-	UBERON:glans penis                                  0.185000
-	UBERON:hair                                         0.957000
-	UBERON:labia minora                                 0.959000
-	UBERON:mouth                                        0.800000
-	UBERON:nose                                         0.466000
-	UBERON:nostril                                      0.496000
-	UBERON:nostrils                                     0.706000
-	UBERON:skin of arm                                  0.529000
-	UBERON:skin of finger                               0.868000
-	UBERON:skin of forearm                              0.972000
-	UBERON:tongue                                       0.383000
-	UBERON:urine                                        0.428000
-	UBERON:zone of skin of abdomen                      0.620000
-	UBERON:zone of skin of foot                         0.290000
-	UBERON:zone of skin of hand                         0.235000
+	UBERON:zone of skin of head                        0.0167137
+	UBERON:zone of skin of knee                        0.4397192
+	UBERON:zone of skin of outer ear                   0.0792463
+		                         UBERON:zone of skin of head
+	UBERON:ear canal                                   0.7640000
+	UBERON:feces                                       0.0270000
+	UBERON:glans penis                                 0.4320000
+	UBERON:hair                                        0.3540000
+	UBERON:labia minora                                0.8540000
+	UBERON:mouth                                       0.6080000
+	UBERON:nose                                        0.9420000
+	UBERON:nostril                                     0.0500000
+	UBERON:nostrils                                    0.0580000
+	UBERON:skin of arm                                 0.0670000
+	UBERON:skin of finger                              0.2260000
+	UBERON:skin of forearm                             0.9620000
+	UBERON:tongue                                      0.8150000
+	UBERON:urine                                       0.0530000
+	UBERON:zone of skin of abdomen                     0.1020000
+	UBERON:zone of skin of foot                        0.0030000
+	UBERON:zone of skin of hand                        0.0230000
 	UBERON:zone of skin of head                                 
-	UBERON:zone of skin of knee                         0.445794
-	UBERON:zone of skin of outer ear                    0.873684
-									 UBERON:zone of skin of knee
-	UBERON:ear canal                                    0.293000
-	UBERON:feces                                        0.561000
-	UBERON:glans penis                                  0.069000
-	UBERON:hair                                         0.565000
-	UBERON:labia minora                                 0.702000
-	UBERON:mouth                                        0.367000
-	UBERON:nose                                         0.161000
-	UBERON:nostril                                      0.979000
-	UBERON:nostrils                                     0.778000
-	UBERON:skin of arm                                  0.929000
-	UBERON:skin of finger                               0.589000
-	UBERON:skin of forearm                              0.378000
-	UBERON:tongue                                       0.079000
-	UBERON:urine                                        0.953000
-	UBERON:zone of skin of abdomen                      0.936000
-	UBERON:zone of skin of foot                         0.797000
-	UBERON:zone of skin of hand                         0.761000
-	UBERON:zone of skin of head                         0.465000
+	UBERON:zone of skin of knee                        0.0037957
+	UBERON:zone of skin of outer ear                   0.2618914
+		                         UBERON:zone of skin of knee
+	UBERON:ear canal                                   0.0200000
+	UBERON:feces                                       0.3350000
+	UBERON:glans penis                                 0.0110000
+	UBERON:hair                                        0.2150000
+	UBERON:labia minora                                0.0520000
+	UBERON:mouth                                       0.0050000
+	UBERON:nose                                        0.0100000
+	UBERON:nostril                                     0.3370000
+	UBERON:nostrils                                    0.6020000
+	UBERON:skin of arm                                 0.3170000
+	UBERON:skin of finger                              0.0860000
+	UBERON:skin of forearm                             0.0030000
+	UBERON:tongue                                      0.0020000
+	UBERON:urine                                       0.2360000
+	UBERON:zone of skin of abdomen                     0.7290000
+	UBERON:zone of skin of foot                        0.6150000
+	UBERON:zone of skin of hand                        0.4220000
+	UBERON:zone of skin of head                        0.0040000
 	UBERON:zone of skin of knee                                 
-	UBERON:zone of skin of outer ear                    0.261342
-									 UBERON:zone of skin of outer ear
-	UBERON:ear canal                                            0.639
-	UBERON:feces                                                0.628
-	UBERON:glans penis                                          0.138
-	UBERON:hair                                                 0.859
-	UBERON:labia minora                                         0.866
-	UBERON:mouth                                                0.865
-	UBERON:nose                                                 0.430
-	UBERON:nostril                                              0.318
-	UBERON:nostrils                                             0.578
-	UBERON:skin of arm                                          0.354
-	UBERON:skin of finger                                       0.715
-	UBERON:skin of forearm                                      0.915
-	UBERON:tongue                                               0.363
-	UBERON:urine                                                0.245
-	UBERON:zone of skin of abdomen                              0.489
-	UBERON:zone of skin of foot                                 0.138
-	UBERON:zone of skin of hand                                 0.111
-	UBERON:zone of skin of head                                 0.884
-	UBERON:zone of skin of knee                                 0.287
+	UBERON:zone of skin of outer ear                   0.0143988
+		                         UBERON:zone of skin of outer ear
+	UBERON:ear canal                                            0.240
+	UBERON:feces                                                0.126
+	UBERON:glans penis                                          0.119
+	UBERON:hair                                                 0.764
+	UBERON:labia minora                                         0.405
+	UBERON:mouth                                                0.118
+	UBERON:nose                                                 0.301
+	UBERON:nostril                                              0.253
+	UBERON:nostrils                                             0.164
+	UBERON:skin of arm                                          0.293
+	UBERON:skin of finger                                       0.728
+	UBERON:skin of forearm                                      0.294
+	UBERON:tongue                                               0.154
+	UBERON:urine                                                0.268
+	UBERON:zone of skin of abdomen                              0.210
+	UBERON:zone of skin of foot                                 0.044
+	UBERON:zone of skin of hand                                 0.086
+	UBERON:zone of skin of head                                 0.266
+	UBERON:zone of skin of knee                                 0.010
 	UBERON:zone of skin of outer ear                                 
 
-The p-value indicates that the results are insignificant.
+The p-value indicates that the results are significant.
 	
 Test 3
 ~~~~~~
@@ -1274,7 +1274,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the BODY_SITE c
 
 **Command:** ::
 
-	R --slave --args -d Whole\ Body/unweighted_unifrac_dm_shuffled_2.txt -m Whole\ Body/map.txt -c BODY_SITE -o betadisper_negative_2 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/whole_body/unweighted_unifrac_dm_shuffled_2.txt -m datasets/whole_body/map.txt -c BODY_SITE -o  whole_body_negative_permdisp_results_2
 
 **Results:**
 
@@ -1283,9 +1283,9 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq F value Pr(>F)
-	Groups     19 0.007599 0.00039994  0.7714 0.7423
-	Residuals 565 0.292927 0.00051845               
+		   Df Sum Sq   Mean Sq F value Pr(>F)
+	Groups     19 0.1035 0.0054482  0.9055 0.5763
+	Residuals 565 3.3996 0.0060169               
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -1299,263 +1299,263 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)
-	Groups     19 0.007599 0.00039994 0.7714    999  0.741
-	Residuals 565 0.292927 0.00051845                     
+		   Df Sum Sq   Mean Sq      F N.Perm Pr(>F)
+	Groups     19 0.1035 0.0054482 0.9055    999  0.561
+	Residuals 565 3.3996 0.0060169                     
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-									 UBERON:ear canal UBERON:feces
-	UBERON:ear canal                                      0.802000
-	UBERON:feces                             0.809460             
-	UBERON:glans penis                       0.630392     0.439281
-	UBERON:hair                              0.432323     0.232982
-	UBERON:labia minora                      0.839904     0.683421
-	UBERON:mouth                             0.831786     0.606633
-	UBERON:nose                              0.890293     0.915637
-	UBERON:nostril                           0.359574     0.142120
-	UBERON:nostrils                          0.935456     0.691673
-	UBERON:skin of arm                       0.811866     0.959382
-	UBERON:skin of finger                    0.775908     0.473111
-	UBERON:skin of forearm                   0.688989     0.397107
-	UBERON:tongue                            0.396479     0.139000
-	UBERON:urine                             0.844537     0.905967
-	UBERON:zone of skin of abdomen           0.773034     0.942461
-	UBERON:zone of skin of foot              0.432269     0.109658
-	UBERON:zone of skin of hand              0.514257     0.162353
-	UBERON:zone of skin of head              0.946979     0.804400
-	UBERON:zone of skin of knee              0.772119     0.994388
-	UBERON:zone of skin of outer ear         0.735179     0.901716
-									 UBERON:glans penis UBERON:hair
-	UBERON:ear canal                           0.623000    0.427000
-	UBERON:feces                               0.468000    0.234000
-	UBERON:glans penis                                     0.951000
-	UBERON:hair                                0.950590            
-	UBERON:labia minora                        0.779727    0.607250
-	UBERON:mouth                               0.625495    0.397652
-	UBERON:nose                                0.462580    0.231632
-	UBERON:nostril                             0.959928    0.842376
-	UBERON:nostrils                            0.547000    0.318343
-	UBERON:skin of arm                         0.354905    0.143593
-	UBERON:skin of finger                      0.693789    0.507098
-	UBERON:skin of forearm                     0.739032    0.558205
-	UBERON:tongue                              0.984249    0.894538
-	UBERON:urine                               0.399236    0.189895
-	UBERON:zone of skin of abdomen             0.381229    0.154025
-	UBERON:zone of skin of foot                0.946796    0.847630
-	UBERON:zone of skin of hand                0.815699    0.659079
-	UBERON:zone of skin of head                0.510606    0.299189
-	UBERON:zone of skin of knee                0.331318    0.131227
-	UBERON:zone of skin of outer ear           0.378568    0.178251
-									 UBERON:labia minora UBERON:mouth UBERON:nose
-	UBERON:ear canal                            0.849000     0.831000    0.891000
-	UBERON:feces                                0.713000     0.630000    0.928000
-	UBERON:glans penis                          0.788000     0.643000    0.486000
-	UBERON:hair                                 0.632000     0.394000    0.219000
-	UBERON:labia minora                                      0.938000    0.693000
-	UBERON:mouth                                0.922316                 0.638000
-	UBERON:nose                                 0.668968     0.625099            
-	UBERON:nostril                              0.604914     0.373313    0.164165
-	UBERON:nostrils                             0.823398     0.846372    0.765859
-	UBERON:skin of arm                          0.597616     0.525545    0.931848
-	UBERON:skin of finger                       0.987205     0.933117    0.613199
-	UBERON:skin of forearm                      0.942072     0.822956    0.505294
-	UBERON:tongue                               0.669089     0.451496    0.231599
-	UBERON:urine                                0.672636     0.606852    0.975367
-	UBERON:zone of skin of abdomen              0.523712     0.451234    0.834166
-	UBERON:zone of skin of foot                 0.740107     0.541309    0.295130
-	UBERON:zone of skin of hand                 0.831319     0.657473    0.352920
-	UBERON:zone of skin of head                 0.770579     0.739934    0.926256
-	UBERON:zone of skin of knee                 0.593879     0.507705    0.897088
-	UBERON:zone of skin of outer ear            0.626102     0.528088    0.840951
-									 UBERON:nostril UBERON:nostrils
-	UBERON:ear canal                       0.351000        0.941000
-	UBERON:feces                           0.126000        0.681000
-	UBERON:glans penis                     0.973000        0.584000
-	UBERON:hair                            0.841000        0.323000
-	UBERON:labia minora                    0.643000        0.846000
-	UBERON:mouth                           0.389000        0.836000
-	UBERON:nose                            0.151000        0.762000
-	UBERON:nostril                                         0.262000
-	UBERON:nostrils                        0.263851                
-	UBERON:skin of arm                     0.082189        0.659537
-	UBERON:skin of finger                  0.476824        0.791254
-	UBERON:skin of forearm                 0.558492        0.675255
-	UBERON:tongue                          0.963563        0.323426
-	UBERON:urine                           0.112238        0.718188
-	UBERON:zone of skin of abdomen         0.095500        0.600444
-	UBERON:zone of skin of foot            0.958232        0.390917
-	UBERON:zone of skin of hand            0.707515        0.490054
-	UBERON:zone of skin of head            0.215798        0.853394
-	UBERON:zone of skin of knee            0.067361        0.621083
-	UBERON:zone of skin of outer ear       0.094194        0.604039
-									 UBERON:skin of arm UBERON:skin of finger
-	UBERON:ear canal                           0.820000              0.767000
-	UBERON:feces                               0.964000              0.477000
-	UBERON:glans penis                         0.390000              0.701000
-	UBERON:hair                                0.144000              0.516000
-	UBERON:labia minora                        0.631000              0.992000
-	UBERON:mouth                               0.550000              0.949000
-	UBERON:nose                                0.928000              0.605000
-	UBERON:nostril                             0.078000              0.464000
-	UBERON:nostrils                            0.671000              0.793000
-	UBERON:skin of arm                                               0.471000
-	UBERON:skin of finger                      0.470137                      
-	UBERON:skin of forearm                     0.363554              0.891104
-	UBERON:tongue                              0.114823              0.483947
-	UBERON:urine                               0.951308              0.480896
-	UBERON:zone of skin of abdomen             0.882940              0.498276
-	UBERON:zone of skin of foot                0.143939              0.516905
-	UBERON:zone of skin of hand                0.191491              0.676127
-	UBERON:zone of skin of head                0.837001              0.637791
-	UBERON:zone of skin of knee                0.955871              0.400612
-	UBERON:zone of skin of outer ear           0.864564              0.376541
-									 UBERON:skin of forearm UBERON:tongue
-	UBERON:ear canal                               0.663000      0.397000
-	UBERON:feces                                   0.380000      0.126000
-	UBERON:glans penis                             0.747000      0.985000
-	UBERON:hair                                    0.533000      0.884000
-	UBERON:labia minora                            0.941000      0.678000
-	UBERON:mouth                                   0.827000      0.463000
-	UBERON:nose                                    0.516000      0.219000
-	UBERON:nostril                                 0.536000      0.965000
-	UBERON:nostrils                                0.674000      0.334000
-	UBERON:skin of arm                             0.356000      0.126000
-	UBERON:skin of finger                          0.887000      0.501000
-	UBERON:skin of forearm                                       0.547000
-	UBERON:tongue                                  0.570831              
-	UBERON:urine                                   0.388207      0.116342
-	UBERON:zone of skin of abdomen                 0.391266      0.168348
-	UBERON:zone of skin of foot                    0.627143      0.924260
-	UBERON:zone of skin of hand                    0.804528      0.678936
-	UBERON:zone of skin of head                    0.541173      0.224593
-	UBERON:zone of skin of knee                    0.308430      0.078869
-	UBERON:zone of skin of outer ear               0.310128      0.087866
-									 UBERON:urine UBERON:zone of skin of abdomen
-	UBERON:ear canal                     0.865000                       0.778000
-	UBERON:feces                         0.913000                       0.946000
-	UBERON:glans penis                   0.419000                       0.382000
-	UBERON:hair                          0.187000                       0.149000
-	UBERON:labia minora                  0.701000                       0.560000
-	UBERON:mouth                         0.623000                       0.453000
-	UBERON:nose                          0.974000                       0.838000
-	UBERON:nostril                       0.118000                       0.108000
-	UBERON:nostrils                      0.719000                       0.611000
-	UBERON:skin of arm                   0.953000                       0.879000
-	UBERON:skin of finger                0.490000                       0.497000
-	UBERON:skin of forearm               0.395000                       0.371000
-	UBERON:tongue                        0.111000                       0.153000
-	UBERON:urine                                                        0.870000
-	UBERON:zone of skin of abdomen       0.860518                               
-	UBERON:zone of skin of foot          0.103726                       0.236692
-	UBERON:zone of skin of hand          0.159310                       0.272320
-	UBERON:zone of skin of head          0.868728                       0.786743
-	UBERON:zone of skin of knee          0.898674                       0.920465
-	UBERON:zone of skin of outer ear     0.791662                       0.993316
-									 UBERON:zone of skin of foot
-	UBERON:ear canal                                    0.420000
-	UBERON:feces                                        0.105000
-	UBERON:glans penis                                  0.951000
-	UBERON:hair                                         0.832000
-	UBERON:labia minora                                 0.750000
-	UBERON:mouth                                        0.545000
-	UBERON:nose                                         0.294000
-	UBERON:nostril                                      0.959000
-	UBERON:nostrils                                     0.366000
-	UBERON:skin of arm                                  0.154000
-	UBERON:skin of finger                               0.532000
-	UBERON:skin of forearm                              0.625000
-	UBERON:tongue                                       0.921000
-	UBERON:urine                                        0.104000
-	UBERON:zone of skin of abdomen                      0.243000
+		                         UBERON:ear canal UBERON:feces
+	UBERON:ear canal                                     0.9470000
+	UBERON:feces                            0.9491718             
+	UBERON:glans penis                      0.6632282    0.5907393
+	UBERON:hair                             0.9588931    0.8902878
+	UBERON:labia minora                     0.9527453    0.9760672
+	UBERON:mouth                            0.4837764    0.2875361
+	UBERON:nose                             0.9395697    0.8640260
+	UBERON:nostril                          0.9994857    0.9323520
+	UBERON:nostrils                         0.5769986    0.4797631
+	UBERON:skin of arm                      0.7699735    0.6117978
+	UBERON:skin of finger                   0.9981619    0.9337492
+	UBERON:skin of forearm                  0.8136912    0.6666330
+	UBERON:tongue                           0.3351867    0.1937985
+	UBERON:urine                            0.8600845    0.8567278
+	UBERON:zone of skin of abdomen          0.1783487    0.0687944
+	UBERON:zone of skin of foot             0.5050372    0.3257261
+	UBERON:zone of skin of hand             0.3702147    0.1874797
+	UBERON:zone of skin of head             0.8467355    0.8410195
+	UBERON:zone of skin of knee             0.5479070    0.3159727
+	UBERON:zone of skin of outer ear        0.9734156    0.8800934
+		                         UBERON:glans penis UBERON:hair
+	UBERON:ear canal                          0.6630000   0.9620000
+	UBERON:feces                              0.5950000   0.8790000
+	UBERON:glans penis                                    0.6030000
+	UBERON:hair                               0.6097327            
+	UBERON:labia minora                       0.7598062   0.9158982
+	UBERON:mouth                              0.3349791   0.4860120
+	UBERON:nose                               0.5968217   0.9791971
+	UBERON:nostril                            0.5835292   0.9472192
+	UBERON:nostrils                           0.9530852   0.5129808
+	UBERON:skin of arm                        0.4406562   0.8058809
+	UBERON:skin of finger                     0.6284870   0.9555471
+	UBERON:skin of forearm                    0.5088490   0.8480225
+	UBERON:tongue                             0.8764168   0.2744082
+	UBERON:urine                              0.6748019   0.8006441
+	UBERON:zone of skin of abdomen            0.1137767   0.1624004
+	UBERON:zone of skin of foot               0.9654872   0.4444102
+	UBERON:zone of skin of hand               0.9357535   0.3111455
+	UBERON:zone of skin of head               0.6912625   0.7872091
+	UBERON:zone of skin of knee               0.2915441   0.5733335
+	UBERON:zone of skin of outer ear          0.5663692   0.9745532
+		                         UBERON:labia minora UBERON:mouth UBERON:nose
+	UBERON:ear canal                           0.9410000    0.4930000   0.9410000
+	UBERON:feces                               0.9800000    0.2990000   0.8550000
+	UBERON:glans penis                         0.7500000    0.3110000   0.5950000
+	UBERON:hair                                0.9200000    0.4830000   0.9810000
+	UBERON:labia minora                                     0.5540000   0.9120000
+	UBERON:mouth                               0.5498655                0.5010000
+	UBERON:nose                                0.9006067    0.5012596            
+	UBERON:nostril                             0.9420900    0.3618682   0.9226619
+	UBERON:nostrils                            0.7098940    0.1794403   0.4957653
+	UBERON:skin of arm                         0.7668182    0.5409303   0.8298140
+	UBERON:skin of finger                      0.9480286    0.4129452   0.9337049
+	UBERON:skin of forearm                     0.8106983    0.5641927   0.8695295
+	UBERON:tongue                              0.5089190    0.0547708   0.2604980
+	UBERON:urine                               0.9552521    0.2571717   0.7763594
+	UBERON:zone of skin of abdomen             0.2255571    0.5859020   0.1710448
+	UBERON:zone of skin of foot                0.6852249    0.1024413   0.4261175
+	UBERON:zone of skin of hand                0.5692975    0.0523750   0.2953040
+	UBERON:zone of skin of head                0.9421462    0.2671659   0.7636669
+	UBERON:zone of skin of knee                0.5993041    0.6817933   0.5967322
+	UBERON:zone of skin of outer ear           0.9242949    0.3524776   0.9493880
+		                         UBERON:nostril UBERON:nostrils
+	UBERON:ear canal                      0.9990000       0.5770000
+	UBERON:feces                          0.9250000       0.4500000
+	UBERON:glans penis                    0.5920000       0.9480000
+	UBERON:hair                           0.9420000       0.5090000
+	UBERON:labia minora                   0.9560000       0.7170000
+	UBERON:mouth                          0.3730000       0.1960000
+	UBERON:nose                           0.9230000       0.4840000
+	UBERON:nostril                                        0.4800000
+	UBERON:nostrils                       0.4742374                
+	UBERON:skin of arm                    0.7010992       0.2979962
+	UBERON:skin of finger                 0.9969102       0.5193891
+	UBERON:skin of forearm                0.7524657       0.3654254
+	UBERON:tongue                         0.2086617       0.7397134
+	UBERON:urine                          0.8107780       0.5891034
+	UBERON:zone of skin of abdomen        0.0973733       0.0352175
+	UBERON:zone of skin of foot           0.3548891       0.9746778
+	UBERON:zone of skin of hand           0.2185954       0.8172248
+	UBERON:zone of skin of head           0.7975624       0.6186635
+	UBERON:zone of skin of knee           0.4207663       0.1406792
+	UBERON:zone of skin of outer ear      0.9624945       0.4332690
+		                         UBERON:skin of arm UBERON:skin of finger
+	UBERON:ear canal                          0.7610000             0.9980000
+	UBERON:feces                              0.5960000             0.9420000
+	UBERON:glans penis                        0.4330000             0.6480000
+	UBERON:hair                               0.8150000             0.9640000
+	UBERON:labia minora                       0.7830000             0.9550000
+	UBERON:mouth                              0.5510000             0.4360000
+	UBERON:nose                               0.8290000             0.9410000
+	UBERON:nostril                            0.7100000             0.9980000
+	UBERON:nostrils                           0.2990000             0.5400000
+	UBERON:skin of arm                                              0.7170000
+	UBERON:skin of finger                     0.7301521                      
+	UBERON:skin of forearm                    0.9731041             0.7745033
+	UBERON:tongue                             0.1000571             0.2511161
+	UBERON:urine                              0.5211068             0.8192846
+	UBERON:zone of skin of abdomen            0.1785814             0.1477113
+	UBERON:zone of skin of foot               0.1897576             0.3761432
+	UBERON:zone of skin of hand               0.1006000             0.2433273
+	UBERON:zone of skin of head               0.5221982             0.8105041
+	UBERON:zone of skin of knee               0.7161439             0.4593725
+	UBERON:zone of skin of outer ear          0.7136199             0.9679383
+		                         UBERON:skin of forearm UBERON:tongue
+	UBERON:ear canal                              0.8010000     0.3150000
+	UBERON:feces                                  0.6510000     0.1780000
+	UBERON:glans penis                            0.4960000     0.8820000
+	UBERON:hair                                   0.8460000     0.2940000
+	UBERON:labia minora                           0.8180000     0.5120000
+	UBERON:mouth                                  0.5790000     0.0590000
+	UBERON:nose                                   0.8610000     0.2570000
+	UBERON:nostril                                0.7400000     0.2090000
+	UBERON:nostrils                               0.3840000     0.7490000
+	UBERON:skin of arm                            0.9700000     0.1060000
+	UBERON:skin of finger                         0.7790000     0.2640000
+	UBERON:skin of forearm                                      0.1470000
+	UBERON:tongue                                 0.1441337              
+	UBERON:urine                                  0.5750651     0.2792883
+	UBERON:zone of skin of abdomen                0.2272929     0.0055520
+	UBERON:zone of skin of foot                   0.2300373     0.7154321
+	UBERON:zone of skin of hand                   0.1334654     0.8852895
+	UBERON:zone of skin of head                   0.5806936     0.3173780
+	UBERON:zone of skin of knee                   0.7086137     0.0249034
+	UBERON:zone of skin of outer ear              0.7587793     0.1608156
+		                         UBERON:urine UBERON:zone of skin of abdomen
+	UBERON:ear canal                    0.8680000                      0.1800000
+	UBERON:feces                        0.8420000                      0.0720000
+	UBERON:glans penis                  0.6780000                      0.0900000
+	UBERON:hair                         0.8240000                      0.1600000
+	UBERON:labia minora                 0.9710000                      0.2240000
+	UBERON:mouth                        0.2520000                      0.5980000
+	UBERON:nose                         0.7840000                      0.1660000
+	UBERON:nostril                      0.8090000                      0.0860000
+	UBERON:nostrils                     0.5720000                      0.0300000
+	UBERON:skin of arm                  0.4880000                      0.1790000
+	UBERON:skin of finger               0.8490000                      0.1430000
+	UBERON:skin of forearm              0.5570000                      0.2220000
+	UBERON:tongue                       0.2770000                      0.0050000
+	UBERON:urine                                                       0.0610000
+	UBERON:zone of skin of abdomen      0.0675393                               
+	UBERON:zone of skin of foot         0.4293941                      0.0230360
+	UBERON:zone of skin of hand         0.2694508                      0.0078468
+	UBERON:zone of skin of head         0.9746332                      0.0662097
+	UBERON:zone of skin of knee         0.2488212                      0.2408571
+	UBERON:zone of skin of outer ear    0.7394463                      0.1096576
+		                         UBERON:zone of skin of foot
+	UBERON:ear canal                                   0.5160000
+	UBERON:feces                                       0.3060000
+	UBERON:glans penis                                 0.9640000
+	UBERON:hair                                        0.4680000
+	UBERON:labia minora                                0.7130000
+	UBERON:mouth                                       0.1010000
+	UBERON:nose                                        0.4200000
+	UBERON:nostril                                     0.3590000
+	UBERON:nostrils                                    0.9660000
+	UBERON:skin of arm                                 0.1970000
+	UBERON:skin of finger                              0.3930000
+	UBERON:skin of forearm                             0.2230000
+	UBERON:tongue                                      0.7230000
+	UBERON:urine                                       0.4390000
+	UBERON:zone of skin of abdomen                     0.0260000
 	UBERON:zone of skin of foot                                 
-	UBERON:zone of skin of hand                         0.724254
-	UBERON:zone of skin of head                         0.219958
-	UBERON:zone of skin of knee                         0.079400
-	UBERON:zone of skin of outer ear                    0.057227
-									 UBERON:zone of skin of hand
-	UBERON:ear canal                                    0.516000
-	UBERON:feces                                        0.158000
-	UBERON:glans penis                                  0.809000
-	UBERON:hair                                         0.638000
-	UBERON:labia minora                                 0.862000
-	UBERON:mouth                                        0.657000
-	UBERON:nose                                         0.341000
-	UBERON:nostril                                      0.685000
-	UBERON:nostrils                                     0.468000
-	UBERON:skin of arm                                  0.199000
-	UBERON:skin of finger                               0.657000
-	UBERON:skin of forearm                              0.809000
-	UBERON:tongue                                       0.669000
-	UBERON:urine                                        0.176000
-	UBERON:zone of skin of abdomen                      0.278000
-	UBERON:zone of skin of foot                         0.731000
+	UBERON:zone of skin of hand                        0.7788859
+	UBERON:zone of skin of head                        0.4980717
+	UBERON:zone of skin of knee                        0.0489356
+	UBERON:zone of skin of outer ear                   0.2362975
+		                         UBERON:zone of skin of hand
+	UBERON:ear canal                                   0.3810000
+	UBERON:feces                                       0.1840000
+	UBERON:glans penis                                 0.9340000
+	UBERON:hair                                        0.3370000
+	UBERON:labia minora                                0.5810000
+	UBERON:mouth                                       0.0590000
+	UBERON:nose                                        0.2730000
+	UBERON:nostril                                     0.2320000
+	UBERON:nostrils                                    0.8160000
+	UBERON:skin of arm                                 0.0940000
+	UBERON:skin of finger                              0.2500000
+	UBERON:skin of forearm                             0.1280000
+	UBERON:tongue                                      0.8880000
+	UBERON:urine                                       0.2830000
+	UBERON:zone of skin of abdomen                     0.0060000
+	UBERON:zone of skin of foot                        0.8070000
 	UBERON:zone of skin of hand                                 
-	UBERON:zone of skin of head                         0.302969
-	UBERON:zone of skin of knee                         0.119274
-	UBERON:zone of skin of outer ear                    0.093463
-									 UBERON:zone of skin of head
-	UBERON:ear canal                                    0.952000
-	UBERON:feces                                        0.799000
-	UBERON:glans penis                                  0.531000
-	UBERON:hair                                         0.297000
-	UBERON:labia minora                                 0.794000
-	UBERON:mouth                                        0.753000
-	UBERON:nose                                         0.910000
-	UBERON:nostril                                      0.209000
-	UBERON:nostrils                                     0.850000
-	UBERON:skin of arm                                  0.838000
-	UBERON:skin of finger                               0.619000
-	UBERON:skin of forearm                              0.532000
-	UBERON:tongue                                       0.231000
-	UBERON:urine                                        0.866000
-	UBERON:zone of skin of abdomen                      0.775000
-	UBERON:zone of skin of foot                         0.232000
-	UBERON:zone of skin of hand                         0.285000
+	UBERON:zone of skin of head                        0.3327359
+	UBERON:zone of skin of knee                        0.0178476
+	UBERON:zone of skin of outer ear                   0.1276731
+		                         UBERON:zone of skin of head
+	UBERON:ear canal                                   0.8530000
+	UBERON:feces                                       0.8300000
+	UBERON:glans penis                                 0.6910000
+	UBERON:hair                                        0.7770000
+	UBERON:labia minora                                0.9490000
+	UBERON:mouth                                       0.2730000
+	UBERON:nose                                        0.7590000
+	UBERON:nostril                                     0.8020000
+	UBERON:nostrils                                    0.6120000
+	UBERON:skin of arm                                 0.5180000
+	UBERON:skin of finger                              0.8340000
+	UBERON:skin of forearm                             0.5790000
+	UBERON:tongue                                      0.3060000
+	UBERON:urine                                       0.9770000
+	UBERON:zone of skin of abdomen                     0.0690000
+	UBERON:zone of skin of foot                        0.4950000
+	UBERON:zone of skin of hand                        0.3430000
 	UBERON:zone of skin of head                                 
-	UBERON:zone of skin of knee                         0.779349
-	UBERON:zone of skin of outer ear                    0.700846
-									 UBERON:zone of skin of knee
-	UBERON:ear canal                                    0.755000
-	UBERON:feces                                        0.993000
-	UBERON:glans penis                                  0.332000
-	UBERON:hair                                         0.129000
-	UBERON:labia minora                                 0.632000
-	UBERON:mouth                                        0.532000
-	UBERON:nose                                         0.898000
-	UBERON:nostril                                      0.086000
-	UBERON:nostrils                                     0.617000
-	UBERON:skin of arm                                  0.956000
-	UBERON:skin of finger                               0.378000
-	UBERON:skin of forearm                              0.313000
-	UBERON:tongue                                       0.082000
-	UBERON:urine                                        0.902000
-	UBERON:zone of skin of abdomen                      0.915000
-	UBERON:zone of skin of foot                         0.100000
-	UBERON:zone of skin of hand                         0.112000
-	UBERON:zone of skin of head                         0.793000
+	UBERON:zone of skin of knee                        0.2672596
+	UBERON:zone of skin of outer ear                   0.7391490
+		                         UBERON:zone of skin of knee
+	UBERON:ear canal                                   0.5420000
+	UBERON:feces                                       0.2860000
+	UBERON:glans penis                                 0.2920000
+	UBERON:hair                                        0.6050000
+	UBERON:labia minora                                0.6130000
+	UBERON:mouth                                       0.6710000
+	UBERON:nose                                        0.6000000
+	UBERON:nostril                                     0.4430000
+	UBERON:nostrils                                    0.1400000
+	UBERON:skin of arm                                 0.7130000
+	UBERON:skin of finger                              0.4690000
+	UBERON:skin of forearm                             0.7190000
+	UBERON:tongue                                      0.0260000
+	UBERON:urine                                       0.2410000
+	UBERON:zone of skin of abdomen                     0.2500000
+	UBERON:zone of skin of foot                        0.0440000
+	UBERON:zone of skin of hand                        0.0140000
+	UBERON:zone of skin of head                        0.2720000
 	UBERON:zone of skin of knee                                 
-	UBERON:zone of skin of outer ear                    0.886053
-									 UBERON:zone of skin of outer ear
-	UBERON:ear canal                                            0.715
-	UBERON:feces                                                0.906
-	UBERON:glans penis                                          0.390
-	UBERON:hair                                                 0.172
-	UBERON:labia minora                                         0.671
-	UBERON:mouth                                                0.541
-	UBERON:nose                                                 0.817
-	UBERON:nostril                                              0.093
-	UBERON:nostrils                                             0.601
-	UBERON:skin of arm                                          0.862
-	UBERON:skin of finger                                       0.371
-	UBERON:skin of forearm                                      0.306
-	UBERON:tongue                                               0.073
-	UBERON:urine                                                0.780
-	UBERON:zone of skin of abdomen                              0.992
-	UBERON:zone of skin of foot                                 0.057
-	UBERON:zone of skin of hand                                 0.083
-	UBERON:zone of skin of head                                 0.657
-	UBERON:zone of skin of knee                                 0.897
+	UBERON:zone of skin of outer ear                   0.3955359
+		                         UBERON:zone of skin of outer ear
+	UBERON:ear canal                                            0.973
+	UBERON:feces                                                0.889
+	UBERON:glans penis                                          0.543
+	UBERON:hair                                                 0.971
+	UBERON:labia minora                                         0.928
+	UBERON:mouth                                                0.361
+	UBERON:nose                                                 0.949
+	UBERON:nostril                                              0.971
+	UBERON:nostrils                                             0.456
+	UBERON:skin of arm                                          0.699
+	UBERON:skin of finger                                       0.968
+	UBERON:skin of forearm                                      0.768
+	UBERON:tongue                                               0.148
+	UBERON:urine                                                0.742
+	UBERON:zone of skin of abdomen                              0.129
+	UBERON:zone of skin of foot                                 0.252
+	UBERON:zone of skin of hand                                 0.136
+	UBERON:zone of skin of head                                 0.742
+	UBERON:zone of skin of knee                                 0.392
 	UBERON:zone of skin of outer ear                                 
 
 The p-value indicates that the results are insignificant.
@@ -1569,7 +1569,7 @@ This test uses a shuffled unweighted unifrac distance matrix and the BODY_SITE c
 
 **Command:** ::
 
-	R --slave --args -d Whole\ Body/unweighted_unifrac_dm_shuffled_3.txt -m Whole\ Body/map.txt -c BODY_SITE -o betadisper_negative_3 < betadisper.r
+	compare_categories.py --method permdisp -i datasets/whole_body/unweighted_unifrac_dm_shuffled_3.txt -m datasets/whole_body/map.txt -c BODY_SITE -o whole_body_negative_permdisp_results_3
 
 **Results:**
 
@@ -1578,9 +1578,9 @@ The following results were written to the output file: ::
 	Analysis of Variance Table
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq F value Pr(>F)
-	Groups     19 0.008864 0.00046655  0.8801 0.6084
-	Residuals 565 0.299502 0.00053009               
+		   Df Sum Sq   Mean Sq F value Pr(>F)
+	Groups     19 0.1508 0.0079357  1.3289 0.1582
+	Residuals 565 3.3740 0.0059717               
 
 	Permutation test for homogeneity of multivariate dispersions
 
@@ -1594,264 +1594,310 @@ The following results were written to the output file: ::
 	Mirrored permutations for Samples?: No 
 
 	Response: Distances
-			   Df   Sum Sq    Mean Sq      F N.Perm Pr(>F)
-	Groups     19 0.008864 0.00046655 0.8801    999  0.618
-	Residuals 565 0.299502 0.00053009                     
+		   Df Sum Sq   Mean Sq      F N.Perm Pr(>F)
+	Groups     19 0.1508 0.0079357 1.3289    999  0.151
+	Residuals 565 3.3740 0.0059717                     
 
 	Pairwise comparisons:
 	(Observed p-value below diagonal, permuted p-value above diagonal)
-									 UBERON:ear canal UBERON:feces
-	UBERON:ear canal                                     0.6690000
-	UBERON:feces                            0.6485757             
-	UBERON:glans penis                      0.3513263    0.1549040
-	UBERON:hair                             0.7101255    0.9495634
-	UBERON:labia minora                     0.8684986    0.5943062
-	UBERON:mouth                            0.4049724    0.5495694
-	UBERON:nose                             0.2736159    0.0662598
-	UBERON:nostril                          0.9403975    0.5525088
-	UBERON:nostrils                         0.6447169    0.9233151
-	UBERON:skin of arm                      0.5663604    0.7924728
-	UBERON:skin of finger                   0.8889145    0.6659402
-	UBERON:skin of forearm                  0.5725727    0.7805681
-	UBERON:tongue                           0.2453426    0.4395189
-	UBERON:urine                            0.5582436    0.8742373
-	UBERON:zone of skin of abdomen          0.8175508    0.4572090
-	UBERON:zone of skin of foot             0.3333797    0.4738408
-	UBERON:zone of skin of hand             0.7928409    0.6740538
-	UBERON:zone of skin of head             0.2696213    0.3498215
-	UBERON:zone of skin of knee             0.2875977    0.4046836
-	UBERON:zone of skin of outer ear        0.4078144    0.5771957
-									 UBERON:glans penis UBERON:hair
-	UBERON:ear canal                          0.3610000   0.7200000
-	UBERON:feces                              0.1510000   0.9540000
-	UBERON:glans penis                                    0.2670000
-	UBERON:hair                               0.2540041            
-	UBERON:labia minora                       0.5314495   0.6698494
-	UBERON:mouth                              0.0746252   0.7011375
-	UBERON:nose                               0.9749716   0.1590738
-	UBERON:nostril                            0.1084239   0.6111217
-	UBERON:nostrils                           0.1567516   0.9872483
-	UBERON:skin of arm                        0.1591828   0.9017453
-	UBERON:skin of finger                     0.2127800   0.7183918
-	UBERON:skin of forearm                    0.1782171   0.8927804
-	UBERON:tongue                             0.0095797   0.6246373
-	UBERON:urine                              0.1125464   0.9694011
-	UBERON:zone of skin of abdomen            0.4118793   0.5532235
-	UBERON:zone of skin of foot               0.0572719   0.6947518
-	UBERON:zone of skin of hand               0.1448509   0.7252143
-	UBERON:zone of skin of head               0.0452218   0.5645821
-	UBERON:zone of skin of knee               0.0417863   0.6202207
-	UBERON:zone of skin of outer ear          0.0878269   0.7697631
-									 UBERON:labia minora UBERON:mouth UBERON:nose
-	UBERON:ear canal                           0.8480000    0.3980000   0.2550000
-	UBERON:feces                               0.5750000    0.5770000   0.0620000
-	UBERON:glans penis                         0.5380000    0.0850000   0.9770000
-	UBERON:hair                                0.6500000    0.6870000   0.1760000
-	UBERON:labia minora                                     0.4030000   0.4750000
-	UBERON:mouth                               0.4127632                0.0440000
-	UBERON:nose                                0.4983522    0.0373902            
-	UBERON:nostril                             0.7439355    0.2192758   0.0701766
-	UBERON:nostrils                            0.5954483    0.6587076   0.0875841
-	UBERON:skin of arm                         0.5512837    0.7455973   0.0735994
-	UBERON:skin of finger                      0.7535290    0.3538976   0.1255757
-	UBERON:skin of forearm                     0.5630486    0.7706877   0.0850692
-	UBERON:tongue                              0.2407563    0.9139570   0.0027092
-	UBERON:urine                               0.5234979    0.6048419   0.0410132
-	UBERON:zone of skin of abdomen             0.9977165    0.2639228   0.3645394
-	UBERON:zone of skin of foot                0.3614583    0.8646884   0.0127110
-	UBERON:zone of skin of hand                0.6661219    0.3156342   0.0594514
-	UBERON:zone of skin of head                0.3091188    0.9182877   0.0117821
-	UBERON:zone of skin of knee                0.3178699    0.9725923   0.0098219
-	UBERON:zone of skin of outer ear           0.4261082    0.8133024   0.0248113
-									 UBERON:nostril UBERON:nostrils
-	UBERON:ear canal                      0.9410000       0.6210000
-	UBERON:feces                          0.5580000       0.9240000
-	UBERON:glans penis                    0.1150000       0.1850000
-	UBERON:hair                           0.6330000       0.9930000
-	UBERON:labia minora                   0.7470000       0.5990000
-	UBERON:mouth                          0.2330000       0.6510000
-	UBERON:nose                           0.0620000       0.0890000
-	UBERON:nostril                                        0.5460000
-	UBERON:nostrils                       0.5260959                
-	UBERON:skin of arm                    0.4278797       0.9002309
-	UBERON:skin of finger                 0.9048184       0.6546939
-	UBERON:skin of forearm                0.4343749       0.8892125
-	UBERON:tongue                         0.0929435       0.5783329
-	UBERON:urine                          0.4324461       0.9833172
-	UBERON:zone of skin of abdomen        0.6559662       0.4646113
-	UBERON:zone of skin of foot           0.1785103       0.6676765
-	UBERON:zone of skin of hand           0.7766800       0.6634468
-	UBERON:zone of skin of head           0.1129581       0.5133439
-	UBERON:zone of skin of knee           0.1313337       0.5786226
-	UBERON:zone of skin of outer ear      0.2527929       0.7525041
-									 UBERON:skin of arm UBERON:skin of finger
-	UBERON:ear canal                          0.5570000             0.8900000
-	UBERON:feces                              0.7870000             0.6660000
-	UBERON:glans penis                        0.1730000             0.2270000
-	UBERON:hair                               0.9080000             0.7240000
-	UBERON:labia minora                       0.5440000             0.7470000
-	UBERON:mouth                              0.7420000             0.3650000
-	UBERON:nose                               0.0890000             0.1270000
-	UBERON:nostril                            0.4350000             0.8980000
-	UBERON:nostrils                           0.9060000             0.6580000
-	UBERON:skin of arm                                              0.5370000
-	UBERON:skin of finger                     0.5401149                      
-	UBERON:skin of forearm                    0.9834464             0.5415090
-	UBERON:tongue                             0.7048538             0.2052761
-	UBERON:urine                              0.8857238             0.5497821
-	UBERON:zone of skin of abdomen            0.4075976             0.6628269
-	UBERON:zone of skin of foot               0.7686770             0.2607727
-	UBERON:zone of skin of hand               0.5072174             0.8960123
-	UBERON:zone of skin of head               0.5902142             0.1948869
-	UBERON:zone of skin of knee               0.6708797             0.2176967
-	UBERON:zone of skin of outer ear          0.8562840             0.3427562
-									 UBERON:skin of forearm UBERON:tongue
-	UBERON:ear canal                              0.5700000     0.2580000
-	UBERON:feces                                  0.7950000     0.4330000
-	UBERON:glans penis                            0.1850000     0.0150000
-	UBERON:hair                                   0.8960000     0.6510000
-	UBERON:labia minora                           0.5360000     0.2260000
-	UBERON:mouth                                  0.7800000     0.9160000
-	UBERON:nose                                   0.0810000     0.0020000
-	UBERON:nostril                                0.4460000     0.0860000
-	UBERON:nostrils                               0.8780000     0.5640000
-	UBERON:skin of arm                            0.9830000     0.6840000
-	UBERON:skin of finger                         0.5250000     0.2100000
-	UBERON:skin of forearm                                      0.7340000
-	UBERON:tongue                                 0.7380587              
-	UBERON:urine                                  0.8693053     0.5196464
-	UBERON:zone of skin of abdomen                0.4206314     0.1134016
-	UBERON:zone of skin of foot                   0.7976490     0.9088106
-	UBERON:zone of skin of hand                   0.5029245     0.1752866
-	UBERON:zone of skin of head                   0.6212949     0.7770731
-	UBERON:zone of skin of knee                   0.7017056     0.9303723
-	UBERON:zone of skin of outer ear              0.8815777     0.8230433
-									 UBERON:urine UBERON:zone of skin of abdomen
-	UBERON:ear canal                    0.5640000                      0.8160000
-	UBERON:feces                        0.8670000                      0.4650000
-	UBERON:glans penis                  0.1200000                      0.4000000
-	UBERON:hair                         0.9730000                      0.5590000
-	UBERON:labia minora                 0.5200000                      0.9980000
-	UBERON:mouth                        0.6020000                      0.2570000
-	UBERON:nose                         0.0410000                      0.3600000
-	UBERON:nostril                      0.4670000                      0.6530000
-	UBERON:nostrils                     0.9860000                      0.4680000
-	UBERON:skin of arm                  0.8740000                      0.3950000
-	UBERON:skin of finger               0.5240000                      0.6500000
-	UBERON:skin of forearm              0.8460000                      0.4380000
-	UBERON:tongue                       0.5010000                      0.1100000
-	UBERON:urine                                                       0.3900000
-	UBERON:zone of skin of abdomen      0.3742275                               
-	UBERON:zone of skin of foot         0.5699519                      0.2030125
-	UBERON:zone of skin of hand         0.5296818                      0.5456379
-	UBERON:zone of skin of head         0.4059798                      0.1609112
-	UBERON:zone of skin of knee         0.4786967                      0.1675283
-	UBERON:zone of skin of outer ear    0.6793253                      0.2661091
-									 UBERON:zone of skin of foot
-	UBERON:ear canal                                   0.3350000
-	UBERON:feces                                       0.4430000
-	UBERON:glans penis                                 0.0580000
-	UBERON:hair                                        0.7000000
-	UBERON:labia minora                                0.3520000
-	UBERON:mouth                                       0.8700000
-	UBERON:nose                                        0.0110000
-	UBERON:nostril                                     0.1990000
-	UBERON:nostrils                                    0.6890000
-	UBERON:skin of arm                                 0.7680000
-	UBERON:skin of finger                              0.2550000
-	UBERON:skin of forearm                             0.7850000
-	UBERON:tongue                                      0.9030000
-	UBERON:urine                                       0.5660000
-	UBERON:zone of skin of abdomen                     0.1890000
+		                         UBERON:ear canal UBERON:feces
+	UBERON:ear canal                                    0.65600000
+	UBERON:feces                           0.64369434             
+	UBERON:glans penis                     0.13390939   0.22202619
+	UBERON:hair                            0.76930293   0.94856194
+	UBERON:labia minora                    0.26573188   0.30803348
+	UBERON:mouth                           0.38825286   0.13410962
+	UBERON:nose                            0.04644476   0.09139076
+	UBERON:nostril                         0.77144109   0.31164904
+	UBERON:nostrils                        0.80914684   0.40998186
+	UBERON:skin of arm                     0.81005310   0.81753053
+	UBERON:skin of finger                  0.97422033   0.49272998
+	UBERON:skin of forearm                 0.90995260   0.47479702
+	UBERON:tongue                          0.40041373   0.08394161
+	UBERON:urine                           0.86874942   0.33972854
+	UBERON:zone of skin of abdomen         0.52830558   0.79547296
+	UBERON:zone of skin of foot            0.75818075   0.22111901
+	UBERON:zone of skin of hand            0.93036257   0.51231458
+	UBERON:zone of skin of head            0.42023494   0.08561553
+	UBERON:zone of skin of knee            0.47005280   0.08974326
+	UBERON:zone of skin of outer ear       0.52914309   0.09432887
+		                         UBERON:glans penis UBERON:hair
+	UBERON:ear canal                         0.13500000  0.75900000
+	UBERON:feces                             0.23400000  0.94800000
+	UBERON:glans penis                                   0.31100000
+	UBERON:hair                              0.31485022            
+	UBERON:labia minora                      0.97642427  0.43157394
+	UBERON:mouth                             0.02118084  0.28666784
+	UBERON:nose                              0.99663888  0.16913109
+	UBERON:nostril                           0.03273600  0.50578420
+	UBERON:nostrils                          0.08688087  0.58948395
+	UBERON:skin of arm                       0.21829905  0.91868905
+	UBERON:skin of finger                    0.05666118  0.66846192
+	UBERON:skin of forearm                   0.12901681  0.66289356
+	UBERON:tongue                            0.00446918  0.23059933
+	UBERON:urine                             0.06026260  0.56537298
+	UBERON:zone of skin of abdomen           0.27585622  0.80429340
+	UBERON:zone of skin of foot              0.05339055  0.46839008
+	UBERON:zone of skin of hand              0.08584173  0.72201918
+	UBERON:zone of skin of head              0.01838243  0.25437056
+	UBERON:zone of skin of knee              0.03276043  0.28277540
+	UBERON:zone of skin of outer ear         0.03066872  0.30356640
+		                         UBERON:labia minora UBERON:mouth UBERON:nose
+	UBERON:ear canal                          0.28700000   0.38800000  0.04700000
+	UBERON:feces                              0.32200000   0.14600000  0.09800000
+	UBERON:glans penis                        0.97500000   0.01100000  0.99700000
+	UBERON:hair                               0.45100000   0.27300000  0.16800000
+	UBERON:labia minora                                    0.08300000  0.97300000
+	UBERON:mouth                              0.08234783               0.00200000
+	UBERON:nose                               0.96595058   0.00258717            
+	UBERON:nostril                            0.09288672   0.39987815  0.00450330
+	UBERON:nostrils                           0.17972658   0.50771736  0.02158724
+	UBERON:skin of arm                        0.31353155   0.25072265  0.09085265
+	UBERON:skin of finger                     0.13448037   0.27172046  0.01087135
+	UBERON:skin of forearm                    0.21252941   0.43154476  0.03805394
+	UBERON:tongue                             0.02619457   0.68689433  0.00020157
+	UBERON:urine                              0.11553034   0.34021622  0.01016977
+	UBERON:zone of skin of abdomen            0.45492294   0.12130731  0.15474301
+	UBERON:zone of skin of foot               0.09691715   0.42433681  0.00767909
+	UBERON:zone of skin of hand               0.14408642   0.20852617  0.01769832
+	UBERON:zone of skin of head               0.05282882   0.81181553  0.00154299
+	UBERON:zone of skin of knee               0.07009782   0.78592682  0.00356419
+	UBERON:zone of skin of outer ear          0.06343217   0.65257392  0.00298993
+		                         UBERON:nostril UBERON:nostrils
+	UBERON:ear canal                     0.76900000      0.81600000
+	UBERON:feces                         0.31300000      0.41700000
+	UBERON:glans penis                   0.02800000      0.07600000
+	UBERON:hair                          0.51800000      0.62000000
+	UBERON:labia minora                  0.08800000      0.18600000
+	UBERON:mouth                         0.39100000      0.52700000
+	UBERON:nose                          0.00700000      0.03100000
+	UBERON:nostril                                       0.98500000
+	UBERON:nostrils                      0.98945448                
+	UBERON:skin of arm                   0.51493588      0.59483323
+	UBERON:skin of finger                0.73013131      0.77215159
+	UBERON:skin of forearm               0.87122857      0.88834381
+	UBERON:tongue                        0.49012080      0.58969183
+	UBERON:urine                         0.86525105      0.88109265
+	UBERON:zone of skin of abdomen       0.26363915      0.36662477
+	UBERON:zone of skin of foot          0.97499842      0.99082569
+	UBERON:zone of skin of hand          0.58724157      0.65288167
+	UBERON:zone of skin of head          0.46527782      0.56683955
+	UBERON:zone of skin of knee          0.51833317      0.61318240
+	UBERON:zone of skin of outer ear     0.62419076      0.70425342
+		                         UBERON:skin of arm UBERON:skin of finger
+	UBERON:ear canal                         0.81500000            0.97300000
+	UBERON:feces                             0.79000000            0.50100000
+	UBERON:glans penis                       0.21100000            0.05000000
+	UBERON:hair                              0.91700000            0.67100000
+	UBERON:labia minora                      0.30800000            0.12800000
+	UBERON:mouth                             0.23500000            0.27800000
+	UBERON:nose                              0.08800000            0.01400000
+	UBERON:nostril                           0.50200000            0.73300000
+	UBERON:nostrils                          0.58900000            0.76200000
+	UBERON:skin of arm                                             0.71200000
+	UBERON:skin of finger                    0.71343830                      
+	UBERON:skin of forearm                   0.67885778            0.90435132
+	UBERON:tongue                            0.20571054            0.28715526
+	UBERON:urine                             0.57677297            0.85368451
+	UBERON:zone of skin of abdomen           0.69147681            0.39604507
+	UBERON:zone of skin of foot              0.44806320            0.69776866
+	UBERON:zone of skin of hand              0.78039956            0.86537734
+	UBERON:zone of skin of head              0.21094626            0.29103360
+	UBERON:zone of skin of knee              0.22911370            0.33493676
+	UBERON:zone of skin of outer ear         0.25239010            0.40169838
+		                         UBERON:skin of forearm UBERON:tongue
+	UBERON:ear canal                             0.91000000    0.37900000
+	UBERON:feces                                 0.46500000    0.09000000
+	UBERON:glans penis                           0.12900000    0.00500000
+	UBERON:hair                                  0.67400000    0.23200000
+	UBERON:labia minora                          0.20600000    0.03100000
+	UBERON:mouth                                 0.43300000    0.71100000
+	UBERON:nose                                  0.02900000    0.00100000
+	UBERON:nostril                               0.87900000    0.49500000
+	UBERON:nostrils                              0.87500000    0.58000000
+	UBERON:skin of arm                           0.68200000    0.21700000
+	UBERON:skin of finger                        0.90500000    0.27500000
+	UBERON:skin of forearm                                     0.46700000
+	UBERON:tongue                                0.46292243              
+	UBERON:urine                                 0.97698710    0.37927308
+	UBERON:zone of skin of abdomen               0.45176747    0.07543195
+	UBERON:zone of skin of foot                  0.83538476    0.50745925
+	UBERON:zone of skin of hand                  0.77366898    0.18917276
+	UBERON:zone of skin of head                  0.44195087    0.88440190
+	UBERON:zone of skin of knee                  0.47432668    0.94269494
+	UBERON:zone of skin of outer ear             0.54562590    0.87752123
+		                         UBERON:urine UBERON:zone of skin of abdomen
+	UBERON:ear canal                   0.88400000                     0.53900000
+	UBERON:feces                       0.33500000                     0.79500000
+	UBERON:glans penis                 0.04700000                     0.26200000
+	UBERON:hair                        0.55300000                     0.80600000
+	UBERON:labia minora                0.10200000                     0.47500000
+	UBERON:mouth                       0.33900000                     0.12600000
+	UBERON:nose                        0.00900000                     0.17000000
+	UBERON:nostril                     0.88000000                     0.27200000
+	UBERON:nostrils                    0.88000000                     0.35900000
+	UBERON:skin of arm                 0.57700000                     0.69600000
+	UBERON:skin of finger              0.85100000                     0.40400000
+	UBERON:skin of forearm             0.97200000                     0.45300000
+	UBERON:tongue                      0.38200000                     0.07400000
+	UBERON:urine                                                      0.33400000
+	UBERON:zone of skin of abdomen     0.33966368                               
+	UBERON:zone of skin of foot        0.81735802                     0.27999512
+	UBERON:zone of skin of hand        0.68035246                     0.46561810
+	UBERON:zone of skin of head        0.34651958                     0.11675393
+	UBERON:zone of skin of knee        0.37557566                     0.15319375
+	UBERON:zone of skin of outer ear   0.45661293                     0.16561517
+		                         UBERON:zone of skin of foot
+	UBERON:ear canal                                  0.74900000
+	UBERON:feces                                      0.22600000
+	UBERON:glans penis                                0.05100000
+	UBERON:hair                                       0.47800000
+	UBERON:labia minora                               0.09900000
+	UBERON:mouth                                      0.44500000
+	UBERON:nose                                       0.00900000
+	UBERON:nostril                                    0.97100000
+	UBERON:nostrils                                   0.98900000
+	UBERON:skin of arm                                0.42400000
+	UBERON:skin of finger                             0.71400000
+	UBERON:skin of forearm                            0.83500000
+	UBERON:tongue                                     0.51700000
+	UBERON:urine                                      0.80800000
+	UBERON:zone of skin of abdomen                    0.29200000
 	UBERON:zone of skin of foot                                 
-	UBERON:zone of skin of hand                        0.1816522
-	UBERON:zone of skin of head                        0.6989050
-	UBERON:zone of skin of knee                        0.8383950
-	UBERON:zone of skin of outer ear                   0.8953861
-									 UBERON:zone of skin of hand
-	UBERON:ear canal                                   0.8010000
-	UBERON:feces                                       0.7040000
-	UBERON:glans penis                                 0.1610000
-	UBERON:hair                                        0.7560000
-	UBERON:labia minora                                0.6440000
-	UBERON:mouth                                       0.3140000
-	UBERON:nose                                        0.0700000
-	UBERON:nostril                                     0.7600000
-	UBERON:nostrils                                    0.6760000
-	UBERON:skin of arm                                 0.5100000
-	UBERON:skin of finger                              0.8970000
-	UBERON:skin of forearm                             0.5190000
-	UBERON:tongue                                      0.1670000
-	UBERON:urine                                       0.5300000
-	UBERON:zone of skin of abdomen                     0.5520000
-	UBERON:zone of skin of foot                        0.1840000
+	UBERON:zone of skin of hand                       0.48840738
+	UBERON:zone of skin of head                       0.44572926
+	UBERON:zone of skin of knee                       0.47135924
+	UBERON:zone of skin of outer ear                  0.57948514
+		                         UBERON:zone of skin of hand
+	UBERON:ear canal                                  0.92600000
+	UBERON:feces                                      0.50800000
+	UBERON:glans penis                                0.08300000
+	UBERON:hair                                       0.71400000
+	UBERON:labia minora                               0.14300000
+	UBERON:mouth                                      0.22500000
+	UBERON:nose                                       0.02100000
+	UBERON:nostril                                    0.58700000
+	UBERON:nostrils                                   0.65900000
+	UBERON:skin of arm                                0.77600000
+	UBERON:skin of finger                             0.86300000
+	UBERON:skin of forearm                            0.76200000
+	UBERON:tongue                                     0.18200000
+	UBERON:urine                                      0.69500000
+	UBERON:zone of skin of abdomen                    0.47600000
+	UBERON:zone of skin of foot                       0.50600000
 	UBERON:zone of skin of hand                                 
-	UBERON:zone of skin of head                        0.1321384
-	UBERON:zone of skin of knee                        0.1537181
-	UBERON:zone of skin of outer ear                   0.2638695
-									 UBERON:zone of skin of head
-	UBERON:ear canal                                   0.2510000
-	UBERON:feces                                       0.3540000
-	UBERON:glans penis                                 0.0460000
-	UBERON:hair                                        0.5820000
-	UBERON:labia minora                                0.3070000
-	UBERON:mouth                                       0.9260000
-	UBERON:nose                                        0.0130000
-	UBERON:nostril                                     0.1160000
-	UBERON:nostrils                                    0.5050000
-	UBERON:skin of arm                                 0.6040000
-	UBERON:skin of finger                              0.2000000
-	UBERON:skin of forearm                             0.6380000
-	UBERON:tongue                                      0.7720000
-	UBERON:urine                                       0.3980000
-	UBERON:zone of skin of abdomen                     0.1400000
-	UBERON:zone of skin of foot                        0.6830000
-	UBERON:zone of skin of hand                        0.1430000
+	UBERON:zone of skin of head                       0.17117513
+	UBERON:zone of skin of knee                       0.18027667
+	UBERON:zone of skin of outer ear                  0.21450973
+		                         UBERON:zone of skin of head
+	UBERON:ear canal                                  0.42200000
+	UBERON:feces                                      0.09400000
+	UBERON:glans penis                                0.01300000
+	UBERON:hair                                       0.26100000
+	UBERON:labia minora                               0.04700000
+	UBERON:mouth                                      0.82000000
+	UBERON:nose                                       0.00500000
+	UBERON:nostril                                    0.46100000
+	UBERON:nostrils                                   0.58400000
+	UBERON:skin of arm                                0.18600000
+	UBERON:skin of finger                             0.29300000
+	UBERON:skin of forearm                            0.43800000
+	UBERON:tongue                                     0.87400000
+	UBERON:urine                                      0.31700000
+	UBERON:zone of skin of abdomen                    0.11700000
+	UBERON:zone of skin of foot                       0.41500000
+	UBERON:zone of skin of hand                       0.15200000
 	UBERON:zone of skin of head                                 
-	UBERON:zone of skin of knee                        0.8496472
-	UBERON:zone of skin of outer ear                   0.6400064
-									 UBERON:zone of skin of knee
-	UBERON:ear canal                                   0.2780000
-	UBERON:feces                                       0.4210000
-	UBERON:glans penis                                 0.0410000
-	UBERON:hair                                        0.6360000
-	UBERON:labia minora                                0.3030000
-	UBERON:mouth                                       0.9730000
-	UBERON:nose                                        0.0100000
-	UBERON:nostril                                     0.1330000
-	UBERON:nostrils                                    0.5950000
-	UBERON:skin of arm                                 0.6660000
-	UBERON:skin of finger                              0.2080000
-	UBERON:skin of forearm                             0.6960000
-	UBERON:tongue                                      0.9210000
-	UBERON:urine                                       0.4620000
-	UBERON:zone of skin of abdomen                     0.1590000
-	UBERON:zone of skin of foot                        0.8410000
-	UBERON:zone of skin of hand                        0.1520000
-	UBERON:zone of skin of head                        0.8280000
+	UBERON:zone of skin of knee                       0.95046038
+	UBERON:zone of skin of outer ear                  0.77640842
+		                         UBERON:zone of skin of knee
+	UBERON:ear canal                                  0.46700000
+	UBERON:feces                                      0.10100000
+	UBERON:glans penis                                0.01800000
+	UBERON:hair                                       0.27900000
+	UBERON:labia minora                               0.06200000
+	UBERON:mouth                                      0.80000000
+	UBERON:nose                                       0.01000000
+	UBERON:nostril                                    0.53200000
+	UBERON:nostrils                                   0.62100000
+	UBERON:skin of arm                                0.24900000
+	UBERON:skin of finger                             0.35600000
+	UBERON:skin of forearm                            0.49500000
+	UBERON:tongue                                     0.95000000
+	UBERON:urine                                      0.38300000
+	UBERON:zone of skin of abdomen                    0.15100000
+	UBERON:zone of skin of foot                       0.49200000
+	UBERON:zone of skin of hand                       0.19300000
+	UBERON:zone of skin of head                       0.94500000
 	UBERON:zone of skin of knee                                 
-	UBERON:zone of skin of outer ear                   0.7577955
-									 UBERON:zone of skin of outer ear
-	UBERON:ear canal                                            0.397
-	UBERON:feces                                                0.603
-	UBERON:glans penis                                          0.092
-	UBERON:hair                                                 0.778
-	UBERON:labia minora                                         0.414
-	UBERON:mouth                                                0.798
-	UBERON:nose                                                 0.025
-	UBERON:nostril                                              0.265
-	UBERON:nostrils                                             0.769
-	UBERON:skin of arm                                          0.863
-	UBERON:skin of finger                                       0.338
-	UBERON:skin of forearm                                      0.876
-	UBERON:tongue                                               0.808
-	UBERON:urine                                                0.704
-	UBERON:zone of skin of abdomen                              0.250
-	UBERON:zone of skin of foot                                 0.897
-	UBERON:zone of skin of hand                                 0.251
-	UBERON:zone of skin of head                                 0.635
-	UBERON:zone of skin of knee                                 0.767
+	UBERON:zone of skin of outer ear                  0.82348257
+		                         UBERON:zone of skin of outer ear
+	UBERON:ear canal                                            0.536
+	UBERON:feces                                                0.092
+	UBERON:glans penis                                          0.025
+	UBERON:hair                                                 0.289
+	UBERON:labia minora                                         0.059
+	UBERON:mouth                                                0.652
+	UBERON:nose                                                 0.005
+	UBERON:nostril                                              0.643
+	UBERON:nostrils                                             0.701
+	UBERON:skin of arm                                          0.232
+	UBERON:skin of finger                                       0.415
+	UBERON:skin of forearm                                      0.534
+	UBERON:tongue                                               0.894
+	UBERON:urine                                                0.433
+	UBERON:zone of skin of abdomen                              0.168
+	UBERON:zone of skin of foot                                 0.553
+	UBERON:zone of skin of hand                                 0.224
+	UBERON:zone of skin of head                                 0.767
+	UBERON:zone of skin of knee                                 0.834
 	UBERON:zone of skin of outer ear                                 
+
+The p-value indicates that the results are insignificant.
+
+Test 5
+~~~~~~
+
+**Description:**
+
+This test uses the unweighted unifrac distance matrix and the SEX category to perform a negative control test.
+
+**Command:** ::
+
+	compare_categories.py --method permdisp -i datasets/whole_body/unweighted_unifrac_dm.txt -m datasets/whole_body/map.txt -c SEX -o  whole_body_negative_permdisp_results
+
+**Results:**
+
+The following results were written to the output file: ::
+
+	Analysis of Variance Table
+
+	Response: Distances
+		   Df Sum Sq   Mean Sq F value Pr(>F)
+	Groups      1 0.0119 0.0118769  2.0989 0.1479
+	Residuals 583 3.2990 0.0056587               
+
+	Permutation test for homogeneity of multivariate dispersions
+
+	No. of permutations: 999  
+
+	**** STRATA ****
+	Permutations are unstratified
+
+	**** SAMPLES ****
+	Permutation type: free 
+	Mirrored permutations for Samples?: No 
+
+	Response: Distances
+		   Df Sum Sq   Mean Sq      F N.Perm Pr(>F)
+	Groups      1 0.0119 0.0118769 2.0989    999  0.145
+	Residuals 583 3.2990 0.0056587                     
+
+	Pairwise comparisons:
+	(Observed p-value below diagonal, permuted p-value above diagonal)
+		female  male
+	female         0.153
+	male   0.14794      
 
 The p-value indicates that the results are insignificant.
 
