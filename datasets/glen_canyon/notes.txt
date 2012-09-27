@@ -1,0 +1,6 @@
+# We were given an open-ref OTU table, so filter it to only include gg OTUs
+# that so we can use the gg tree to compute unifrac, etc.
+filter_otus_from_otu_table.py -i otu_table_mc2_1526.biom -o otu_table.biom -e ~/.virtualenvs/qiime/data/gg_otus_4feb2011/taxonomies/greengenes_tax.txt --negate_ids_to_exclude
+
+# To keep all of the filenames consistent between datasets.
+cp map_25Jan2012.txt map.txt
