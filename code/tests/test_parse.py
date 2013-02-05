@@ -16,6 +16,7 @@ from cogent.util.unit_test import TestCase, main
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
                                parse_dbrda_results,
+                               _parse_float,
                                parse_mantel_results,
                                parse_morans_i_results,
                                parse_mrpp_results,
@@ -93,6 +94,34 @@ class ParseTests(TestCase):
         """Test parsing moran's i results file."""
         obs = parse_morans_i_results(self.morans_i_results_str1)
         self.assertFloatEqual(obs, (-0.06005486, 4.442088e-05))
+
+    def test_parse_float(self):
+        """Test parsing float strings."""
+        obs = _parse_float('0.045')
+        self.assertFloatEqual(obs, 0.045)
+
+        obs = _parse_float('1.0')
+        self.assertFloatEqual(obs, 1.0)
+
+        obs = _parse_float('0')
+        self.assertFloatEqual(obs, 0.0)
+
+        obs = _parse_float('42')
+        self.assertFloatEqual(obs, 42.0)
+
+        obs = _parse_float('5', 0)
+        self.assertFloatEqual(obs, 5.0)
+
+        obs = _parse_float('-9', max_val=10)
+        self.assertFloatEqual(obs, -9.0)
+
+    def test_parse_float_invalid_input(self):
+        """Test parsing invalid float strings raises errors."""
+        self.assertRaises(ValueError, _parse_float, 'foo')
+        self.assertRaises(ValueError, _parse_float, '5.0', 0, 1)
+        self.assertRaises(ValueError, _parse_float, '-0.1', 0, 1)
+        self.assertRaises(ValueError, _parse_float, '-0.1', 0)
+        self.assertRaises(ValueError, _parse_float, '11.2', max_val=10)
 
 
 anosim_results_str1 = """Method Name\tR-value\tP-value

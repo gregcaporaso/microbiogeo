@@ -18,13 +18,12 @@ def parse_anosim_permanova_results(results_f):
         pass
 
     es, p_value = line.strip().split('\t')[1:]
-    es = float(es)
+    es = _parse_float(es)
+
     if 'Too few iters to compute p-value' in p_value:
         p_value = None
     else:
-        p_value = float(p_value)
-        if p_value < 0 or p_value > 1:
-            raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+        p_value = _parse_float(p_value, 0, 1)
 
     return es, p_value
 
@@ -36,20 +35,14 @@ def parse_adonis_results(results_f):
             # The format of the file changes if the result is significant or
             # not.
             if len(tokens) == 7:
-                es, p_value = map(float, line.strip().split()[-2:])
-                if p_value < 0 or p_value > 1:
-                    raise ValueError("Encountered invalid p-value: %.4f" %
-                                     p_value)
-                elif es < 0 or es > 1:
-                    raise ValueError("Encountered invalid R2 value: %.4f" % es)
+                es, p_value = line.strip().split()[-2:]
+                es = _parse_float(es, 0, 1)
+                p_value = _parse_float(p_value, 0, 1)
                 return es, p_value
             elif len(tokens) == 8:
-                es, p_value = map(float, line.strip().split()[:-1][-2:])
-                if p_value < 0 or p_value > 1:
-                    raise ValueError("Encountered invalid p-value: %.4f" %
-                                     p_value)
-                elif es < 0 or es > 1:
-                    raise ValueError("Encountered invalid R2 value: %.4f" % es)
+                es, p_value = line.strip().split()[:-1][-2:]
+                es = _parse_float(es, 0, 1)
+                p_value = _parse_float(p_value, 0, 1)
                 return es, p_value
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
@@ -58,18 +51,19 @@ def parse_mrpp_results(results_f):
     for line in results_f:
         if line.startswith('Chance corrected within-group agreement A:'):
             tokens = line.strip().split()
+
             if len(tokens) == 6:
-                a_value = float(tokens[-1])
+                a_value = _parse_float(tokens[-1])
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
         elif line.startswith('Significance of delta:'):
             tokens = line.strip().split()
+
             if len(tokens) == 4:
-                p_value = float(tokens[-1])
+                p_value = _parse_float(tokens[-1], 0, 1)
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
-    if p_value < 0 or p_value > 1:
-        raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+
     return a_value, p_value
 
 def parse_dbrda_results(results_f):
@@ -162,3 +156,20 @@ def parse_morans_i_results(results_f):
                 raise ValueError("Encountered invalid p-value: %.4f" % p_value)
             p_value_next = False
     return es, p_value
+
+def _parse_float(float_str, min_val=None, max_val=None):
+    """Converts a float (as a string) into a float.
+
+    Performs optional sanity checks to ensure the float is in
+    [min_val, max_val].
+    """
+    try:
+        result = float(float_str)
+    except ValueError:
+        raise ValueError("Could not convert float string '%s' to float."
+                         % float_str)
+    if (min_val is not None and result < min_val) or \
+       (max_val is not None and result > max_val):
+        raise ValueError("Float %.4f does not fall in valid range." % result)
+
+    return result
