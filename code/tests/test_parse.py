@@ -37,6 +37,10 @@ class ParseTests(TestCase):
 
         self.dbrda_results_str1 = dbrda_results_str1.split('\n')
 
+        self.permdisp_results_str1 = permdisp_results_str1.split('\n')
+
+        self.mantel_results_str1 = mantel_results_str1.split('\n')
+
     def test_parse_anosim_permanova_results(self):
         """Test parsing anosim/permanova results file."""
         obs = parse_anosim_permanova_results(self.anosim_results_str1)
@@ -64,6 +68,16 @@ class ParseTests(TestCase):
         """Test parsing dbrda results file."""
         obs = parse_dbrda_results(self.dbrda_results_str1)
         self.assertFloatEqual(obs, (0.2786, 0.010101))
+
+    def test_parse_permdisp_results(self):
+        """Test parsing permdisp results file."""
+        obs = parse_permdisp_results(self.permdisp_results_str1)
+        self.assertFloatEqual(obs, (2.0989, 0.131))
+
+    def test_parse_mantel_results(self):
+        """Test parsing mantel results file."""
+        obs = parse_mantel_results(self.mantel_results_str1)
+        self.assertFloatEqual(obs, (1.0, 0.01))
 
 
 anosim_results_str1 = """Method Name\tR-value\tP-value
@@ -150,10 +164,47 @@ Permutation test for capscale
 Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
 factors.frame)
 Permutation test for all constrained eigenvalues
-Pseudo-F:	 11.48258 (with 19, 565 Degrees of Freedom)
-Significance:	 0.010101 
+Pseudo-F:\t 11.48258 (with 19, 565 Degrees of Freedom)
+Significance:\t 0.010101 
 Based on 98 permutations under reduced model.
 """
+
+permdisp_results_str1 = """Analysis of Variance Table
+
+Response: Distances
+           Df Sum Sq   Mean Sq F value Pr(>F)
+Groups      1 0.0119 0.0118769  2.0989 0.1479
+Residuals 583 3.2990 0.0056587               
+
+Permutation test for homogeneity of multivariate dispersions
+
+No. of permutations: 999  
+
+**** STRATA ****
+Permutations are unstratified
+
+**** SAMPLES ****
+Permutation type: free 
+Mirrored permutations for Samples?: No 
+
+Response: Distances
+           Df Sum Sq   Mean Sq      F N.Perm Pr(>F)
+Groups      1 0.0119 0.0118769 2.0989    999  0.131
+Residuals 583 3.2990 0.0056587                     
+
+Pairwise comparisons:
+(Observed p-value below diagonal, permuted p-value above diagonal)
+        female  male
+female         0.132
+male   0.14794  
+"""
+
+mantel_results_str1 = """# Number of entries refers to the number of rows (or cols) retained in each
+# distance matrix after filtering the distance matrices to include only those
+# samples that were in both distance matrices. p-value contains the correct
+# number of significant digits.
+DM1\tDM2\tNumber of entries\tMantel r statistic\tp-value\tNumber of permutations\tTail type
+/Users/jrideout/analysis/overview_tutorial/wf_bdiv_even146/unweighted_unifrac_dm.txt\t/Users/jrideout/analysis/overview_tutorial/wf_bdiv_even146/unweighted_unifrac_dm.txt\t9\t1.00000\t0.01\t100\ttwo sided"""
 
 
 if __name__ == "__main__":

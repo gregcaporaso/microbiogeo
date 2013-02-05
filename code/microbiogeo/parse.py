@@ -113,6 +113,7 @@ def parse_permdisp_results(results_f):
 def parse_mantel_results(results_f):
     for line in results_f:
         pass
+
     if len(line.strip().split('\t')) != 7:
         raise ValueError("Encountered unparsable line: %s" % line)
     es, p_value = map(float, line.strip().split('\t')[3:5])
@@ -120,11 +121,13 @@ def parse_mantel_results(results_f):
         raise ValueError("Encountered invalid r value: %.4f" % es)
     if p_value < 0 or p_value > 1:
         raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+
     return es, p_value
 
 def parse_partial_mantel_results(results_f):
     for line in results_f:
         pass
+
     if len(line.strip().split('\t')) != 8:
         raise ValueError("Encountered unparsable line: %s" % line)
     es, p_value = map(float, line.strip().split('\t')[4:6])
@@ -132,6 +135,7 @@ def parse_partial_mantel_results(results_f):
         raise ValueError("Encountered invalid r value: %.4f" % es)
     if p_value < 0 or p_value > 1:
         raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+
     return es, p_value
 
 def parse_morans_i_results(results_f):
