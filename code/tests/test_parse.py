@@ -63,8 +63,7 @@ class ParseTests(TestCase):
     def test_parse_dbrda_results(self):
         """Test parsing dbrda results file."""
         obs = parse_dbrda_results(self.dbrda_results_str1)
-        print obs
-        #self.assertFloatEqual(obs, (0.07567, 0.01))
+        self.assertFloatEqual(obs, (0.2786, 0.010101))
 
 
 anosim_results_str1 = """Method Name\tR-value\tP-value
@@ -121,34 +120,39 @@ Based on observed delta 0.8162 and expected delta 0.883
 Significance of delta: 0.01 
 Based on  99  permutations"""
 
-dbrda_results_str1 = """Analysis of Variance Table
+dbrda_results_str1 = """Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+factors.frame)
 
-Response: Distances
-           Df Sum Sq   Mean Sq F value Pr(>F)
-Groups      1 0.0119 0.0118769  2.0989 0.1479
-Residuals 583 3.2990 0.0056587               
+               Inertia Proportion Rank
+Total         159.1762                
+Real Total    165.4413     1.0000     
+Constrained    46.0873     0.2786   19
+Unconstrained 119.3540     0.7214  371
+Imaginary      -6.2651             213
+Inertia is squared Unknown distance 
 
-Permutation test for homogeneity of multivariate dispersions
+Eigenvalues for constrained axes:
+    CAP1     CAP2     CAP3     CAP4     CAP5     CAP6     CAP7     CAP8 
+14.72239 10.95891  8.89776  3.26489  2.89957  1.41151  0.87627  0.69475 
+    CAP9    CAP10    CAP11    CAP12    CAP13    CAP14    CAP15    CAP16 
+ 0.40960  0.35446  0.29999  0.24395  0.20137  0.18342  0.17567  0.15110 
+   CAP17    CAP18    CAP19 
+ 0.13347  0.11498  0.09327 
 
-No. of permutations: 999  
+Eigenvalues for unconstrained axes:
+  MDS1   MDS2   MDS3   MDS4   MDS5   MDS6   MDS7   MDS8 
+12.480  5.688  4.495  3.722  3.331  2.814  2.279  2.153 
+(Showed only 8 of all 371 unconstrained eigenvalues)
 
-**** STRATA ****
-Permutations are unstratified
 
-**** SAMPLES ****
-Permutation type: free 
-Mirrored permutations for Samples?: No 
+Permutation test for capscale 
 
-Response: Distances
-           Df Sum Sq   Mean Sq      F N.Perm Pr(>F)
-Groups      1 0.0119 0.0118769 2.0989    999  0.131
-Residuals 583 3.2990 0.0056587                     
-
-Pairwise comparisons:
-(Observed p-value below diagonal, permuted p-value above diagonal)
-        female  male
-female         0.132
-male   0.14794  
+Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
+factors.frame)
+Permutation test for all constrained eigenvalues
+Pseudo-F:	 11.48258 (with 19, 565 Degrees of Freedom)
+Significance:	 0.010101 
+Based on 98 permutations under reduced model.
 """
 
 
