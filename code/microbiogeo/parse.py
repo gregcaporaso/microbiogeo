@@ -16,6 +16,7 @@ __email__ = "jai.rideout@gmail.com"
 def parse_anosim_permanova_results(results_f):
     for line in results_f:
         pass
+
     es, p_value = line.strip().split('\t')[1:]
     es = float(es)
     if 'Too few iters to compute p-value' in p_value:
@@ -24,6 +25,7 @@ def parse_anosim_permanova_results(results_f):
         p_value = float(p_value)
         if p_value < 0 or p_value > 1:
             raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+
     return es, p_value
 
 def parse_adonis_results(results_f):

@@ -27,8 +27,19 @@ class ParseTests(TestCase):
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        self.anosim_results_str1 = anosim_results_str1.split('\n')
+        self.anosim_results_str2 = anosim_results_str2.split('\n')
+
         self.adonis_results_str1 = adonis_results_str1.split('\n')
         self.adonis_results_str2 = adonis_results_str2.split('\n')
+
+    def test_parse_anosim_permanova_results(self):
+        """Test parsing anosim/permanova results file."""
+        obs = parse_anosim_permanova_results(self.anosim_results_str1)
+        self.assertFloatEqual(obs, (0.463253142506, 0.01))
+
+        obs = parse_anosim_permanova_results(self.anosim_results_str2)
+        self.assertFloatEqual(obs, (0.9375, None))
 
     def test_parse_adonis_results(self):
         """Test parsing adonis results file."""
@@ -40,6 +51,12 @@ class ParseTests(TestCase):
         obs = parse_adonis_results(self.adonis_results_str2)
         self.assertFloatEqual(obs, (0.24408, 0.5))
 
+
+anosim_results_str1 = """Method Name\tR-value\tP-value
+ANOSIM\t0.463253142506\t0.01"""
+
+anosim_results_str2 = """Method Name\tR-value\tP-value
+ANOSIM\t0.9375\tToo few iters to compute p-value (num_iters=1)"""
 
 adonis_results_str1 = """
 Call:
