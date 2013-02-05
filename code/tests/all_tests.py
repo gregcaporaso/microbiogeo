@@ -55,7 +55,7 @@ def main():
     # are bad import statements in the script, SyntaxErrors, or other failures
     # prior to running parse_args().
     script_names = []
-    script_names = glob('%s/*' % scripts_dir)
+    script_names = glob('%s/*.py' % scripts_dir)
     script_names.sort()
 
     bad_scripts = []
