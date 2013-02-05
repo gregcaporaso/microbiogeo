@@ -36,18 +36,19 @@ def parse_adonis_results(results_f):
             # not.
             if len(tokens) == 7:
                 es, p_value = line.strip().split()[-2:]
-                es = _parse_float(es, 0, 1)
-                p_value = _parse_float(p_value, 0, 1)
-                return es, p_value
             elif len(tokens) == 8:
                 es, p_value = line.strip().split()[:-1][-2:]
-                es = _parse_float(es, 0, 1)
-                p_value = _parse_float(p_value, 0, 1)
-                return es, p_value
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
 
+            return _parse_float(es, 0, 1), _parse_float(p_value, 0, 1)
+
+    return ValueError("Unable to parse Adonis results file.")
+
 def parse_mrpp_results(results_f):
+    a_value = None
+    p_value = None
+
     for line in results_f:
         if line.startswith('Chance corrected within-group agreement A:'):
             tokens = line.strip().split()
@@ -64,44 +65,56 @@ def parse_mrpp_results(results_f):
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
 
+    if a_value is None or p_value is None:
+        raise ValueError("Unable to parse MRPP results file.")
+
     return a_value, p_value
 
 def parse_dbrda_results(results_f):
+    r2_value = None
+    p_value = None
+
     for line in results_f:
         if line.startswith('Constrained'):
             tokens = line.strip().split()
+
             if len(tokens) == 4:
-                r2 = float(tokens[2])
-                if r2 < 0 or r2 > 1:
-                    raise ValueError("Encountered invalid R2 value: %.4f" % r2)
+                r2_value = _parse_float(tokens[2], 0, 1)
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
         elif line.startswith('Significance:'):
             tokens = line.strip().split()
+
             if len(tokens) == 2:
-                p_value = float(tokens[1])
-                if p_value < 0 or p_value > 1:
-                    raise ValueError("Encountered invalid p-value: %.4f" %
-                                     p_value)
+                p_value = _parse_float(tokens[1], 0, 1)
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
-    return r2, p_value
+
+    if r2_value is None or p_value is None:
+        raise ValueError("Unable to parse db-RDA results file.")
+
+    return r2_value, p_value
 
 def parse_permdisp_results(results_f):
+    f_value = None
+    p_value = None
     at_nonparametric_section = False
+
     for line in results_f:
         if line.startswith('No. of permutations:'):
             at_nonparametric_section = True
         elif line.startswith('Groups') and at_nonparametric_section:
             tokens = line.strip().split()
+
             if len(tokens) == 7 or len(tokens) == 8:
-                f_value = float(tokens[4])
-                p_value = float(tokens[6])
-                if p_value < 0 or p_value > 1:
-                    raise ValueError("Encountered invalid p-value: %.4f" %
-                                     p_value)
+                f_value = _parse_float(tokens[4])
+                p_value = _parse_float(tokens[6], 0, 1)
             else:
                 raise ValueError("Encountered unparsable line: %s" % line)
+
+    if f_value is None or p_value is None:
+        raise ValueError("Unable to parse PERMDISP results file.")
+
     return f_value, p_value
 
 def parse_mantel_results(results_f):
@@ -110,11 +123,10 @@ def parse_mantel_results(results_f):
 
     if len(line.strip().split('\t')) != 7:
         raise ValueError("Encountered unparsable line: %s" % line)
-    es, p_value = map(float, line.strip().split('\t')[3:5])
-    if es < -1 or es > 1:
-        raise ValueError("Encountered invalid r value: %.4f" % es)
-    if p_value < 0 or p_value > 1:
-        raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+
+    es, p_value = line.strip().split('\t')[3:5]
+    es = _parse_float(es, -1, 1)
+    p_value = _parse_float(p_value, 0, 1)
 
     return es, p_value
 
@@ -124,11 +136,10 @@ def parse_partial_mantel_results(results_f):
 
     if len(line.strip().split('\t')) != 8:
         raise ValueError("Encountered unparsable line: %s" % line)
-    es, p_value = map(float, line.strip().split('\t')[4:6])
-    if es < -1 or es > 1:
-        raise ValueError("Encountered invalid r value: %.4f" % es)
-    if p_value < 0 or p_value > 1:
-        raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+
+    es, p_value = line.strip().split('\t')[4:6]
+    es = _parse_float(es, -1, 1)
+    p_value = _parse_float(p_value, 0, 1)
 
     return es, p_value
 
