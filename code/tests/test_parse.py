@@ -44,6 +44,8 @@ class ParseTests(TestCase):
         self.partial_mantel_results_str1 = \
                 partial_mantel_results_str1.split('\n')
 
+        self.morans_i_results_str1 = morans_i_results_str1.split('\n')
+
     def test_parse_anosim_permanova_results(self):
         """Test parsing anosim/permanova results file."""
         obs = parse_anosim_permanova_results(self.anosim_results_str1)
@@ -86,6 +88,11 @@ class ParseTests(TestCase):
         """Test parsing partial mantel results file."""
         obs = parse_partial_mantel_results(self.partial_mantel_results_str1)
         self.assertFloatEqual(obs, (0.5, 0.01))
+
+    def test_parse_morans_i_results(self):
+        """Test parsing moran's i results file."""
+        obs = parse_morans_i_results(self.morans_i_results_str1)
+        self.assertFloatEqual(obs, (-0.06005486, 4.442088e-05))
 
 
 anosim_results_str1 = """Method Name\tR-value\tP-value
@@ -220,6 +227,19 @@ partial_mantel_results_str1 = """# Number of entries refers to the number of row
 # number of significant digits.
 DM1\tDM2\tCDM\tNumber of entries\tMantel r statistic\tp-value\tNumber of permutations\tTail type
 /Users/jrideout/analysis/overview_tutorial/wf_bdiv_even146/unweighted_unifrac_dm.txt\t/Users/jrideout/analysis/overview_tutorial/wf_bdiv_even146/unweighted_unifrac_dm.txt\t/Users/jrideout/analysis/overview_tutorial/wf_bdiv_even146/unweighted_unifrac_dm.txt\t9\t0.50000\t0.01\t100\tgreater"""
+
+morans_i_results_str1 = """$observed
+[1] -0.06005486
+
+$expected
+[1] -0.125
+
+$sd
+[1] 0.01590547
+
+$p.value
+[1] 4.442088e-05
+"""
 
 
 if __name__ == "__main__":
