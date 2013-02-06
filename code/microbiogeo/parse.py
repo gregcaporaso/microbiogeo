@@ -43,9 +43,9 @@ def parse_adonis_results(results_f):
             # The format of the file changes if the result is significant or
             # not.
             if len(tokens) == 7:
-                es, p_value = line.strip().split()[-2:]
+                es, p_value = tokens[-2:]
             elif len(tokens) == 8:
-                es, p_value = line.strip().split()[:-1][-2:]
+                es, p_value = tokens[-3:-1]
             else:
                 raise UnparsableLineError(line)
 
@@ -129,27 +129,25 @@ def parse_mantel_results(results_f):
     for line in results_f:
         pass
 
-    if len(line.strip().split('\t')) != 7:
+    tokens = line.strip().split('\t')
+
+    if len(tokens) != 7:
         raise UnparsableLineError(line)
 
-    es, p_value = line.strip().split('\t')[3:5]
-    es = _parse_float(es, -1, 1)
-    p_value = _parse_float(p_value, 0, 1)
-
-    return es, p_value
+    es, p_value = tokens[3:5]
+    return _parse_float(es, -1, 1), _parse_float(p_value, 0, 1)
 
 def parse_partial_mantel_results(results_f):
     for line in results_f:
         pass
 
-    if len(line.strip().split('\t')) != 8:
+    tokens = line.strip().split('\t')
+
+    if len(tokens) != 8:
         raise UnparsableLineError(line)
 
-    es, p_value = line.strip().split('\t')[4:6]
-    es = _parse_float(es, -1, 1)
-    p_value = _parse_float(p_value, 0, 1)
-
-    return es, p_value
+    es, p_value = tokens[4:6]
+    return _parse_float(es, -1, 1), _parse_float(p_value, 0, 1)
 
 def parse_morans_i_results(results_f):
     es = None
