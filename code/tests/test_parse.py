@@ -22,6 +22,7 @@ from microbiogeo.parse import (parse_adonis_results,
                                parse_mrpp_results,
                                parse_partial_mantel_results,
                                parse_permdisp_results,
+                               UnparsableFileError,
                                UnparsableLineError)
 
 class ParseTests(TestCase):
@@ -34,8 +35,10 @@ class ParseTests(TestCase):
 
         self.adonis_results_str1 = adonis_results_str1.split('\n')
         self.adonis_results_str2 = adonis_results_str2.split('\n')
+        self.adonis_results_str3 = adonis_results_str3.split('\n')
 
         self.mrpp_results_str1 = mrpp_results_str1.split('\n')
+        self.mrpp_results_str2 = mrpp_results_str2.split('\n')
 
         self.dbrda_results_str1 = dbrda_results_str1.split('\n')
 
@@ -66,10 +69,18 @@ class ParseTests(TestCase):
         obs = parse_adonis_results(self.adonis_results_str2)
         self.assertFloatEqual(obs, (0.24408, 0.5))
 
+        # Invalid format.
+        self.assertRaises(UnparsableFileError, parse_adonis_results,
+                          self.adonis_results_str3)
+
     def test_parse_mrpp_results(self):
         """Test parsing mrpp results file."""
         obs = parse_mrpp_results(self.mrpp_results_str1)
         self.assertFloatEqual(obs, (0.07567, 0.01))
+
+        # Invalid format.
+        self.assertRaises(UnparsableFileError, parse_mrpp_results,
+                          self.mrpp_results_str2)
 
     def test_parse_dbrda_results(self):
         """Test parsing dbrda results file."""
@@ -151,6 +162,15 @@ qiime.data$map[[opts$category]]  1   0.44467 0.44467  2.2602 0.24408    0.5
 Residuals                        7   1.37717 0.19674         0.75592       
 Total                            8   1.82183                 1.00000       """
 
+adonis_results_str3 = """
+Call:
+adonis(formula = as.dist(qiime.data$distmat) ~ qiime.data$map[[opts$category]],      permutations = opts$num_permutations) 
+
+                                Df SumsOfSqs MeanSqs F.Model      R2 Pr(>F)
+foo.data$map[[opts$category]]  1   0.44467 0.44467  2.2602 0.24408    0.5
+Residuals                        7   1.37717 0.19674         0.75592       
+Total                            8   1.82183                 1.00000       """
+
 mrpp_results_str1 = """
 Call:
 mrpp(dat = as.dist(qiime.data$distmat), grouping = qiime.data$map[[opts$category]],      permutations = opts$num_permutations) 
@@ -177,6 +197,34 @@ Chance corrected within-group agreement A: 0.07567
 Based on observed delta 0.8162 and expected delta 0.883 
 
 Significance of delta: 0.01 
+Based on  99  permutations"""
+
+mrpp_results_str2 = """
+Call:
+mrpp(dat = as.dist(qiime.data$distmat), grouping = qiime.data$map[[opts$category]],      permutations = opts$num_permutations) 
+
+Dissimilarity index: 
+Weights for groups:  n 
+
+Class means and counts:
+
+      ENVO:forest ENVO:grassland ENVO:shrubland
+delta 0.8133      0.8758         0.8456        
+n     13          6              20            
+      ENVO:Temperate broadleaf and mixed forest biome ENVO:Temperate grasslands
+delta 0.7626                                          0.8554                   
+n     19                                              11                       
+      ENVO:Tropical and subtropical grasslands, savannas, and shrubland biome
+delta 0.8392                                                                 
+n     3                                                                      
+      ENVO:Tropical humid forests
+delta 0.7835                     
+n     12                         
+
+Chance corrected within-group agreement A: 0.07567 
+Based on observed delta 0.8162 and expected delta 0.883 
+
+Significance of foo: 0.01 
 Based on  99  permutations"""
 
 dbrda_results_str1 = """Call: capscale(formula = as.dist(qiime.data$distmat) ~ factor, data =
