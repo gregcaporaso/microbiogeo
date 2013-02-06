@@ -21,7 +21,8 @@ from microbiogeo.parse import (parse_adonis_results,
                                parse_morans_i_results,
                                parse_mrpp_results,
                                parse_partial_mantel_results,
-                               parse_permdisp_results)
+                               parse_permdisp_results,
+                               UnparsableLineError)
 
 class ParseTests(TestCase):
     """Tests for the parse.py module."""
@@ -52,8 +53,8 @@ class ParseTests(TestCase):
         obs = parse_anosim_permanova_results(self.anosim_results_str1)
         self.assertFloatEqual(obs, (0.463253142506, 0.01))
 
-        obs = parse_anosim_permanova_results(self.anosim_results_str2)
-        self.assertFloatEqual(obs, (0.9375, None))
+        self.assertRaises(UnparsableLineError, parse_anosim_permanova_results,
+                          self.anosim_results_str2)
 
     def test_parse_adonis_results(self):
         """Test parsing adonis results file."""

@@ -11,6 +11,14 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module to parse various supported file formats."""
 
+class UnparsableLineError(Exception):
+    def __init__(self, line):
+        self.args = ("Encountered unparsable line: '%s'" % line,)
+
+class UnparsableFileError(Exception):
+    def __init__(self, method):
+        self.args = ("Unable to parse %s results file." % method,)
+
 # Functions to parse effect size statistics and p-values from the various
 # results files.
 def parse_anosim_permanova_results(results_f):
@@ -21,7 +29,7 @@ def parse_anosim_permanova_results(results_f):
     es = _parse_float(es)
 
     if 'Too few iters to compute p-value' in p_value:
-        p_value = None
+        raise UnparsableLineError(line)
     else:
         p_value = _parse_float(p_value, 0, 1)
 
@@ -39,11 +47,11 @@ def parse_adonis_results(results_f):
             elif len(tokens) == 8:
                 es, p_value = line.strip().split()[:-1][-2:]
             else:
-                raise ValueError("Encountered unparsable line: %s" % line)
+                raise UnparsableLineError(line)
 
             return _parse_float(es, 0, 1), _parse_float(p_value, 0, 1)
 
-    return ValueError("Unable to parse Adonis results file.")
+    raise UnparsableFileError('Adonis')
 
 def parse_mrpp_results(results_f):
     a_value = None
@@ -56,17 +64,17 @@ def parse_mrpp_results(results_f):
             if len(tokens) == 6:
                 a_value = _parse_float(tokens[-1])
             else:
-                raise ValueError("Encountered unparsable line: %s" % line)
+                raise UnparsableLineError(line)
         elif line.startswith('Significance of delta:'):
             tokens = line.strip().split()
 
             if len(tokens) == 4:
                 p_value = _parse_float(tokens[-1], 0, 1)
             else:
-                raise ValueError("Encountered unparsable line: %s" % line)
+                raise UnparsableLineError(line)
 
     if a_value is None or p_value is None:
-        raise ValueError("Unable to parse MRPP results file.")
+        raise UnparsableFileError('MRPP')
 
     return a_value, p_value
 
@@ -81,17 +89,17 @@ def parse_dbrda_results(results_f):
             if len(tokens) == 4:
                 r2_value = _parse_float(tokens[2], 0, 1)
             else:
-                raise ValueError("Encountered unparsable line: %s" % line)
+                raise UnparsableLineError(line)
         elif line.startswith('Significance:'):
             tokens = line.strip().split()
 
             if len(tokens) == 2:
                 p_value = _parse_float(tokens[1], 0, 1)
             else:
-                raise ValueError("Encountered unparsable line: %s" % line)
+                raise UnparsableLineError(line)
 
     if r2_value is None or p_value is None:
-        raise ValueError("Unable to parse db-RDA results file.")
+        raise UnparsableFileError('db-RDA')
 
     return r2_value, p_value
 
@@ -110,10 +118,10 @@ def parse_permdisp_results(results_f):
                 f_value = _parse_float(tokens[4])
                 p_value = _parse_float(tokens[6], 0, 1)
             else:
-                raise ValueError("Encountered unparsable line: %s" % line)
+                raise UnparsableLineError(line)
 
     if f_value is None or p_value is None:
-        raise ValueError("Unable to parse PERMDISP results file.")
+        raise UnparsableFileError('PERMDISP')
 
     return f_value, p_value
 
@@ -122,7 +130,7 @@ def parse_mantel_results(results_f):
         pass
 
     if len(line.strip().split('\t')) != 7:
-        raise ValueError("Encountered unparsable line: %s" % line)
+        raise UnparsableLineError(line)
 
     es, p_value = line.strip().split('\t')[3:5]
     es = _parse_float(es, -1, 1)
@@ -135,7 +143,7 @@ def parse_partial_mantel_results(results_f):
         pass
 
     if len(line.strip().split('\t')) != 8:
-        raise ValueError("Encountered unparsable line: %s" % line)
+        raise UnparsableLineError(line)
 
     es, p_value = line.strip().split('\t')[4:6]
     es = _parse_float(es, -1, 1)
@@ -144,6 +152,8 @@ def parse_partial_mantel_results(results_f):
     return es, p_value
 
 def parse_morans_i_results(results_f):
+    es = None
+    p_value = None
     es_next = False
     p_value_next = False
 
@@ -154,18 +164,20 @@ def parse_morans_i_results(results_f):
             p_value_next = True
         elif es_next:
             if len(line.strip().split()) != 2:
-                raise ValueError("Encountered unparsable line: %s" % line)
-            es = float(line.strip().split()[1])
-            if es < -1 or es > 1:
-                raise ValueError("Encountered invalid I value: %.4f" % es)
+                raise UnparsableLineError(line)
+
+            es = _parse_float(line.strip().split()[1], -1, 1)
             es_next = False
         elif p_value_next:
             if len(line.strip().split()) != 2:
-                raise ValueError("Encountered unparsable line: %s" % line)
-            p_value = float(line.strip().split()[1])
-            if p_value < 0 or p_value > 1:
-                raise ValueError("Encountered invalid p-value: %.4f" % p_value)
+                raise UnparsableLineError(line)
+
+            p_value = _parse_float(line.strip().split()[1], 0, 1)
             p_value_next = False
+
+    if es is None or p_value is None:
+        raise UnparsableFileError('Moran\'s I')
+
     return es, p_value
 
 def _parse_float(float_str, min_val=None, max_val=None):
