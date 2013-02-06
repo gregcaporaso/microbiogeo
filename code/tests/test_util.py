@@ -22,6 +22,7 @@ class UtilTests(TestCase):
     def setUp(self):
         """Define some sample data that will be used by the tests."""
         self.dm_f1 = dm_str1.split('\n')
+        self.map_f1 = map_str1.split('\n')
 
     def test_shuffle_dm(self):
         """Test shuffling labels of distance matrix."""
@@ -42,10 +43,37 @@ class UtilTests(TestCase):
 
         self.assertTrue(order_changed)
 
+    def test_subsample_dm(self):
+        """Test picking subsets of sample groups in distance matrix."""
+        # Don't filter anything out.
+        exp = parse_distmat(self.dm_f1)
+        obs = parse_distmat(subsample_dm(
+                self.dm_f1, self.map_f1, 'Category', 2).split('\n'))
+        self.assertFloatEqual(obs, exp)
 
-dm_str1 = """\tS1\tS2
-S1\t0\t0.5
-S2\t0.5\t0"""
+        obs = parse_distmat(subsample_dm(
+                self.dm_f1, self.map_f1, 'Category', 3).split('\n'))
+        self.assertFloatEqual(obs, exp)
+
+        # Pick groups of size 1.
+        obs_labels, obs_dm = parse_distmat(subsample_dm(
+                self.dm_f1, self.map_f1, 'Category', 1).split('\n'))
+        self.assertTrue('S2' in obs_labels)
+
+        # XOR: either S1 or S3 should be in obs_labels, but not both.
+        self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
+
+
+dm_str1 = """\tS1\tS2\tS3
+S1\t0\t0.5\t0.7
+S2\t0.5\t0\t0.1
+S3\t0.7\t0.1\t0"""
+
+map_str1 = """#SampleID\tBarcodeSequence\tCategory
+S1\tAGCACGAGCCTA\tCat1
+S2\tAGCACGAGCCTG\tCat2
+S3\tAGCACGAGCCTC\tCat1
+S4\tAGCACGAGCCTT\tCat1"""
 
 
 if __name__ == "__main__":
