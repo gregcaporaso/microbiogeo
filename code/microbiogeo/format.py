@@ -11,8 +11,20 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module to format data for presentation."""
 
+from csv import writer
+from os.path import join
+
 # Not unit-tested.
 def create_results_summary_tables(results, out_dir, filename_prefix):
+    """Create tables to summarize the results of the statistical methods.
+    
+    These tables will be in TSV format so that they can be easily imported into
+    Excel for viewing and cleanup for publication.
+
+    A table will be created for each sampling depth / metric combination and
+    written to out_dir with the filename convention
+    <filename_prefix>_<depth>_<metric>.txt.
+    """
     for depth_desc, depth_res in results.items():
         for metric, metric_res in depth_res.items():
             table_rows = format_method_comparison_table(metric_res)
