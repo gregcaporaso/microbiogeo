@@ -39,11 +39,11 @@ def create_results_summary_tables(results, out_dir, filename_prefix):
                 tsv_writer.writerows(table_rows)
 
 def format_method_comparison_table(per_method_results):
-    constructed_header = False
-    header = ['Method']
+    constructed_header = None
     rows = []
 
     for method, method_res in sorted(per_method_results.items()):
+        header = ['Method']
         row = [method]
 
         for study, study_res in sorted(method_res.items()):
@@ -53,7 +53,7 @@ def format_method_comparison_table(per_method_results):
                 header.append(header_column_title + ' (shuffled)')
                 header.append(header_column_title + ' (subsampled)')
 
-                if len(category_res) > 0:
+                if len(category_res) == 3:
                     # Format full results.
                     row.append('%.2f; %s' % (category_res['full'][0],
                                ', '.join(map(format_p_value_as_asterisk,
@@ -72,9 +72,12 @@ def format_method_comparison_table(per_method_results):
                 else:
                     row.append(['N/A'] * 3)
 
-        if not constructed_header:
-            rows.append(header[:])
-            constructed_header = True
+        if constructed_header is None:
+            rows.append(header)
+            constructed_header = header
+        elif constructed_header != header:
+            raise ValueError("The studies and/or categories did not match up "
+                             "exactly between one or more of the methods.")
 
         rows.append(row)
 
