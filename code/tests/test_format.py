@@ -13,13 +13,15 @@ __email__ = "jai.rideout@gmail.com"
 
 from cogent.util.unit_test import TestCase, main
 
-from microbiogeo.format import format_p_value_as_asterisk
+from microbiogeo.format import (format_method_comparison_table,
+                                format_p_value_as_asterisk)
 
 class FormatTests(TestCase):
     """Tests for the format.py module."""
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        #self.
         pass
 
     def test_format_p_value_as_asterisk(self):
