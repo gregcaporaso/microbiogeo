@@ -14,7 +14,7 @@ __status__ = "Development"
 from numpy import max,zeros 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from Bio.qiime.spatial_autocorrelation import morans, morans_variance, _format_morans_results, _w_exponential, _w_inverse
+from microbiogeo.spatial_autocorrelation import morans, morans_variance, _format_morans_results, _w_exponential, _w_inverse
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict, parse_mapping_file
 import os
 

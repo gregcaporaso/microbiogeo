@@ -109,14 +109,14 @@ def morans_variance(w, x):
     e2 = (((n**2)*s1) - (n*s2) + (3*(sum_w**2)))/((n-1)*(n+1)*(sum_w**2))
 #    m2 = 
 #    e2r = (n(((n**2) - (3n) + 3)*s1)) - (n*s2) + (3*(sum_w**2))) - 
-    print "e[i2]: ",e2
-    print "e[i**2]-e[i]**2: ", (v_value - (e_value**2))
-    print "e[i]**2: ",(e_value**2)
-    print "i: ",i_value
-    print "e: ",e_value
-    print "v: ",v_value
-    print "z: ",z_value
-    print "p: ",zprob(z_value)
+#    print "e[i2]: ",e2
+#    print "e[i**2]-e[i]**2: ", (v_value - (e_value**2))
+#    print "e[i]**2: ",(e_value**2)
+#    print "i: ",i_value
+#    print "e: ",e_value
+#    print "v: ",v_value
+#    print "z: ",z_value
+#    print "p: ",zprob(z_value)
     return i_value, v_value
 
 
@@ -191,7 +191,7 @@ def _s1(w):
     for i in range(len(w)):
         for j in range(len(w)):
             accumulator = accumulator + ((w[i][j] + w[j][i])**2)
-            print "accumulator: ",accumulator
+#            print "accumulator: ",accumulator
     return .5 * accumulator
     
     
