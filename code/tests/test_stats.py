@@ -18,7 +18,7 @@ from numpy import array, matrix, roll, asarray
 from numpy.random import permutation
 
 from qiime.util import DistanceMatrix, MetadataMap
-from python.qiime.stats import DistanceBasedRda
+from microbiogeo.stats import DistanceBasedRda
 
 class TestHelper(TestCase):
     """Helper class that instantiates some commonly-used objects.
