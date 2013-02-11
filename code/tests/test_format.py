@@ -78,8 +78,9 @@ class FormatTests(TestCase):
                             'ENV_BIOME': {
                                 'full': (0.13, [0.02, 0.002]),
                                 'shuffled': (0.03, [0.40, 0.401]),
-                                'subsampled': ([0.22, 0.19], [[0.01, 0.009],
-                                                              [0.06, 0.029]])
+                                'subsampled': ([0.22, 0.19],
+                                               [[0.01, 0.009],
+                                               [0.06, 0.029]])
                             }
                         },
 
@@ -100,13 +101,57 @@ class FormatTests(TestCase):
                             'HOST_SUBJECT_ID': {
                                 'full': (0.59, [0.11, 0.101]),
                                 'shuffled': (0.32, [0.65, 0.776]),
-                                'subsampled': ([0.13, 0.42], [[0.23, 0.105],
-                                                              [0.92, 0.723]])
+                                'subsampled': ([0.13, 0.42],
+                                               [[0.23, 0.105],
+                                               [0.92, 0.723]])
                             }
                         },
 
                         '88_soils': {
                             'ENV_BIOME': {}
+                        }
+                    }
+                }
+            }
+        }
+
+        # Invalid results (methods don't cover same studies).
+        self.full_results2 = {
+            '5_percent': {
+                'unweighted_unifrac': {
+                    'adonis': {
+                        'whole_body': {}
+                    },
+
+                    'anosim': {
+                        '88_soils': {}
+                    }
+                }
+            }
+        }
+
+        # Invalid results (not the same number of effect sizes to compare).
+        self.full_results3 = {
+            '5_percent': {
+                'unweighted_unifrac': {
+                    'adonis': {
+                        'whole_body': {
+                            'BODY_SITE': {
+                                'full': (0.27, [0.01, 0.001]),
+                                'shuffled': (0.02, [0.45, 0.476]),
+                                'subsampled': ([0.24, 0.20], [[0.03, 0.005],
+                                                              [0.02, 0.023]])
+                            }
+                        }
+                    },
+
+                    'anosim': {
+                        'whole_body': {
+                            'BODY_SITE': {
+                                'full': (0.27, [0.01, 0.001]),
+                                'shuffled': (0.02, [0.45, 0.476]),
+                                'subsampled': ([0.24, 0.20], [[0.03, 0.005]])
+                            }
                         }
                     }
                 }
@@ -154,6 +199,12 @@ class FormatTests(TestCase):
         obs = format_method_comparison_heatmaps(self.full_results1,
                                                 ['adonis', 'anosim'])
         self.assertEqual(obs, exp_method_comparison_heatmaps1)
+
+        self.assertRaises(ValueError, format_method_comparison_heatmaps,
+                          self.full_results2, ['adonis', 'anosim'])
+
+        self.assertRaises(ValueError, format_method_comparison_heatmaps,
+                          self.full_results3, ['adonis', 'anosim'])
 
 
 exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',
