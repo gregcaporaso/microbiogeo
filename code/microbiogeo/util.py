@@ -17,7 +17,10 @@ from random import sample, shuffle
 from qiime.filter import filter_samples_from_distance_matrix
 from qiime.format import format_distance_matrix
 from qiime.parse import parse_distmat
-from qiime.util import MetadataMap
+from qiime.util import MetadataMap, qiime_system_call
+
+class ExternalCommandFailedError(Exception):
+    pass
 
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)
@@ -50,3 +53,12 @@ def subset_dm(dm_f, num_samps):
     samp_ids_to_keep = sample(labels, num_samps)
     return filter_samples_from_distance_matrix((labels, dm_data),
                                                samp_ids_to_keep, negate=True)
+
+def run_command(cmd):
+    stdout, stderr, ret_val = qiime_system_call(cmd)
+
+    if ret_val != 0:
+        raise ExternalCommandFailedError("The command '%s' failed with exit "
+                                         "status %d.\n\nStdout:\n\n%s\n\n"
+                                         "Stderr:\n\n%s\n" % (cmd,
+                                         ret_val, stdout, stderr))
