@@ -11,7 +11,8 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module for executing various workflows/analyses."""
 
-from os.path import join
+from glob import glob
+from os.path import basename, exists, join, splitext
 
 from IPython.parallel import Client
 
@@ -23,6 +24,7 @@ from microbiogeo.parse import (parse_adonis_results,
                                parse_mantel_results,
                                parse_morans_i_results,
                                parse_partial_mantel_results)
+from microbiogeo.util import run_command
 
 def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                num_subsets, tree_fp):
@@ -52,7 +54,49 @@ def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                      studies[study]['group_sizes'],
                                      studies[study]['subset_sizes'],
                                      num_shuffled, num_subsets, tree_fp))
+
     lview.map(generate_per_study_depth_dms, per_study_depths)
+
+def run_methods(in_dir, studies, grouping_methods, gradient_methods,
+                permutations):
+    """Runs each statistical method on each distance matrix."""
+    # Process each compare_categories.py/compare_distance_matrices.py run in
+    # parallel.
+    c = Client()
+    lview = c.load_balanced_view()
+    lview.block = True
+
+    jobs = []
+    for study in studies:
+        for depth in studies[study]['depths']:
+            for method in grouping_methods:
+                study_dir = join(in_dir, study)
+                map_fp = join(study_dir, 'map.txt')
+                depth_dir = join(study_dir, 'bdiv_even%d' % depth)
+                dm_fps = glob(join(depth_dir, '*_dm*.txt'))
+
+                for dm_fp in dm_fps:
+                    for category in studies[study]['grouping_categories']:
+                        for permutation in permutations:
+                            dm_bn = basename(dm_fp)
+
+                            if 'dm.txt' in dm_bn or 'dm_shuffled' in dm_bn or \
+                               'dm_%s_gs' % category in dm_bn:
+                                results_dir = join(depth_dir, '%s_%s_%s_%d' % (
+                                    splitext(dm_bn)[0], method, category,
+                                    permutation))
+
+                                # Skip the job if the results dir exists. We'll
+                                # assume it was created from a previous run.
+                                if not exists(results_dir) or \
+                                   len(listdir(results_dir)) == 0:
+                                    cmd = ('compare_categories.py --method %s '
+                                           '-n %d -i %s -m %s -c %s -o %s' % (
+                                           method, permutation, dm_fp, map_fp,
+                                           category, results_dir))
+                                    jobs.append(cmd)
+
+    lview.map(run_command, jobs)
 
 def main():
     in_dir = 'test_datasets'
@@ -95,6 +139,9 @@ def main():
 
     generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
             num_subsets, tree_fp)
+
+    run_methods(out_dir, studies, grouping_methods, gradient_methods,
+                permutations)
 
 
 if __name__ == "__main__":
