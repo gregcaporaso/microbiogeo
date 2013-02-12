@@ -69,34 +69,115 @@ def run_methods(in_dir, studies, grouping_methods, gradient_methods,
     jobs = []
     for study in studies:
         for depth in studies[study]['depths']:
-            for method in grouping_methods:
+            # Use set in case method is in both grouping and gradient analysis
+            # methods.
+            for method in set(grouping_methods.keys() +
+                              gradient_methods.keys()):
                 study_dir = join(in_dir, study)
                 map_fp = join(study_dir, 'map.txt')
                 depth_dir = join(study_dir, 'bdiv_even%d' % depth)
                 dm_fps = glob(join(depth_dir, '*_dm*.txt'))
 
                 for dm_fp in dm_fps:
-                    for category in studies[study]['grouping_categories']:
-                        for permutation in permutations:
-                            dm_bn = basename(dm_fp)
+                    if method in grouping_methods:
+                        for category in studies[study]['grouping_categories']:
+                            jobs.extend(_build_grouping_method_cmds(depth_dir,
+                                    dm_fp, map_fp, method, category,
+                                    permutations))
 
-                            if 'dm.txt' in dm_bn or 'dm_shuffled' in dm_bn or \
-                               'dm_%s_gs' % category in dm_bn:
-                                results_dir = join(depth_dir, '%s_%s_%s_%d' % (
-                                    splitext(dm_bn)[0], method, category,
-                                    permutation))
+                    if method in gradient_methods:
+                        for category in studies[study]['gradient_categories']:
+                            jobs.extend(_build_gradient_method_cmds(study_dir,
+                                    depth_dir, dm_fp, map_fp, method, category,
+                                    permutations))
 
-                                # Skip the job if the results dir exists. We'll
-                                # assume it was created from a previous run.
-                                if not exists(results_dir) or \
-                                   len(listdir(results_dir)) == 0:
-                                    cmd = ('compare_categories.py --method %s '
-                                           '-n %d -i %s -m %s -c %s -o %s' % (
-                                           method, permutation, dm_fp, map_fp,
-                                           category, results_dir))
-                                    jobs.append(cmd)
+                if method in gradient_methods and study == 'keyboard':
+                    for dm_fp in dm_fps:
+                        jobs.extend(_build_gradient_method_keyboard_cmds(
+                                study_dir, depth_dir, dm_fp, method,
+                                permutations))
 
     lview.map(run_command, jobs)
+
+def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
+                                permutations):
+    cmds = []
+    dm_bn = basename(dm_fp)
+
+    for permutation in permutations:
+        if 'dm.txt' in dm_bn or 'dm_shuffled' in dm_bn or \
+           'dm_%s_gs' % category in dm_bn:
+            results_dir = join(depth_dir, '%s_%s_%s_%d' % (splitext(dm_bn)[0],
+                                                           method, category,
+                                                           permutation))
+
+            # Skip the job if the results dir exists. We'll assume it was
+            # created from a previous run.
+            if not exists(results_dir) or len(listdir(results_dir)) == 0:
+                cmd = ('compare_categories.py --method %s -n %d -i %s -m %s '
+                       '-c %s -o %s' % (method, permutation, dm_fp, map_fp,
+                                        category, results_dir))
+                cmds.append(cmd)
+    return cmds
+
+def _build_gradient_method_cmds(study_dir, depth_dir, dm_fp, map_fp, method,
+                                category, permutations):
+    cmds = []
+
+    for permutation in permutations:
+        if method == 'mantel' or method == 'mantel_corr':
+            in_dm_fps = '%s,%s' % (dm_fp, join(study_dir,
+                                               '%s_dm.txt' % category))
+            results_dir = join(depth_dir,
+                               '%s_%s_%s_%d' % (splitext(basename(dm_fp))[0],
+                                                method, category, permutation))
+
+            # Skip the job if the results dir exists and is not empty. We'll
+            # assume it was created from a previous run.
+            if not exists(results_dir) or len(listdir(results_dir)) == 0:
+                cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
+                       '-o %s' % (method, permutation, in_dm_fps, results_dir))
+                cmds.append(cmd)
+
+    # Moran's I does not accept a number of permutations.
+    if method == 'morans_i':
+        results_dir = join(depth_dir,
+                           '%s_%s_%s' % (splitext(basename(dm_fp))[0], method,
+                                         category))
+
+        if not exists(results_dir) or len(listdir(results_dir)) == 0:
+            cmd = ('compare_categories.py --method %s -i %s -m %s -c %s '
+                   '-o %s' % (method, dm_fp, map_fp, category, results_dir))
+            cmds.append(cmd)
+
+    return cmds
+
+def _build_gradient_method_keyboard_cmds(study_dir, depth_dir, dm_fp, method,
+                                         permutations):
+    cmds = []
+
+    for permutation in permutations:
+        in_dm_fps = '%s,%s' % (dm_fp, join(study_dir,
+                                           'euclidean_key_distances_dm.txt'))
+
+        if method in ('mantel', 'mantel_corr', 'partial_mantel'):
+            results_dir = join(depth_dir,
+                               '%s_%s_%s_%d' % (splitext(basename(dm_fp))[0],
+                                                method, 'key_distance',
+                                                permutation))
+
+            if not exists(results_dir) or len(listdir(results_dir)) == 0:
+                cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
+                       '-o %s' % (method, permutation, in_dm_fps, results_dir))
+
+                if method == 'partial_mantel':
+                    control_dm_fp = join(study_dir,
+                            'median_unifrac_individual_distances_dm.txt')
+                    cmd += ' -c %s' % control_dm_fp
+
+                cmds.append(cmd)
+
+    return cmds
 
 def main():
     in_dir = 'test_datasets'
