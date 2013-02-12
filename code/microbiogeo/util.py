@@ -22,12 +22,27 @@ from qiime.util import MetadataMap, qiime_system_call
 class ExternalCommandFailedError(Exception):
     pass
 
+def run_command(cmd):
+    stdout, stderr, ret_val = qiime_system_call(cmd)
+
+    if ret_val != 0:
+        raise ExternalCommandFailedError("The command '%s' failed with exit "
+                                         "status %d.\n\nStdout:\n\n%s\n\n"
+                                         "Stderr:\n\n%s\n" % (cmd,
+                                         ret_val, stdout, stderr))
+
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)
     shuffle(labels)
     return format_distance_matrix(labels, dm_data)
 
-def subsample_dm(dm_f, map_f, category, max_group_size):
+def subset_dm(dm_f, num_samps):
+    labels, dm_data = parse_distmat(dm_f)
+    samp_ids_to_keep = sample(labels, num_samps)
+    return filter_samples_from_distance_matrix((labels, dm_data),
+                                               samp_ids_to_keep, negate=True)
+
+def subset_groups(dm_f, map_f, category, max_group_size):
     dm_labels, dm_data = parse_distmat(dm_f)
     metadata_map = MetadataMap.parseMetadataMap(map_f)
 
@@ -47,18 +62,3 @@ def subsample_dm(dm_f, map_f, category, max_group_size):
 
     return filter_samples_from_distance_matrix((dm_labels, dm_data),
                                                samp_ids_to_keep, negate=True)
-
-def subset_dm(dm_f, num_samps):
-    labels, dm_data = parse_distmat(dm_f)
-    samp_ids_to_keep = sample(labels, num_samps)
-    return filter_samples_from_distance_matrix((labels, dm_data),
-                                               samp_ids_to_keep, negate=True)
-
-def run_command(cmd):
-    stdout, stderr, ret_val = qiime_system_call(cmd)
-
-    if ret_val != 0:
-        raise ExternalCommandFailedError("The command '%s' failed with exit "
-                                         "status %d.\n\nStdout:\n\n%s\n\n"
-                                         "Stderr:\n\n%s\n" % (cmd,
-                                         ret_val, stdout, stderr))

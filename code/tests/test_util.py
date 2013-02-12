@@ -14,7 +14,8 @@ __email__ = "jai.rideout@gmail.com"
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_distmat
 
-from microbiogeo.util import shuffle_dm, subsample_dm, subset_dm
+from microbiogeo.util import (ExternalCommandFailedError, run_command,
+                              shuffle_dm, subset_dm, subset_groups)
 
 class UtilTests(TestCase):
     """Tests for the util.py module."""
@@ -23,6 +24,11 @@ class UtilTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.dm_f1 = dm_str1.split('\n')
         self.map_f1 = map_str1.split('\n')
+
+    def test_run_command(self):
+        """Test running an invalid command."""
+        self.assertRaises(ExternalCommandFailedError, run_command,
+                          'foobarbazbazbarfoo')
 
     def test_shuffle_dm(self):
         """Test shuffling labels of distance matrix."""
@@ -43,26 +49,6 @@ class UtilTests(TestCase):
 
         self.assertTrue(order_changed)
 
-    def test_subsample_dm(self):
-        """Test picking subsets of sample groups in distance matrix."""
-        # Don't filter anything out.
-        exp = parse_distmat(self.dm_f1)
-        obs = parse_distmat(subsample_dm(
-                self.dm_f1, self.map_f1, 'Category', 2).split('\n'))
-        self.assertFloatEqual(obs, exp)
-
-        obs = parse_distmat(subsample_dm(
-                self.dm_f1, self.map_f1, 'Category', 3).split('\n'))
-        self.assertFloatEqual(obs, exp)
-
-        # Pick groups of size 1.
-        obs_labels, obs_dm = parse_distmat(subsample_dm(
-                self.dm_f1, self.map_f1, 'Category', 1).split('\n'))
-        self.assertTrue('S2' in obs_labels)
-
-        # XOR: either S1 or S3 should be in obs_labels, but not both.
-        self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
-
     def test_subset_dm(self):
         """Test picking a subset of a distance matrix."""
         # Don't actually subset.
@@ -82,6 +68,26 @@ class UtilTests(TestCase):
         self.assertTrue(obs_labels[1] in exp[0])
 
         self.assertRaises(ValueError, subset_dm, self.dm_f1, 4)
+
+    def test_subset_groups(self):
+        """Test picking subsets of sample groups in distance matrix."""
+        # Don't filter anything out.
+        exp = parse_distmat(self.dm_f1)
+        obs = parse_distmat(subset_groups(
+                self.dm_f1, self.map_f1, 'Category', 2).split('\n'))
+        self.assertFloatEqual(obs, exp)
+
+        obs = parse_distmat(subset_groups(
+                self.dm_f1, self.map_f1, 'Category', 3).split('\n'))
+        self.assertFloatEqual(obs, exp)
+
+        # Pick groups of size 1.
+        obs_labels, obs_dm = parse_distmat(subset_groups(
+                self.dm_f1, self.map_f1, 'Category', 1).split('\n'))
+        self.assertTrue('S2' in obs_labels)
+
+        # XOR: either S1 or S3 should be in obs_labels, but not both.
+        self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
 
 
 dm_str1 = """\tS1\tS2\tS3
