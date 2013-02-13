@@ -121,7 +121,6 @@ def summarize_results(in_dir, out_dir, studies, grouping_methods,
                                                           permutations,
                                                           num_shuffled,
                                                           num_subsets)
-
     create_results_summary_tables(grouping_results, out_dir,
                                   'grouping_analysis_method_comparison_table')
     create_results_summary_tables(gradient_results, out_dir,
