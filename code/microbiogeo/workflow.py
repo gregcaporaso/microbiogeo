@@ -24,7 +24,7 @@ from microbiogeo.parse import (parse_adonis_results,
                                parse_mantel_results,
                                parse_morans_i_results,
                                parse_partial_mantel_results)
-from microbiogeo.util import has_results, run_command
+from microbiogeo.util import has_results, run_command, StatsResults
 
 def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                num_subsets, tree_fp):
@@ -97,6 +97,112 @@ def run_methods(in_dir, studies, grouping_methods, gradient_methods,
                                     permutations))
 
     lview.map(run_command, jobs)
+
+def summarize_results(in_dir, out_dir, studies, grouping_methods,
+                      gradient_methods, depth_descs, metrics, permutations,
+                      num_shuffled, num_subsets):
+    """Summarizes the results of the various method runs.
+
+    Effect size statistics and p-values are collected for each of the tests
+    that were run and summary tables are created, one for each sampling depth /
+    metric combination (separate tables for grouping and gradient analysis
+    methods). These tables are written to out_dir.
+    """
+    grouping_results, gradient_results = _collate_results(in_dir,
+                                                          studies,
+                                                          grouping_methods,
+                                                          gradient_methods,
+                                                          depth_descs,
+                                                          metrics,
+                                                          permutations,
+                                                          num_shuffled,
+                                                          num_subsets)
+
+    create_results_summary_tables(grouping_results, out_dir,
+                                  'grouping_analysis_method_comparison_table')
+    create_results_summary_tables(gradient_results, out_dir,
+                                  'gradient_analysis_method_comparison_table')
+
+def _collate_results(in_dir, studies, grouping_methods, gradient_methods,
+                     depth_descs, metrics, permutations, num_shuffled,
+                     num_subsets):
+    grouping_results = {}
+    gradient_results = {}
+
+    for depth_idx, depth_desc in enumerate(depth_descs):
+        depth_res = {}
+
+        for metric in metrics:
+            metric_res = {}
+
+            for method, res_parsing_fn in grouping_methods.items():
+                method_res = {}
+
+                for study in studies:
+                    study_res = {}
+
+                    # Figure out what our actual depth is for the study, and
+                    # what subset group sizes we used.
+                    depth = studies[study]['depths'][depth_idx]
+                    group_sizes = studies[study]['group_sizes']
+
+                    for category in studies[study]['grouping_categories']:
+                        category_res = {}
+                        full_res = StatsResults()
+                        shuff_res = StatsResults()
+
+                        for permutation in permutations:
+                            # Collect results for full distance matrices.
+                            full_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_%s_%d' % (metric, method, category, permutation), '%s_results.txt' % method), 'U')
+                            full_es, full_p_val = res_parsing_fn(full_res_f)
+                            full_res_f.close()
+                            full_res.addResults(full_es, full_p_val)
+                            
+                            # Collect results for shuffled distance matrices.
+                            shuff_ess = []
+                            shuff_p_vals = []
+                            for shuff_num in range(1, num_shuffled + 1):
+                                shuff_res_f = open(join(out_dir, study, 'bdiv_even%d' % depth, '%s_dm_shuffled%d_%s_%s_%d' % (metric, shuff_num, method, category, permutation), '%s_results.txt' % method), 'U')
+                                shuff_es, shuff_p_val = res_parsing_fn(shuff_res_f)
+                                shuff_res_f.close()
+                                shuff_ess.append(shuff_es)
+                                shuff_p_vals.append(shuff_p_val)
+
+                            shuff_res.addResults(median(shuff_ess),
+                                                 median(shuff_p_vals))
+
+                        category_res['full'] = full_res
+                        category_res['shuffled'] = shuff_res
+
+                        # Collect results for subset distance matrices.
+                        ss_results = []
+
+                        for group_size in group_sizes:
+                            gs_res = StatsResults()
+
+                            for permutation in permutations:
+                                ss_ess = []
+                                ss_p_vals = []
+
+                                for ss_num in range(1, num_subsets + 1):
+                                    ss_res_f = open(join(out_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_ss%d_%d_%s_%s_%d' % (metric, category, group_size, ss_num, method, category, permutation),
+                                                         '%s_results.txt' % method), 'U')
+                                    ss_es, ss_p_val = res_parsing_fn(ss_res_f)
+                                    ss_res_f.close()
+                                    ss_ess.append(ss_es)
+                                    ss_p_vals.append(ss_p_val)
+
+                                gs_res.addResults(median(ss_ess),
+                                                  median(ss_p_vals))
+
+                            ss_results.append(gs_res)
+
+                        category_res['subsampled'] = ss_results
+                        study_res[category] = category_res
+                    method_res[study] = study_res
+                metric_res[method] = method_res
+            depth_res[metric] = metric_res
+        results[depth_desc] = depth_res
 
 def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
                                 permutations):

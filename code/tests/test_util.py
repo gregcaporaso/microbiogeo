@@ -22,11 +22,11 @@ from qiime.parse import parse_distmat
 from qiime.util import get_qiime_temp_dir
 
 from microbiogeo.util import (ExternalCommandFailedError, has_results,
-                              run_command, shuffle_dm, subset_dm,
+                              run_command, shuffle_dm, StatsResults, subset_dm,
                               subset_groups)
 
 class UtilTests(TestCase):
-    """Tests for the util.py module."""
+    """Tests for the util.py module functions."""
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
@@ -150,6 +150,50 @@ class UtilTests(TestCase):
 
         # XOR: either S1 or S3 should be in obs_labels, but not both.
         self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
+
+class StatsResultsTests(TestCase):
+    """Tests for the util.StatsResults class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.sr1 = StatsResults()
+
+    def test_addResult(self):
+        """Adding effect size and p-value works correctly on valid input."""
+        self.sr1.addResult(0.5, 0.01)
+        self.sr1.addResult(0.5, 0.001)
+        self.assertFloatEqual(self.sr1.effect_size, 0.5)
+        self.assertFloatEqual(self.sr1.p_values, [0.01, 0.001])
+
+    def test_addResult_invalid_input(self):
+        """Adding invalid input raises error."""
+        # Effect sizes don't match.
+        self.sr1.addResult(0.5, 0.01)
+        self.assertRaises(ValueError, self.sr1.addResult, 0.6, 0.001)
+        self.assertFloatEqual(self.sr1.effect_size, 0.5)
+        self.assertFloatEqual(self.sr1.p_values, [0.01])
+
+        # Invalid p-value range.
+        self.sr1 = StatsResults()
+        self.assertRaises(ValueError, self.sr1.addResult, 0.5, 1.1)
+        self.assertTrue(self.sr1.effect_size is None)
+        self.assertEqual(self.sr1.p_values, [])
+
+        self.sr1.addResult(0.5, 0.01)
+        self.sr1.addResult(0.5, 0.02)
+        self.assertRaises(ValueError, self.sr1.addResult, 0.5, 1.1)
+        self.assertRaises(ValueError, self.sr1.addResult, 0.5, -0.2)
+        self.assertFloatEqual(self.sr1.effect_size, 0.5)
+        self.assertFloatEqual(self.sr1.p_values, [0.01, 0.02])
+
+    def test_check_p_value(self):
+        """Raises error on invalid p-value."""
+        self.sr1._check_p_value(0.0)
+        self.sr1._check_p_value(0.5)
+        self.sr1._check_p_value(1.0)
+
+        self.assertRaises(ValueError, self.sr1._check_p_value, 1.5)
+        self.assertRaises(ValueError, self.sr1._check_p_value, -1.5)
 
 
 dm_str1 = """\tS1\tS2\tS3

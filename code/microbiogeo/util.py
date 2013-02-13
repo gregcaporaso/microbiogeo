@@ -68,3 +68,28 @@ def subset_groups(dm_f, map_f, category, max_group_size):
 
     return filter_samples_from_distance_matrix((dm_labels, dm_data),
                                                samp_ids_to_keep, negate=True)
+
+class StatsResults(object):
+
+    def __init__(self):
+        self.effect_size = None
+        self.p_values = []
+
+    def addResult(self, effect_size, p_value):
+        self._check_p_value(p_value)
+
+        if self.effect_size is None:
+            self.effect_size = effect_size
+        else:
+            if effect_size != self.effect_size:
+                raise ValueError("The effect size %.4f is not the same as the "
+                                 "previously supplied effect size %.4f. These "
+                                 "must be the same for different numbers of "
+                                 "permutations." % (effect_size,
+                                                    self.effect_size))
+
+        self.p_values.append(p_value)
+
+    def _check_p_value(self, p_value):
+        if p_value < 0 or p_value > 1:
+            raise ValueError("Invalid p-value: %.4f" % p_value)
