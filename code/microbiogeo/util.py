@@ -12,6 +12,8 @@ __email__ = "jai.rideout@gmail.com"
 """Module with various utility functions."""
 
 from collections import defaultdict
+from os import listdir
+from os.path import exists
 from random import sample, shuffle
 
 from qiime.filter import filter_samples_from_distance_matrix
@@ -30,6 +32,10 @@ def run_command(cmd):
                                          "status %d.\n\nStdout:\n\n%s\n\n"
                                          "Stderr:\n\n%s\n" % (cmd,
                                          ret_val, stdout, stderr))
+
+def has_results(results_dir):
+    """Returns True if results_dir exists and is not empty, False otherwise."""
+    return exists(results_dir) and len(listdir(results_dir)) > 0
 
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)

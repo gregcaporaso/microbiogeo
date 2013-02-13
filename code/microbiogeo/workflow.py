@@ -24,7 +24,7 @@ from microbiogeo.parse import (parse_adonis_results,
                                parse_mantel_results,
                                parse_morans_i_results,
                                parse_partial_mantel_results)
-from microbiogeo.util import run_command
+from microbiogeo.util import has_results, run_command
 
 def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                num_subsets, tree_fp):
@@ -91,11 +91,10 @@ def run_methods(in_dir, studies, grouping_methods, gradient_methods,
                                     depth_dir, dm_fp, map_fp, method, category,
                                     permutations))
 
-                if method in gradient_methods and study == 'keyboard':
-                    for dm_fp in dm_fps:
-                        jobs.extend(_build_gradient_method_keyboard_cmds(
-                                study_dir, depth_dir, dm_fp, method,
-                                permutations))
+                        if study == 'keyboard':
+                            jobs.extend(_build_gradient_method_keyboard_cmds(
+                                    study_dir, depth_dir, dm_fp, method,
+                                    permutations))
 
     lview.map(run_command, jobs)
 
@@ -113,7 +112,7 @@ def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
 
             # Skip the job if the results dir exists. We'll assume it was
             # created from a previous run.
-            if not exists(results_dir) or len(listdir(results_dir)) == 0:
+            if not has_results(results_dir):
                 cmd = ('compare_categories.py --method %s -n %d -i %s -m %s '
                        '-c %s -o %s' % (method, permutation, dm_fp, map_fp,
                                         category, results_dir))
@@ -136,9 +135,7 @@ def _build_gradient_method_cmds(study_dir, depth_dir, dm_fp, map_fp, method,
                                '%s_%s_%s_%d' % (splitext(basename(dm_fp))[0],
                                                 method, category, permutation))
 
-            # Skip the job if the results dir exists and is not empty. We'll
-            # assume it was created from a previous run.
-            if not exists(results_dir) or len(listdir(results_dir)) == 0:
+            if not has_results(results_dir):
                 cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
                        '-o %s' % (method, permutation, in_dm_fps, results_dir))
                 cmds.append(cmd)
@@ -149,7 +146,7 @@ def _build_gradient_method_cmds(study_dir, depth_dir, dm_fp, map_fp, method,
                            '%s_%s_%s' % (splitext(basename(dm_fp))[0], method,
                                          category))
 
-        if not exists(results_dir) or len(listdir(results_dir)) == 0:
+        if not has_results(results_dir):
             cmd = ('compare_categories.py --method %s -i %s -m %s -c %s '
                    '-o %s' % (method, dm_fp, map_fp, category, results_dir))
             cmds.append(cmd)
@@ -170,7 +167,7 @@ def _build_gradient_method_keyboard_cmds(study_dir, depth_dir, dm_fp, method,
                                                 method, 'key_distance',
                                                 permutation))
 
-            if not exists(results_dir) or len(listdir(results_dir)) == 0:
+            if not has_results(results_dir):
                 cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
                        '-o %s' % (method, permutation, in_dm_fps, results_dir))
 

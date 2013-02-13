@@ -11,11 +11,19 @@ __email__ = "jai.rideout@gmail.com"
 
 """Test suite for the util.py module."""
 
+from os import chdir, getcwd
+from os.path import exists, join
+from shutil import rmtree
+from tempfile import mkdtemp
+
+from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_distmat
+from qiime.util import get_qiime_temp_dir
 
-from microbiogeo.util import (ExternalCommandFailedError, run_command,
-                              shuffle_dm, subset_dm, subset_groups)
+from microbiogeo.util import (ExternalCommandFailedError, has_results,
+                              run_command, shuffle_dm, subset_dm,
+                              subset_groups)
 
 class UtilTests(TestCase):
     """Tests for the util.py module."""
@@ -25,10 +33,64 @@ class UtilTests(TestCase):
         self.dm_f1 = dm_str1.split('\n')
         self.map_f1 = map_str1.split('\n')
 
+        # The prefix to use for temporary files/dirs. This prefix may be added
+        # to, but all temp dirs and files created by the tests will have this
+        # prefix at a minimum.
+        self.prefix = 'microbiogeo_tests'
+
+        self.start_dir = getcwd()
+        self.dirs_to_remove = []
+        self.files_to_remove = []
+
+        self.tmp_dir = get_qiime_temp_dir()
+
+        if not exists(self.tmp_dir):
+            makedirs(self.tmp_dir)
+
+            # If test creates the temp dir, also remove it.
+            self.dirs_to_remove.append(self.tmp_dir)
+
+        # Set up temporary directories to use with tests.
+        self.input_dir = mkdtemp(dir=self.tmp_dir,
+                                 prefix='%s_input_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.input_dir)
+
+    def tearDown(self):
+        """Remove temporary files/dirs created by tests."""
+        # Change back to the start dir - some workflows change directory.
+        chdir(self.start_dir)
+        remove_files(self.files_to_remove)
+
+        # Remove directories last, so we don't get errors trying to remove
+        # files which may be in the directories.
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+
     def test_run_command(self):
         """Test running an invalid command."""
         self.assertRaises(ExternalCommandFailedError, run_command,
                           'foobarbazbazbarfoo')
+
+    def test_has_results(self):
+        """Test checking a directory for results."""
+        # Dir that doesn't exist.
+        obs = has_results('/foobarbazbazbarfoo1234567890')
+        self.assertFalse(obs)
+
+        # Dir that exists but is empty.
+        obs = has_results(self.input_dir)
+        self.assertFalse(obs)
+
+        # Dir that exists and is not empty.
+        tmp_fp = join(self.input_dir, 'foo.txt')
+        tmp_f = open(tmp_fp, 'w')
+        tmp_f.write('foo')
+        tmp_f.close()
+        self.files_to_remove.append(tmp_fp)
+
+        obs = has_results(self.input_dir)
+        self.assertTrue(obs)
 
     def test_shuffle_dm(self):
         """Test shuffling labels of distance matrix."""
