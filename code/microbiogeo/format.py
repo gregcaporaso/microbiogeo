@@ -62,21 +62,9 @@ def format_method_comparison_table(per_method_results):
                 header.append(header_column_title + ' (subsampled)')
 
                 if len(category_res) == 3:
-                    # Format full results.
-                    row.append('%.2f; %s' % (category_res['full'][0],
-                               ', '.join(map(format_p_value_as_asterisk,
-                                             category_res['full'][1]))))
-
-                    # Format shuffled results.
-                    row.append('%.2f; %s' % (category_res['shuffled'][0],
-                               ', '.join(map(format_p_value_as_asterisk,
-                                             category_res['shuffled'][1]))))
-
-                    # Format subsampled results.
-                    cell = ['%.2f; %s' % (es, ', '.join(map(
-                            format_p_value_as_asterisk, p_vals)))
-                            for es, p_vals in zip(*category_res['subsampled'])]
-                    row.append('\r'.join(cell))
+                    row.append(str(category_res['full']))
+                    row.append(str(category_res['shuffled']))
+                    row.append('\r'.join(map(str, category_res['subsampled'])))
                 else:
                     row.append(['N/A'] * 3)
 
@@ -179,13 +167,12 @@ def format_method_comparison_heatmaps(results, methods):
                                 study_res.items()):
                             if category in shared_categories[study]:
                                 method_data[method].append(
-                                        category_res['full'][0])
+                                        category_res['full'].effect_size)
                                 method_data[method].append(
-                                        category_res['shuffled'][0])
+                                        category_res['shuffled'].effect_size)
                                 
-                                for es, p_vals in zip(
-                                        *category_res['subsampled']):
-                                    method_data[method].append(es)
+                                for res in category_res['subsampled']:
+                                    method_data[method].append(res.effect_size)
 
     # Make sure our data looks sane. We should have the same number of
     # observations for each method.

@@ -18,20 +18,74 @@ from cogent.util.unit_test import TestCase, main
 from microbiogeo.format import (format_method_comparison_heatmaps,
                                 format_method_comparison_table,
                                 format_p_value_as_asterisk)
+from microbiogeo.util import StatsResults
 
 class FormatTests(TestCase):
     """Tests for the format.py module."""
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        sr_full1 = StatsResults()
+        sr_full1.addResult(0.27, 0.01)
+        sr_full1.addResult(0.27, 0.001)
+
+        sr_shuff1 = StatsResults()
+        sr_shuff1.addResult(0.02, 0.45)
+        sr_shuff1.addResult(0.02, 0.476)
+
+        sr_ss1 = [StatsResults(), StatsResults()]
+        sr_ss1[0].addResult(0.24, 0.03)
+        sr_ss1[0].addResult(0.24, 0.005)
+        sr_ss1[1].addResult(0.20, 0.02)
+        sr_ss1[1].addResult(0.20, 0.023)
+
+        sr_full2 = StatsResults()
+        sr_full2.addResult(0.13, 0.02)
+        sr_full2.addResult(0.13, 0.002)
+
+        sr_shuff2 = StatsResults()
+        sr_shuff2.addResult(0.03, 0.40)
+        sr_shuff2.addResult(0.03, 0.401)
+
+        sr_ss2 = [StatsResults(), StatsResults()]
+        sr_ss2[0].addResult(0.22, 0.01)
+        sr_ss2[0].addResult(0.22, 0.009)
+        sr_ss2[1].addResult(0.19, 0.06)
+        sr_ss2[1].addResult(0.19, 0.029)
+
+        sr_full3 = StatsResults()
+        sr_full3.addResult(0.59, 0.11)
+        sr_full3.addResult(0.59, 0.101)
+
+        sr_shuff3 = StatsResults()
+        sr_shuff3.addResult(0.32, 0.65)
+        sr_shuff3.addResult(0.32, 0.776)
+
+        sr_ss3 = [StatsResults(), StatsResults()]
+        sr_ss3[0].addResult(0.13, 0.23)
+        sr_ss3[0].addResult(0.13, 0.105)
+        sr_ss3[1].addResult(0.42, 0.92)
+        sr_ss3[1].addResult(0.42, 0.723)
+
+        sr_full4 = StatsResults()
+        sr_full4.addResult(0.27, 0.01)
+        sr_full4.addResult(0.27, 0.001)
+
+        sr_shuff4 = StatsResults()
+        sr_shuff4.addResult(0.02, 0.45)
+        sr_shuff4.addResult(0.02, 0.476)
+
+        sr_ss4 = [StatsResults()]
+        sr_ss4[0].addResult(0.24, 0.03)
+        sr_ss4[0].addResult(0.24, 0.005)
+
         self.per_method_results1 = {
             'adonis': {
                 'whole_body': {
                     'BODY_SITE': {
-                        'full': (0.27, [0.01, 0.001]),
-                        'shuffled': (0.02, [0.45, 0.476]),
-                        'subsampled': ([0.24, 0.20], [[0.03, 0.005],
-                                                      [0.02, 0.023]])
+                        'full': sr_full1,
+                        'shuffled': sr_shuff1,
+                        'subsampled': sr_ss1
                     }
                 }
             },
@@ -67,20 +121,17 @@ class FormatTests(TestCase):
                     'adonis': {
                         'whole_body': {
                             'BODY_SITE': {
-                                'full': (0.27, [0.01, 0.001]),
-                                'shuffled': (0.02, [0.45, 0.476]),
-                                'subsampled': ([0.24, 0.20], [[0.03, 0.005],
-                                                              [0.02, 0.023]])
+                                'full': sr_full1,
+                                'shuffled': sr_shuff1,
+                                'subsampled': sr_ss1
                             }
                         },
 
                         '88_soils': {
                             'ENV_BIOME': {
-                                'full': (0.13, [0.02, 0.002]),
-                                'shuffled': (0.03, [0.40, 0.401]),
-                                'subsampled': ([0.22, 0.19],
-                                               [[0.01, 0.009],
-                                               [0.06, 0.029]])
+                                'full': sr_full2,
+                                'shuffled': sr_shuff2,
+                                'subsampled': sr_ss2
                             }
                         },
 
@@ -90,20 +141,17 @@ class FormatTests(TestCase):
                     'anosim': {
                         'whole_body': {
                             'BODY_SITE': {
-                                'full': (0.27, [0.01, 0.001]),
-                                'shuffled': (0.02, [0.45, 0.476]),
-                                'subsampled': ([0.24, 0.20], [[0.03, 0.005],
-                                                              [0.02, 0.023]])
+                                'full': sr_full1,
+                                'shuffled': sr_shuff1,
+                                'subsampled': sr_ss1
                             }
                         },
 
                         'keyboard': {
                             'HOST_SUBJECT_ID': {
-                                'full': (0.59, [0.11, 0.101]),
-                                'shuffled': (0.32, [0.65, 0.776]),
-                                'subsampled': ([0.13, 0.42],
-                                               [[0.23, 0.105],
-                                               [0.92, 0.723]])
+                                'full': sr_full3,
+                                'shuffled': sr_shuff3,
+                                'subsampled': sr_ss3
                             }
                         },
 
@@ -137,10 +185,9 @@ class FormatTests(TestCase):
                     'adonis': {
                         'whole_body': {
                             'BODY_SITE': {
-                                'full': (0.27, [0.01, 0.001]),
-                                'shuffled': (0.02, [0.45, 0.476]),
-                                'subsampled': ([0.24, 0.20], [[0.03, 0.005],
-                                                              [0.02, 0.023]])
+                                'full': sr_full1,
+                                'shuffled': sr_shuff1,
+                                'subsampled': sr_ss1
                             }
                         }
                     },
@@ -148,9 +195,9 @@ class FormatTests(TestCase):
                     'anosim': {
                         'whole_body': {
                             'BODY_SITE': {
-                                'full': (0.27, [0.01, 0.001]),
-                                'shuffled': (0.02, [0.45, 0.476]),
-                                'subsampled': ([0.24, 0.20], [[0.03, 0.005]])
+                                'full': sr_full4,
+                                'shuffled': sr_shuff4,
+                                'subsampled': sr_ss4
                             }
                         }
                     }

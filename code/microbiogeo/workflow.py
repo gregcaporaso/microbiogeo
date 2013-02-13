@@ -16,8 +16,11 @@ from os.path import basename, exists, join, splitext
 
 from IPython.parallel import Client
 
+from numpy import median
+
 from qiime.util import create_dir
 
+from microbiogeo.format import create_results_summary_tables
 from microbiogeo.parallel import generate_per_study_depth_dms
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
@@ -96,7 +99,8 @@ def run_methods(in_dir, studies, grouping_methods, gradient_methods,
                                     study_dir, depth_dir, dm_fp, method,
                                     permutations))
 
-    lview.map(run_command, jobs)
+    #lview.map(run_command, jobs)
+    map(run_command, jobs)
 
 def summarize_results(in_dir, out_dir, studies, grouping_methods,
                       gradient_methods, depth_descs, metrics, permutations,
@@ -150,59 +154,55 @@ def _collate_results(in_dir, studies, grouping_methods, gradient_methods,
                         category_res = {}
                         full_res = StatsResults()
                         shuff_res = StatsResults()
+                        ss_results = [StatsResults()
+                                      for i in range(len(group_sizes))]
 
                         for permutation in permutations:
                             # Collect results for full distance matrices.
                             full_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_%s_%d' % (metric, method, category, permutation), '%s_results.txt' % method), 'U')
                             full_es, full_p_val = res_parsing_fn(full_res_f)
                             full_res_f.close()
-                            full_res.addResults(full_es, full_p_val)
-                            
+                            full_res.addResult(full_es, full_p_val)
+
                             # Collect results for shuffled distance matrices.
                             shuff_ess = []
                             shuff_p_vals = []
                             for shuff_num in range(1, num_shuffled + 1):
-                                shuff_res_f = open(join(out_dir, study, 'bdiv_even%d' % depth, '%s_dm_shuffled%d_%s_%s_%d' % (metric, shuff_num, method, category, permutation), '%s_results.txt' % method), 'U')
+                                shuff_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_shuffled%d_%s_%s_%d' % (metric, shuff_num, method, category, permutation), '%s_results.txt' % method), 'U')
                                 shuff_es, shuff_p_val = res_parsing_fn(shuff_res_f)
                                 shuff_res_f.close()
                                 shuff_ess.append(shuff_es)
                                 shuff_p_vals.append(shuff_p_val)
 
-                            shuff_res.addResults(median(shuff_ess),
-                                                 median(shuff_p_vals))
+                            shuff_res.addResult(median(shuff_ess),
+                                                median(shuff_p_vals))
 
-                        category_res['full'] = full_res
-                        category_res['shuffled'] = shuff_res
-
-                        # Collect results for subset distance matrices.
-                        ss_results = []
-
-                        for group_size in group_sizes:
-                            gs_res = StatsResults()
-
-                            for permutation in permutations:
+                            # Collect results for subset distance matrices.
+                            for group_size_idx, group_size in enumerate(group_sizes):
                                 ss_ess = []
                                 ss_p_vals = []
 
                                 for ss_num in range(1, num_subsets + 1):
-                                    ss_res_f = open(join(out_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_ss%d_%d_%s_%s_%d' % (metric, category, group_size, ss_num, method, category, permutation),
+                                    ss_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_gs%d_%d_%s_%s_%d' % (metric, category, group_size, ss_num, method, category, permutation),
                                                          '%s_results.txt' % method), 'U')
                                     ss_es, ss_p_val = res_parsing_fn(ss_res_f)
                                     ss_res_f.close()
                                     ss_ess.append(ss_es)
                                     ss_p_vals.append(ss_p_val)
 
-                                gs_res.addResults(median(ss_ess),
-                                                  median(ss_p_vals))
+                                ss_results[group_size_idx].addResult(median(ss_ess), median(ss_p_vals))
 
-                            ss_results.append(gs_res)
-
+                        category_res['full'] = full_res
+                        category_res['shuffled'] = shuff_res
                         category_res['subsampled'] = ss_results
+
                         study_res[category] = category_res
                     method_res[study] = study_res
                 metric_res[method] = method_res
             depth_res[metric] = metric_res
-        results[depth_desc] = depth_res
+        grouping_results[depth_desc] = depth_res
+
+    return grouping_results, gradient_results
 
 def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
                                 permutations):
@@ -325,11 +325,15 @@ def main():
     num_shuffled = 2
     num_subsets = 2
 
-    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
-            num_subsets, tree_fp)
-
+#    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
+#            num_subsets, tree_fp)
+#
     run_methods(out_dir, studies, grouping_methods, gradient_methods,
                 permutations)
+
+    summarize_results(out_dir, out_dir, studies, grouping_methods,
+                      gradient_methods, depth_descs, metrics, permutations,
+                      num_shuffled, num_subsets)
 
 
 if __name__ == "__main__":

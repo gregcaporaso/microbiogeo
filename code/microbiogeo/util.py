@@ -21,6 +21,8 @@ from qiime.format import format_distance_matrix
 from qiime.parse import parse_distmat
 from qiime.util import MetadataMap, qiime_system_call
 
+from microbiogeo.format import format_p_value_as_asterisk
+
 class ExternalCommandFailedError(Exception):
     pass
 
@@ -89,6 +91,15 @@ class StatsResults(object):
                                                     self.effect_size))
 
         self.p_values.append(p_value)
+
+    def __str__(self):
+        if self.effect_size is None:
+            result = 'Empty results'
+        else:
+            result = '%.2f; %s' % (self.effect_size,
+                                   ', '.join(map(format_p_value_as_asterisk,
+                                                 self.p_values)))
+        return result
 
     def _check_p_value(self, p_value):
         if p_value < 0 or p_value > 1:

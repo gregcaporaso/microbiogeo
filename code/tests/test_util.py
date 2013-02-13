@@ -186,6 +186,18 @@ class StatsResultsTests(TestCase):
         self.assertFloatEqual(self.sr1.effect_size, 0.5)
         self.assertFloatEqual(self.sr1.p_values, [0.01, 0.02])
 
+    def test_str(self):
+        """Test __str__ method."""
+        # Empty results.
+        obs = str(self.sr1)
+        self.assertEqual(obs, 'Empty results')
+
+        # Populated results.
+        self.sr1.addResult(0.5, 0.01)
+        self.sr1.addResult(0.5, 0.05)
+        obs = str(self.sr1)
+        self.assertEqual(obs, '0.50; ***, **')
+
     def test_check_p_value(self):
         """Raises error on invalid p-value."""
         self.sr1._check_p_value(0.0)
