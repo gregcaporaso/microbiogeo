@@ -122,6 +122,10 @@ def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
 
 def _build_gradient_method_cmds(study_dir, depth_dir, dm_fp, map_fp, method,
                                 category, permutations):
+    # Not all methods can be tested on the same variables/inputs. For example,
+    # Moran's I cannot be tested on the keyboard study's key distances because
+    # it is univariate, and partial Mantel can only be tested on the keyboard
+    # study because that is the only study we have a control matrix for.
     cmds = []
 
     for permutation in permutations:
