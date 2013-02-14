@@ -21,8 +21,6 @@ from qiime.format import format_distance_matrix
 from qiime.parse import parse_distmat
 from qiime.util import MetadataMap, qiime_system_call
 
-from microbiogeo.format import format_p_value_as_asterisk
-
 class ExternalCommandFailedError(Exception):
     pass
 
@@ -71,6 +69,13 @@ def subset_groups(dm_f, map_f, category, max_group_size):
     return filter_samples_from_distance_matrix((dm_labels, dm_data),
                                                samp_ids_to_keep, negate=True)
 
+def is_empty(category_results):
+    return (len(category_results) == 0) or \
+           category_results['full'].isEmpty() or \
+           category_results['shuffled'].isEmpty() or \
+           [e for e in category_results['subsampled'] if e.isEmpty()]
+
+
 class StatsResults(object):
 
     def __init__(self):
@@ -80,7 +85,7 @@ class StatsResults(object):
     def addResult(self, effect_size, p_value):
         self._check_p_value(p_value)
 
-        if self.effect_size is None:
+        if self.isEmpty():
             self.effect_size = effect_size
         else:
             if effect_size != self.effect_size:
@@ -92,15 +97,35 @@ class StatsResults(object):
 
         self.p_values.append(p_value)
 
+    def isEmpty(self):
+        return self.effect_size is None
+
     def __str__(self):
-        if self.effect_size is None:
+        if self.isEmpty():
             result = 'Empty results'
         else:
-            result = '%.2f; %s' % (self.effect_size,
-                                   ', '.join(map(format_p_value_as_asterisk,
-                                                 self.p_values)))
+            result = '%.2f; %s' % (self.effect_size, ', '.join(
+                    map(self._format_p_value_as_asterisk, self.p_values)))
         return result
 
     def _check_p_value(self, p_value):
         if p_value < 0 or p_value > 1:
             raise ValueError("Invalid p-value: %.4f" % p_value)
+
+    def _format_p_value_as_asterisk(self, p_value):
+        if not isinstance(p_value, float):
+            raise TypeError("p-value must be a float.")
+        self._check_p_value(p_value)
+
+        result = 'x'
+
+        if p_value <= 0.1:
+            result = '*'
+        if p_value <= 0.05:
+            result += '*'
+        if p_value <= 0.01:
+            result += '*'
+        if p_value <= 0.001:
+            result += '*'
+
+        return result

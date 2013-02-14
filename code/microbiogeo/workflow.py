@@ -60,8 +60,7 @@ def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
 
     lview.map(generate_per_study_depth_dms, per_study_depths)
 
-def run_methods(in_dir, studies, grouping_methods, gradient_methods,
-                permutations):
+def run_methods(in_dir, studies, methods, permutations):
     """Runs each statistical method on each distance matrix."""
     # Process each compare_categories.py/compare_distance_matrices.py run in
     # parallel.
@@ -72,39 +71,42 @@ def run_methods(in_dir, studies, grouping_methods, gradient_methods,
     jobs = []
     for study in studies:
         for depth in studies[study]['depths']:
-            # Use set in case method is in both grouping and gradient analysis
-            # methods.
-            for method in set(grouping_methods.keys() +
-                              gradient_methods.keys()):
-                study_dir = join(in_dir, study)
-                map_fp = join(study_dir, 'map.txt')
-                depth_dir = join(study_dir, 'bdiv_even%d' % depth)
-                dm_fps = glob(join(depth_dir, '*_dm*.txt'))
+            for method_type, methods in methods.items():
+                for method in methods:
+                    study_dir = join(in_dir, study)
+                    map_fp = join(study_dir, 'map.txt')
+                    depth_dir = join(study_dir, 'bdiv_even%d' % depth)
+                    dm_fps = glob(join(depth_dir, '*_dm*.txt'))
 
-                for dm_fp in dm_fps:
-                    if method in grouping_methods:
-                        for category in studies[study]['grouping_categories']:
-                            jobs.extend(_build_grouping_method_cmds(depth_dir,
-                                    dm_fp, map_fp, method, category,
-                                    permutations))
+                    for dm_fp in dm_fps:
+                        if method_type 'grouping':
+                            for category in \
+                                    studies[study]['grouping_categories']:
+                                jobs.extend(
+                                        _build_grouping_method_cmds(depth_dir,
+                                            dm_fp, map_fp, method, category,
+                                            permutations))
+                        elif method_type == 'gradient':
+                            for category in \
+                                    studies[study]['gradient_categories']:
+                                jobs.extend(
+                                        _build_gradient_method_cmds(study_dir,
+                                            depth_dir, dm_fp, map_fp, method,
+                                            category, permutations))
 
-                    if method in gradient_methods:
-                        for category in studies[study]['gradient_categories']:
-                            jobs.extend(_build_gradient_method_cmds(study_dir,
-                                    depth_dir, dm_fp, map_fp, method, category,
-                                    permutations))
+                            if study == 'keyboard':
+                                jobs.extend(
+                                        _build_gradient_method_keyboard_cmds(
+                                            study_dir, depth_dir, dm_fp,
+                                            method, permutations))
+                        else:
+                            raise ValueError("Unknown method type '%s'." %
+                                             method_type)
 
-                        if study == 'keyboard':
-                            jobs.extend(_build_gradient_method_keyboard_cmds(
-                                    study_dir, depth_dir, dm_fp, method,
-                                    permutations))
+    lview.map(run_command, jobs)
 
-    #lview.map(run_command, jobs)
-    map(run_command, jobs)
-
-def summarize_results(in_dir, out_dir, studies, grouping_methods,
-                      gradient_methods, depth_descs, metrics, permutations,
-                      num_shuffled, num_subsets):
+def summarize_results(in_dir, out_dir, studies, methods, depth_descs, metrics,
+                      permutations, num_shuffled, num_subsets):
     """Summarizes the results of the various method runs.
 
     Effect size statistics and p-values are collected for each of the tests
@@ -112,25 +114,13 @@ def summarize_results(in_dir, out_dir, studies, grouping_methods,
     metric combination (separate tables for grouping and gradient analysis
     methods). These tables are written to out_dir.
     """
-    grouping_results, gradient_results = _collate_results(in_dir,
-                                                          studies,
-                                                          grouping_methods,
-                                                          gradient_methods,
-                                                          depth_descs,
-                                                          metrics,
-                                                          permutations,
-                                                          num_shuffled,
-                                                          num_subsets)
-    create_results_summary_tables(grouping_results, out_dir,
-                                  'grouping_analysis_method_comparison_table')
-    create_results_summary_tables(gradient_results, out_dir,
-                                  'gradient_analysis_method_comparison_table')
+    results = _collate_results(in_dir, studies, methods, depth_descs, metrics,
+                               permutations, num_shuffled, num_subsets)
+    create_results_summary_tables(results, out_dir)
 
-def _collate_results(in_dir, studies, grouping_methods, gradient_methods,
-                     depth_descs, metrics, permutations, num_shuffled,
-                     num_subsets):
-    grouping_results = {}
-    gradient_results = {}
+def _collate_results(in_dir, studies, methods, depth_descs, metrics,
+                     permutations, num_shuffled, num_subsets):
+    results = {}
 
     for depth_idx, depth_desc in enumerate(depth_descs):
         depth_res = {}
@@ -138,70 +128,159 @@ def _collate_results(in_dir, studies, grouping_methods, gradient_methods,
         for metric in metrics:
             metric_res = {}
 
-            for method, res_parsing_fn in grouping_methods.items():
-                method_res = {}
+            for method_type, methods in methods.items():
+                method_type_res = {}
 
-                for study in studies:
-                    study_res = {}
+                for method, res_parsing_fn in methods.items():
+                    if method in ('mantel_corr', 'best'):
+                        # Completely ignore Mantel correlogram and BEST (for
+                        # now at least). Mantel correlogram is hard to
+                        # summarize because it produces a correlogram and many
+                        # Mantel statistics for each distance class. We'll need
+                        # to look at those results by hand and summarize them
+                        # in the paper. The same holds for BEST: though it does
+                        # not create a visual plot, it does not provide
+                        # p-values. It mainly tells you which environmental
+                        # variables best correlate with the community data.
+                        continue
 
-                    # Figure out what our actual depth is for the study, and
-                    # what subset group sizes we used.
-                    depth = studies[study]['depths'][depth_idx]
-                    group_sizes = studies[study]['group_sizes']
+                    method_res = {}
 
-                    for category in studies[study]['grouping_categories']:
-                        category_res = {}
-                        full_res = StatsResults()
-                        shuff_res = StatsResults()
-                        ss_results = [StatsResults()
-                                      for i in range(len(group_sizes))]
+                    for study in studies:
+                        study_res = {}
 
-                        for permutation in permutations:
-                            # Collect results for full distance matrices.
-                            full_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_%s_%d' % (metric, method, category, permutation), '%s_results.txt' % method), 'U')
-                            full_es, full_p_val = res_parsing_fn(full_res_f)
-                            full_res_f.close()
-                            full_res.addResult(full_es, full_p_val)
+                        # Figure out what our actual depth is for the study,
+                        # and what subset sizes we used.
+                        depth = studies[study]['depths'][depth_idx]
 
-                            # Collect results for shuffled distance matrices.
-                            shuff_ess = []
-                            shuff_p_vals = []
-                            for shuff_num in range(1, num_shuffled + 1):
-                                shuff_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_shuffled%d_%s_%s_%d' % (metric, shuff_num, method, category, permutation), '%s_results.txt' % method), 'U')
-                                shuff_es, shuff_p_val = res_parsing_fn(shuff_res_f)
-                                shuff_res_f.close()
-                                shuff_ess.append(shuff_es)
-                                shuff_p_vals.append(shuff_p_val)
+                        if method_type == 'grouping':
+                            subset_sizes = studies[study]['group_sizes']
+                            categories = studies[study]['grouping_categories']
+                        elif method_type == 'gradient':
+                            subset_sizes = studies[study]['subset_sizes']
+                        else:
+                            raise ValueError("Unknown method type '%s'." %
+                                             method_type)
 
-                            shuff_res.addResult(median(shuff_ess),
-                                                median(shuff_p_vals))
+                            # Add our fictional 'key_distance' category, which
+                            # isn't actually a category (i.e. not in a mapping
+                            # file), but can be treated the same way as the
+                            # others in this case.
+                            categories = studies[study]['gradient_categories']\
+                                    + ['key_distance']
 
-                            # Collect results for subset distance matrices.
-                            for group_size_idx, group_size in enumerate(group_sizes):
-                                ss_ess = []
-                                ss_p_vals = []
+                        for category in categories:
+                            category_res = {}
+                            full_results = StatsResults()
+                            shuffled_results = StatsResults()
+                            ss_results = [StatsResults()
+                                          for i in range(len(group_sizes))]
 
-                                for ss_num in range(1, num_subsets + 1):
-                                    ss_res_f = open(join(in_dir, study, 'bdiv_even%d' % depth, '%s_dm_%s_gs%d_%d_%s_%s_%d' % (metric, category, group_size, ss_num, method, category, permutation),
-                                                         '%s_results.txt' % method), 'U')
-                                    ss_es, ss_p_val = res_parsing_fn(ss_res_f)
-                                    ss_res_f.close()
-                                    ss_ess.append(ss_es)
-                                    ss_p_vals.append(ss_p_val)
+                            # Moran's I does not use permutations.
+                            if method == 'morans_i':
+                                _collate_category_results(full_results,
+                                        shuffled_results, ss_results, in_dir,
+                                        study, depth, metric, method_type,
+                                        method, category, subset_sizes,
+                                        permutation=None)
+                            else:
+                                for permutation in permutations:
+                                    _collate_category_results(full_results,
+                                            shuffled_results, ss_results,
+                                            in_dir, study, depth, metric,
+                                            method_type, method, category,
+                                            subset_sizes,
+                                            permutation=permutation)
 
-                                ss_results[group_size_idx].addResult(median(ss_ess), median(ss_p_vals))
+                            category_res['full'] = full_results
+                            category_res['shuffled'] = shuffled_results
+                            category_res['subsampled'] = ss_results
 
-                        category_res['full'] = full_res
-                        category_res['shuffled'] = shuff_res
-                        category_res['subsampled'] = ss_results
-
-                        study_res[category] = category_res
-                    method_res[study] = study_res
-                metric_res[method] = method_res
+                            study_res[category] = category_res
+                        method_res[study] = study_res
+                    method_type_res[method] = method_res
+                metric_res[method_type] = method_type_res
             depth_res[metric] = metric_res
-        grouping_results[depth_desc] = depth_res
+        results[depth_desc] = depth_res
 
-    return grouping_results, gradient_results
+    return results
+
+def _collate_category_results(full_results, shuffled_results, ss_results,
+                              in_dir, study, depth, metric, method_type,
+                              method, category, subset_sizes,
+                              permutation=None):
+    depth_dir = join(in_dir, study, 'bdiv_even%d' % depth)
+
+    # Collect results for full distance matrices.
+    results_dir = join(depth_dir, '%s_dm_%s_%s' % (metric, method, category))
+    if permutation is not None:
+        results_dir += '_%d' % permutation
+
+    results_fp = join(results_dir, '%s_results.txt' % method)
+
+    # We will not always have results for every combination of parameters (e.g.
+    # partial Mantel).
+    if exists(results_fp):
+        full_res_f = open(results_fp, 'U')
+        full_es, full_p_val = res_parsing_fn(full_res_f)
+        full_res_f.close()
+        full_results.addResult(full_es, full_p_val)
+
+    # Collect results for shuffled distance matrices.
+    shuff_ess = []
+    shuff_p_vals = []
+    for shuff_num in range(1, num_shuffled + 1):
+        results_dir = join(depth_dir, '%s_dm_shuffled%d_%s_%s' % (metric,
+                                                                  shuff_num,
+                                                                  method,
+                                                                  category))
+        if permutation is not None:
+            results_dir += '_%d' % permutation
+
+        results_fp = join(results_dir, '%s_results.txt' % method)
+
+        if exists(results_fp):
+            shuff_res_f = open(results_fp, 'U')
+            shuff_es, shuff_p_val = res_parsing_fn(shuff_res_f)
+            shuff_res_f.close()
+            shuff_ess.append(shuff_es)
+            shuff_p_vals.append(shuff_p_val)
+
+    if shuff_ess and shuff_p_vals:
+        shuffled_results.addResult(median(shuff_ess), median(shuff_p_vals))
+
+    # Collect results for subset distance matrices.
+    for subset_size_idx, subset_size in enumerate(subset_sizes):
+        ss_ess = []
+        ss_p_vals = []
+
+        for ss_num in range(1, num_subsets + 1):
+            if method_type == 'grouping':
+                subset_path = '%s_dm_%s_gs%d_%d_%s_%s' % (metric, category,
+                                                          subset_size, ss_num,
+                                                          method, category)
+            elif method_type == 'gradient':
+                subset_path = '%s_dm_n%d_%d_%s_%s' % (metric, subset_size,
+                                                      ss_num, method, category)
+            else:
+                raise ValueError("Unknown method type '%s'." % method_type)
+
+            results_dir = join(depth_dir, subset_path)
+            if permutation is not None:
+                results_dir += '_%d' % permutation
+
+            results_fp = join(results_dir, '%s_results.txt' % method)
+
+            if exists(results_fp):
+                ss_res_f = open(results_fp, 'U')
+                ss_es, ss_p_val = res_parsing_fn(ss_res_f)
+                ss_res_f.close()
+                ss_ess.append(ss_es)
+                ss_p_vals.append(ss_p_val)
+
+        if ss_ess and ss_p_vals:
+            ss_results[subset_size_idx].addResult(
+                    median(ss_ess), median(ss_p_vals))
 
 def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
                                 permutations):
@@ -309,15 +388,18 @@ def main():
                             }
               }
     metrics = ['euclidean', 'bray_curtis']
-    grouping_methods = {
+    methods = {
+        'grouping': {
             'adonis': parse_adonis_results,
             'anosim': parse_anosim_permanova_results
-    }
-    gradient_methods = {
+        },
+
+        'gradient': {
             'mantel': parse_mantel_results,
             'mantel_corr': None,
             'morans_i': parse_morans_i_results,
             'partial_mantel': parse_partial_mantel_results
+        }
     }
 
     permutations = [99, 999]
@@ -327,12 +409,10 @@ def main():
 #    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
 #            num_subsets, tree_fp)
 #
-    run_methods(out_dir, studies, grouping_methods, gradient_methods,
-                permutations)
+    run_methods(out_dir, studies, methods, permutations)
 
-    summarize_results(out_dir, out_dir, studies, grouping_methods,
-                      gradient_methods, depth_descs, metrics, permutations,
-                      num_shuffled, num_subsets)
+    summarize_results(out_dir, out_dir, studies, methods, depth_descs, metrics,
+                      permutations, num_shuffled, num_subsets)
 
 
 if __name__ == "__main__":

@@ -22,8 +22,8 @@ from qiime.parse import parse_distmat
 from qiime.util import get_qiime_temp_dir
 
 from microbiogeo.util import (ExternalCommandFailedError, has_results,
-                              run_command, shuffle_dm, StatsResults, subset_dm,
-                              subset_groups)
+                              is_empty, run_command, shuffle_dm, StatsResults,
+                              subset_dm, subset_groups)
 
 class UtilTests(TestCase):
     """Tests for the util.py module functions."""
@@ -32,6 +32,34 @@ class UtilTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.dm_f1 = dm_str1.split('\n')
         self.map_f1 = map_str1.split('\n')
+
+        empty = StatsResults()
+        nonempty = StatsResults()
+        nonempty.addResult(0.1, 0.001)
+
+        self.cat_res1 = {
+            'full': empty,
+            'shuffled': nonempty,
+            'subsampled': [nonempty, nonempty]
+        }
+
+        self.cat_res2 = {
+            'full': nonempty,
+            'shuffled': empty,
+            'subsampled': [nonempty, nonempty]
+        }
+
+        self.cat_res3 = {
+            'full': nonempty,
+            'shuffled': nonempty,
+            'subsampled': [nonempty, empty]
+        }
+
+        self.cat_res4 = {
+            'full': nonempty,
+            'shuffled': nonempty,
+            'subsampled': [nonempty, nonempty]
+        }
 
         # The prefix to use for temporary files/dirs. This prefix may be added
         # to, but all temp dirs and files created by the tests will have this
@@ -151,6 +179,15 @@ class UtilTests(TestCase):
         # XOR: either S1 or S3 should be in obs_labels, but not both.
         self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
 
+    def test_is_empty(self):
+        """Test checking if category results are empty or not."""
+        self.assertTrue(is_empty(self.cat_res1))
+        self.assertTrue(is_empty(self.cat_res2))
+        self.assertTrue(is_empty(self.cat_res3))
+        self.assertTrue(is_empty({}))
+        self.assertFalse(is_empty(self.cat_res4))
+
+
 class StatsResultsTests(TestCase):
     """Tests for the util.StatsResults class."""
 
@@ -186,6 +223,13 @@ class StatsResultsTests(TestCase):
         self.assertFloatEqual(self.sr1.effect_size, 0.5)
         self.assertFloatEqual(self.sr1.p_values, [0.01, 0.02])
 
+    def test_isEmpty(self):
+        """Test checking if results are empty or not."""
+        self.assertTrue(self.sr1.isEmpty())
+
+        self.sr1.addResult(0.5, 0.01)
+        self.assertFalse(self.sr1.isEmpty())
+
     def test_str(self):
         """Test __str__ method."""
         # Empty results.
@@ -206,6 +250,36 @@ class StatsResultsTests(TestCase):
 
         self.assertRaises(ValueError, self.sr1._check_p_value, 1.5)
         self.assertRaises(ValueError, self.sr1._check_p_value, -1.5)
+
+    def test_format_p_value_as_asterisk(self):
+        """Test formatting a p-value to indicate statistical significance."""
+        obs = self.sr1._format_p_value_as_asterisk(1.0)
+        self.assertEqual(obs, 'x')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.09)
+        self.assertEqual(obs, '*')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.045)
+        self.assertEqual(obs, '**')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.01)
+        self.assertEqual(obs, '***')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.0005)
+        self.assertEqual(obs, '****')
+
+    def test_format_p_value_as_asterisk_invalid_input(self):
+        """Test supplying an invalid p-value results in error being thrown."""
+        self.assertRaises(TypeError, self.sr1._format_p_value_as_asterisk, 1)
+        self.assertRaises(TypeError, self.sr1._format_p_value_as_asterisk,
+                          "0.05")
+        self.assertRaises(TypeError, self.sr1._format_p_value_as_asterisk,
+                          [0.05])
+
+        self.assertRaises(ValueError, self.sr1._format_p_value_as_asterisk,
+                          1.1)
+        self.assertRaises(ValueError, self.sr1._format_p_value_as_asterisk,
+                          -0.042)
 
 
 dm_str1 = """\tS1\tS2\tS3

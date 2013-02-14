@@ -16,8 +16,7 @@ from numpy import array
 from cogent.util.unit_test import TestCase, main
 
 from microbiogeo.format import (format_method_comparison_heatmaps,
-                                format_method_comparison_table,
-                                format_p_value_as_asterisk)
+                                format_method_comparison_table)
 from microbiogeo.util import StatsResults
 
 class FormatTests(TestCase):
@@ -118,45 +117,47 @@ class FormatTests(TestCase):
         self.full_results1 = {
             '5_percent': {
                 'unweighted_unifrac': {
-                    'adonis': {
-                        'whole_body': {
-                            'BODY_SITE': {
-                                'full': sr_full1,
-                                'shuffled': sr_shuff1,
-                                'subsampled': sr_ss1
-                            }
+                    'grouping': {
+                        'adonis': {
+                            'whole_body': {
+                                'BODY_SITE': {
+                                    'full': sr_full1,
+                                    'shuffled': sr_shuff1,
+                                    'subsampled': sr_ss1
+                                }
+                            },
+
+                            '88_soils': {
+                                'ENV_BIOME': {
+                                    'full': sr_full2,
+                                    'shuffled': sr_shuff2,
+                                    'subsampled': sr_ss2
+                                }
+                            },
+
+                            'keyboard': {}
                         },
 
-                        '88_soils': {
-                            'ENV_BIOME': {
-                                'full': sr_full2,
-                                'shuffled': sr_shuff2,
-                                'subsampled': sr_ss2
+                        'anosim': {
+                            'whole_body': {
+                                'BODY_SITE': {
+                                    'full': sr_full1,
+                                    'shuffled': sr_shuff1,
+                                    'subsampled': sr_ss1
+                                }
+                            },
+
+                            'keyboard': {
+                                'HOST_SUBJECT_ID': {
+                                    'full': sr_full3,
+                                    'shuffled': sr_shuff3,
+                                    'subsampled': sr_ss3
+                                }
+                            },
+
+                            '88_soils': {
+                                'ENV_BIOME': {}
                             }
-                        },
-
-                        'keyboard': {}
-                    },
-
-                    'anosim': {
-                        'whole_body': {
-                            'BODY_SITE': {
-                                'full': sr_full1,
-                                'shuffled': sr_shuff1,
-                                'subsampled': sr_ss1
-                            }
-                        },
-
-                        'keyboard': {
-                            'HOST_SUBJECT_ID': {
-                                'full': sr_full3,
-                                'shuffled': sr_shuff3,
-                                'subsampled': sr_ss3
-                            }
-                        },
-
-                        '88_soils': {
-                            'ENV_BIOME': {}
                         }
                     }
                 }
@@ -167,12 +168,14 @@ class FormatTests(TestCase):
         self.full_results2 = {
             '5_percent': {
                 'unweighted_unifrac': {
-                    'adonis': {
-                        'whole_body': {}
-                    },
+                    'grouping': {
+                        'adonis': {
+                            'whole_body': {}
+                        },
 
-                    'anosim': {
-                        '88_soils': {}
+                        'anosim': {
+                            '88_soils': {}
+                        }
                     }
                 }
             }
@@ -182,22 +185,24 @@ class FormatTests(TestCase):
         self.full_results3 = {
             '5_percent': {
                 'unweighted_unifrac': {
-                    'adonis': {
-                        'whole_body': {
-                            'BODY_SITE': {
-                                'full': sr_full1,
-                                'shuffled': sr_shuff1,
-                                'subsampled': sr_ss1
+                    'grouping': {
+                        'adonis': {
+                            'whole_body': {
+                                'BODY_SITE': {
+                                    'full': sr_full1,
+                                    'shuffled': sr_shuff1,
+                                    'subsampled': sr_ss1
+                                }
                             }
-                        }
-                    },
+                        },
 
-                    'anosim': {
-                        'whole_body': {
-                            'BODY_SITE': {
-                                'full': sr_full4,
-                                'shuffled': sr_shuff4,
-                                'subsampled': sr_ss4
+                        'anosim': {
+                            'whole_body': {
+                                'BODY_SITE': {
+                                    'full': sr_full4,
+                                    'shuffled': sr_shuff4,
+                                    'subsampled': sr_ss4
+                                }
                             }
                         }
                     }
@@ -216,42 +221,18 @@ class FormatTests(TestCase):
         self.assertRaises(ValueError, format_method_comparison_table,
                           self.per_method_results3)
 
-    def test_format_p_value_as_asterisk(self):
-        """Test formatting a p-value to indicate statistical significance."""
-        obs = format_p_value_as_asterisk(1.0)
-        self.assertEqual(obs, 'x')
-
-        obs = format_p_value_as_asterisk(0.09)
-        self.assertEqual(obs, '*')
-
-        obs = format_p_value_as_asterisk(0.045)
-        self.assertEqual(obs, '**')
-
-        obs = format_p_value_as_asterisk(0.01)
-        self.assertEqual(obs, '***')
-
-        obs = format_p_value_as_asterisk(0.0005)
-        self.assertEqual(obs, '****')
-
-    def test_format_p_value_as_asterisk_invalid_input(self):
-        """Test supplying an invalid p-value results in error being thrown."""
-        self.assertRaises(TypeError, format_p_value_as_asterisk, 1)
-        self.assertRaises(TypeError, format_p_value_as_asterisk, "0.05")
-        self.assertRaises(TypeError, format_p_value_as_asterisk, [0.05])
-
-        self.assertRaises(ValueError, format_p_value_as_asterisk, 1.1)
-        self.assertRaises(ValueError, format_p_value_as_asterisk, -0.042)
-
     def test_format_method_comparison_heatmaps(self):
         obs = format_method_comparison_heatmaps(self.full_results1,
-                                                ['adonis', 'anosim'])
+                {'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM'])})
         self.assertEqual(obs, exp_method_comparison_heatmaps1)
 
         self.assertRaises(ValueError, format_method_comparison_heatmaps,
-                          self.full_results2, ['adonis', 'anosim'])
+                self.full_results2,
+                {'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM'])})
 
         self.assertRaises(ValueError, format_method_comparison_heatmaps,
-                          self.full_results3, ['adonis', 'anosim'])
+                self.full_results3,
+                {'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM'])})
 
 
 exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',
@@ -261,9 +242,14 @@ exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',
                                 '0.24; **, ***\r0.20; **, **'],
                                ['anosim', ['N/A', 'N/A', 'N/A']]]
 
-exp_method_comparison_heatmaps1 = {'spearman': array([[ 1.,  1.],
-                                   [ 1.,  1.]]), 'pearson': array([[ 1.,  1.],
-                                   [ 1.,  1.]])}
+exp_method_comparison_heatmaps1 = {
+    'grouping': {
+        'spearman': array([[ 1.,  1.],
+                           [ 1.,  1.]]),
+        'pearson': array([[ 1.,  1.],
+                          [ 1.,  1.]])
+    }
+}
 
 
 if __name__ == "__main__":
