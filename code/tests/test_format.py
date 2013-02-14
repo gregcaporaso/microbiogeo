@@ -32,11 +32,19 @@ class FormatTests(TestCase):
         sr_shuff1.addResult(0.02, 0.45)
         sr_shuff1.addResult(0.02, 0.476)
 
+        # No empty results.
         sr_ss1 = [StatsResults(), StatsResults()]
         sr_ss1[0].addResult(0.24, 0.03)
         sr_ss1[0].addResult(0.24, 0.005)
         sr_ss1[1].addResult(0.20, 0.02)
         sr_ss1[1].addResult(0.20, 0.023)
+
+        # Some empty results.
+        sr_ss1_empty = [StatsResults(), StatsResults(), StatsResults()]
+        sr_ss1_empty[0].addResult(0.24, 0.03)
+        sr_ss1_empty[0].addResult(0.24, 0.005)
+        sr_ss1_empty[1].addResult(0.20, 0.02)
+        sr_ss1_empty[1].addResult(0.20, 0.023)
 
         sr_full2 = StatsResults()
         sr_full2.addResult(0.13, 0.02)
@@ -84,7 +92,7 @@ class FormatTests(TestCase):
                     'BODY_SITE': {
                         'full': sr_full1,
                         'shuffled': sr_shuff1,
-                        'subsampled': sr_ss1
+                        'subsampled': sr_ss1_empty
                     }
                 }
             },
@@ -236,11 +244,11 @@ class FormatTests(TestCase):
 
 
 exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',
-                                'whole_body\rBODY_SITE (shuffled)',
-                                'whole_body\rBODY_SITE (subsampled)'],
-                               ['adonis', '0.27; ***, ****', '0.02; x, x',
-                                '0.24; **, ***\r0.20; **, **'],
-                               ['anosim', ['N/A', 'N/A', 'N/A']]]
+                                 'whole_body\rBODY_SITE (shuffled)',
+                                 'whole_body\rBODY_SITE (subsampled)'],
+                                ['adonis', '0.27; ***, ****', '0.02; x, x',
+                                 '0.24; **, ***\r0.20; **, **\rN/A'],
+                                ['anosim', 'N/A', 'N/A', 'N/A']]
 
 exp_method_comparison_heatmaps1 = {
     'grouping': {

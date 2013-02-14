@@ -13,6 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from glob import glob
 from os.path import basename, exists, join, splitext
+from shutil import copy
 
 from IPython.parallel import Client
 
@@ -50,6 +51,34 @@ def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
 
     per_study_depths = []
     for study in studies:
+        # Prep per-study output directories before running each depth in
+        # parallel.
+        in_study_dir = join(in_dir, study)
+        out_study_dir = join(out_dir, study)
+        create_dir(out_study_dir)
+        copy(join(in_study_dir, 'map.txt'), out_study_dir)
+        map_fp = join(out_study_dir, 'map.txt')
+
+        # Create distance matrices from environmental variables in mapping
+        # file. These are independent of sampling depth and metric, so we only
+        # need to create them once for each study. Again, keyboard is unique in
+        # that we cannot easily create a key distance matrix from the mapping
+        # file. We'll use one that has been precalculated.
+        for category in studies[study]['gradient_categories']:
+            env_dm_fp = join(out_study_dir, '%s_dm.txt' % category)
+
+            cmd = ('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (
+                   map_fp, category, env_dm_fp))
+            run_command(cmd)
+
+        if study == 'keyboard':
+            key_dm_fp = join(in_study_dir, 'euclidean_key_distances_dm.txt')
+            copy(key_dm_fp, out_study_dir)
+
+            indiv_dm_fp = join(in_study_dir,
+                               'median_unifrac_individual_distances_dm.txt')
+            copy(indiv_dm_fp, out_study_dir)
+
         for depth in studies[study]['depths']:
             per_study_depths.append((in_dir, out_dir, study, depth, metrics,
                                      studies[study]['grouping_categories'],
@@ -71,15 +100,15 @@ def run_methods(in_dir, studies, methods, permutations):
     jobs = []
     for study in studies:
         for depth in studies[study]['depths']:
-            for method_type, methods in methods.items():
-                for method in methods:
+            for method_type in methods:
+                for method in methods[method_type]:
                     study_dir = join(in_dir, study)
                     map_fp = join(study_dir, 'map.txt')
                     depth_dir = join(study_dir, 'bdiv_even%d' % depth)
                     dm_fps = glob(join(depth_dir, '*_dm*.txt'))
 
                     for dm_fp in dm_fps:
-                        if method_type 'grouping':
+                        if method_type == 'grouping':
                             for category in \
                                     studies[study]['grouping_categories']:
                                 jobs.extend(
@@ -128,10 +157,10 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
         for metric in metrics:
             metric_res = {}
 
-            for method_type, methods in methods.items():
+            for method_type in methods:
                 method_type_res = {}
 
-                for method, res_parsing_fn in methods.items():
+                for method, res_parsing_fn in methods[method_type].items():
                     if method in ('mantel_corr', 'best'):
                         # Completely ignore Mantel correlogram and BEST (for
                         # now at least). Mantel correlogram is hard to
@@ -158,9 +187,6 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                             categories = studies[study]['grouping_categories']
                         elif method_type == 'gradient':
                             subset_sizes = studies[study]['subset_sizes']
-                        else:
-                            raise ValueError("Unknown method type '%s'." %
-                                             method_type)
 
                             # Add our fictional 'key_distance' category, which
                             # isn't actually a category (i.e. not in a mapping
@@ -168,28 +194,34 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                             # others in this case.
                             categories = studies[study]['gradient_categories']\
                                     + ['key_distance']
+                        else:
+                            raise ValueError("Unknown method type '%s'." %
+                                             method_type)
 
                         for category in categories:
                             category_res = {}
                             full_results = StatsResults()
                             shuffled_results = StatsResults()
                             ss_results = [StatsResults()
-                                          for i in range(len(group_sizes))]
+                                          for i in range(len(subset_sizes))]
 
                             # Moran's I does not use permutations.
                             if method == 'morans_i':
                                 _collate_category_results(full_results,
                                         shuffled_results, ss_results, in_dir,
                                         study, depth, metric, method_type,
-                                        method, category, subset_sizes,
-                                        permutation=None)
+                                        method, res_parsing_fn, category,
+                                        subset_sizes, num_shuffled,
+                                        num_subsets, permutation=None)
                             else:
                                 for permutation in permutations:
                                     _collate_category_results(full_results,
                                             shuffled_results, ss_results,
                                             in_dir, study, depth, metric,
-                                            method_type, method, category,
-                                            subset_sizes,
+                                            method_type, method,
+                                            res_parsing_fn, category,
+                                            subset_sizes, num_shuffled,
+                                            num_subsets,
                                             permutation=permutation)
 
                             category_res['full'] = full_results
@@ -207,7 +239,8 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
 
 def _collate_category_results(full_results, shuffled_results, ss_results,
                               in_dir, study, depth, metric, method_type,
-                              method, category, subset_sizes,
+                              method, results_parsing_fn, category,
+                              subset_sizes, num_shuffled, num_subsets,
                               permutation=None):
     depth_dir = join(in_dir, study, 'bdiv_even%d' % depth)
 
@@ -222,7 +255,7 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
     # partial Mantel).
     if exists(results_fp):
         full_res_f = open(results_fp, 'U')
-        full_es, full_p_val = res_parsing_fn(full_res_f)
+        full_es, full_p_val = results_parsing_fn(full_res_f)
         full_res_f.close()
         full_results.addResult(full_es, full_p_val)
 
@@ -241,7 +274,7 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
 
         if exists(results_fp):
             shuff_res_f = open(results_fp, 'U')
-            shuff_es, shuff_p_val = res_parsing_fn(shuff_res_f)
+            shuff_es, shuff_p_val = results_parsing_fn(shuff_res_f)
             shuff_res_f.close()
             shuff_ess.append(shuff_es)
             shuff_p_vals.append(shuff_p_val)
@@ -273,7 +306,7 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
 
             if exists(results_fp):
                 ss_res_f = open(results_fp, 'U')
-                ss_es, ss_p_val = res_parsing_fn(ss_res_f)
+                ss_es, ss_p_val = results_parsing_fn(ss_res_f)
                 ss_res_f.close()
                 ss_ess.append(ss_es)
                 ss_p_vals.append(ss_p_val)
@@ -409,8 +442,8 @@ def main():
 #    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
 #            num_subsets, tree_fp)
 #
-    run_methods(out_dir, studies, methods, permutations)
-
+#    run_methods(out_dir, studies, methods, permutations)
+#
     summarize_results(out_dir, out_dir, studies, methods, depth_descs, metrics,
                       permutations, num_shuffled, num_subsets)
 

@@ -65,22 +65,22 @@ def format_method_comparison_table(per_method_results):
                 header.append(header_column_title + ' (subsampled)')
 
                 if len(category_res) == 0:
-                    row.append(['N/A'] * 3)
+                    row.extend(['N/A'] * 3)
                 else:
                     if category_res['full'].isEmpty():
-                        row.append(['N/A'])
+                        row.append('N/A')
                     else:
                         row.append(str(category_res['full']))
 
                     if category_res['shuffled'].isEmpty():
-                        row.append(['N/A'])
+                        row.append('N/A')
                     else:
                         row.append(str(category_res['shuffled']))
 
                     cells = []
                     for res in category_res['subsampled']:
                         if res.isEmpty():
-                            cells.append(['N/A'])
+                            cells.append('N/A')
                         else:
                             cells.append(str(res))
                     row.append('\r'.join(cells))

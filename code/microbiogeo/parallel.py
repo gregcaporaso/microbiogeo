@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 """Module for functionality meant to be run in parallel."""
 
 from os.path import join
-from shutil import copy, move, rmtree
+from shutil import move
 
 from qiime.util import create_dir
 
@@ -27,8 +27,6 @@ def generate_per_study_depth_dms((in_dir, out_dir, study, depth, metrics,
                                   num_subsets, tree_fp)):
     in_study_dir = join(in_dir, study)
     out_study_dir = join(out_dir, study)
-    create_dir(out_study_dir)
-    copy(join(in_study_dir, 'map.txt'), out_study_dir)
     map_fp = join(out_study_dir, 'map.txt')
 
     full_otu_fp = join(in_study_dir, 'otu_table.biom')
@@ -100,23 +98,3 @@ def generate_per_study_depth_dms((in_dir, out_dir, study, depth, metrics,
                 subset_dm_f.write(
                         subset_dm(open(renamed_dm_fp, 'U'), subset_size))
                 subset_dm_f.close()
-
-    # Create distance matrices from environmental variables in mapping file.
-    # These are independent of sampling depth and metric, so we only need to
-    # create them once for each study. Again, keyboard is unique in that we
-    # cannot easily create a key distance matrix from the mapping file. We'll
-    # use one that has been precalculated.
-    for category in gradient_categories:
-        env_dm_fp = join(out_study_dir, '%s_dm.txt' % category)
-
-        cmd = ('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (map_fp,
-                category, env_dm_fp))
-        run_command(cmd)
-
-    if study == 'keyboard':
-        key_dm_fp = join(in_study_dir, 'euclidean_key_distances_dm.txt')
-        copy(key_dm_fp, out_study_dir)
-
-        indiv_dm_fp = join(in_study_dir,
-                           'median_unifrac_individual_distances_dm.txt')
-        copy(indiv_dm_fp, out_study_dir)
