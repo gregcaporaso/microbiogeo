@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 """Module for executing various workflows/analyses."""
 
 from glob import glob
-from os.path import basename, exists, join, splitext
+from os.path import exists, join
 from shutil import copy
 
 from IPython.parallel import Client
@@ -22,13 +22,16 @@ from numpy import median
 from qiime.util import create_dir
 
 from microbiogeo.format import create_results_summary_tables
-from microbiogeo.parallel import generate_per_study_depth_dms
+from microbiogeo.parallel import (generate_per_study_depth_dms,
+                                  build_grouping_method_commands,
+                                  build_gradient_method_commands,
+                                  build_gradient_method_keyboard_cmds)
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
                                parse_mantel_results,
                                parse_morans_i_results,
                                parse_partial_mantel_results)
-from microbiogeo.util import has_results, run_command, StatsResults
+from microbiogeo.util import run_command, StatsResults
 
 def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                num_subsets, tree_fp):
@@ -111,21 +114,19 @@ def run_methods(in_dir, studies, methods, permutations):
                         if method_type == 'grouping':
                             for category in \
                                     studies[study]['grouping_categories']:
-                                jobs.extend(
-                                        _build_grouping_method_cmds(depth_dir,
-                                            dm_fp, map_fp, method, category,
-                                            permutations))
+                                jobs.extend(build_grouping_method_commands(
+                                        depth_dir, dm_fp, map_fp, method,
+                                        category, permutations))
                         elif method_type == 'gradient':
                             for category in \
                                     studies[study]['gradient_categories']:
-                                jobs.extend(
-                                        _build_gradient_method_cmds(study_dir,
-                                            depth_dir, dm_fp, map_fp, method,
-                                            category, permutations))
+                                jobs.extend(build_gradient_method_commands(
+                                        study_dir, depth_dir, dm_fp, map_fp,
+                                        method, category, permutations))
 
                             if study == 'keyboard':
                                 jobs.extend(
-                                        _build_gradient_method_keyboard_cmds(
+                                    build_gradient_method_keyboard_commands(
                                             study_dir, depth_dir, dm_fp,
                                             method, permutations))
                         else:
@@ -314,88 +315,6 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
         if ss_ess and ss_p_vals:
             ss_results[subset_size_idx].addResult(
                     median(ss_ess), median(ss_p_vals))
-
-def _build_grouping_method_cmds(depth_dir, dm_fp, map_fp, method, category,
-                                permutations):
-    cmds = []
-    dm_bn = basename(dm_fp)
-
-    for permutation in permutations:
-        if 'dm.txt' in dm_bn or 'dm_shuffled' in dm_bn or \
-           'dm_%s_gs' % category in dm_bn:
-            results_dir = join(depth_dir, '%s_%s_%s_%d' % (splitext(dm_bn)[0],
-                                                           method, category,
-                                                           permutation))
-
-            # Skip the job if the results dir exists. We'll assume it was
-            # created from a previous run.
-            if not has_results(results_dir):
-                cmd = ('compare_categories.py --method %s -n %d -i %s -m %s '
-                       '-c %s -o %s' % (method, permutation, dm_fp, map_fp,
-                                        category, results_dir))
-                cmds.append(cmd)
-    return cmds
-
-def _build_gradient_method_cmds(study_dir, depth_dir, dm_fp, map_fp, method,
-                                category, permutations):
-    # Not all methods can be tested on the same variables/inputs. For example,
-    # Moran's I cannot be tested on the keyboard study's key distances because
-    # it is univariate, and partial Mantel can only be tested on the keyboard
-    # study because that is the only study we have a control matrix for.
-    cmds = []
-
-    for permutation in permutations:
-        if method == 'mantel' or method == 'mantel_corr':
-            in_dm_fps = '%s,%s' % (dm_fp, join(study_dir,
-                                               '%s_dm.txt' % category))
-            results_dir = join(depth_dir,
-                               '%s_%s_%s_%d' % (splitext(basename(dm_fp))[0],
-                                                method, category, permutation))
-
-            if not has_results(results_dir):
-                cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
-                       '-o %s' % (method, permutation, in_dm_fps, results_dir))
-                cmds.append(cmd)
-
-    # Moran's I does not accept a number of permutations.
-    if method == 'morans_i':
-        results_dir = join(depth_dir,
-                           '%s_%s_%s' % (splitext(basename(dm_fp))[0], method,
-                                         category))
-
-        if not has_results(results_dir):
-            cmd = ('compare_categories.py --method %s -i %s -m %s -c %s '
-                   '-o %s' % (method, dm_fp, map_fp, category, results_dir))
-            cmds.append(cmd)
-
-    return cmds
-
-def _build_gradient_method_keyboard_cmds(study_dir, depth_dir, dm_fp, method,
-                                         permutations):
-    cmds = []
-
-    for permutation in permutations:
-        in_dm_fps = '%s,%s' % (dm_fp, join(study_dir,
-                                           'euclidean_key_distances_dm.txt'))
-
-        if method in ('mantel', 'mantel_corr', 'partial_mantel'):
-            results_dir = join(depth_dir,
-                               '%s_%s_%s_%d' % (splitext(basename(dm_fp))[0],
-                                                method, 'key_distance',
-                                                permutation))
-
-            if not has_results(results_dir):
-                cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
-                       '-o %s' % (method, permutation, in_dm_fps, results_dir))
-
-                if method == 'partial_mantel':
-                    control_dm_fp = join(study_dir,
-                            'median_unifrac_individual_distances_dm.txt')
-                    cmd += ' -c %s' % control_dm_fp
-
-                cmds.append(cmd)
-
-    return cmds
 
 def main():
     in_dir = 'test_datasets'
