@@ -15,24 +15,26 @@ from glob import glob
 from os.path import exists, join
 from shutil import copy
 
-from IPython.parallel import Client
-
 from numpy import median
 
 from qiime.util import create_dir
 
 from microbiogeo.format import create_results_summary_tables
 from microbiogeo.parallel import (build_best_method_commands,
-                                  build_grouping_method_commands,
-                                  build_gradient_method_commands,
-                                  build_gradient_method_keyboard_commands,
-                                  generate_per_study_depth_dms)
+        build_gradient_method_commands,
+        build_gradient_method_keyboard_commands,
+        build_gradient_method_sample_size_testing_commands,
+        build_grouping_method_commands,
+        build_grouping_method_sample_size_testing_commands,
+        generate_per_study_depth_dms)
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
+                               parse_dbrda_results,
                                parse_mantel_results,
                                parse_morans_i_results,
+                               parse_mrpp_results,
                                parse_partial_mantel_results)
-from microbiogeo.util import run_command, StatsResults
+from microbiogeo.util import run_command, run_parallel_jobs, StatsResults
 
 def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                num_subsets, tree_fp):
@@ -46,13 +48,9 @@ def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
     category's sample groupings or the entire distance matrix). These can be
     used to test how the methods perform on different study sizes.
     """
-    # Process each depth in each study in parallel.
-    c = Client()
-    lview = c.load_balanced_view()
-    lview.block = True
-
     create_dir(out_dir)
 
+    # Process each depth in each study in parallel.
     per_study_depths = []
     for study in studies:
         # Prep per-study output directories before running each depth in
@@ -91,16 +89,12 @@ def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
                                      studies[study]['subset_sizes'],
                                      num_shuffled, num_subsets, tree_fp))
 
-    lview.map(generate_per_study_depth_dms, per_study_depths)
+    run_parallel_jobs(per_study_depths, generate_per_study_depth_dms)
 
 def run_methods(in_dir, studies, methods, permutations):
     """Runs each statistical method on each distance matrix."""
     # Process each compare_categories.py/compare_distance_matrices.py run in
     # parallel.
-    c = Client()
-    lview = c.load_balanced_view()
-    lview.block = True
-
     jobs = []
     for study in studies:
         best_method_env_vars = studies[study]['best_method_env_vars']
@@ -142,7 +136,7 @@ def run_methods(in_dir, studies, methods, permutations):
                             raise ValueError("Unknown method type '%s'." %
                                              method_type)
 
-    lview.map(run_command, jobs)
+    run_parallel_jobs(jobs, run_command)
 
 def summarize_results(in_dir, out_dir, studies, methods, depth_descs, metrics,
                       permutations, num_shuffled, num_subsets):
@@ -325,6 +319,64 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
             ss_results[subset_size_idx].addResult(
                     median(ss_ess), median(ss_p_vals))
 
+def run_sample_size_tests(in_dir, out_dir, sample_size_tests):
+    """Tests the methods on subsets of the original sample groups.
+
+    For grouping analysis methods:
+
+    Samples will be chosen randomly without replacement to generate groups of
+    samples at the specified subset size.
+
+    For gradient analysis methods:
+
+    Samples will be chosen along the gradient for each subset (which is what a
+    researcher might do instead of randomly picking samples in order to test a
+    gradient).
+
+    Plots will be generated with subset size on the x-axis and test statistic
+    on the y-axis. This will allow us to see if there is a cutoff/threshold
+    based on the number of samples (i.e. where things start to stabilize in
+    terms of the number of samples).
+    """
+    create_dir(out_dir)
+
+    jobs = []
+    for method_type in sample_size_tests:
+        study = sample_size_tests[method_type]['study']
+        depth = sample_size_tests[method_type]['depth']
+        metric = sample_size_tests[method_type]['metric']
+        categories = sample_size_tests[method_type]['categories']
+        subset_sizes = sample_size_tests[method_type]['subset_sizes']
+        num_subsets = sample_size_tests[method_type]['num_subsets']
+        permutation = sample_size_tests[method_type]['permutation']
+        methods = sample_size_tests[method_type]['methods']
+
+        out_method_type_dir = join(out_dir, method_type)
+        out_study_dir = join(out_method_type_dir, study)
+        create_dir(out_method_type_dir)
+        create_dir(out_study_dir)
+
+        map_fp = join(in_dir, study, 'map.txt')
+        dm_fp = join(in_dir, study, 'bdiv_even%d' % depth,
+                     '%s_dm.txt' % metric)
+
+        for category in categories:
+            if method_type == 'grouping':
+                jobs.extend(build_grouping_method_sample_size_testing_commands(
+                        out_study_dir, dm_fp, map_fp, metric, category,
+                        methods, subset_sizes, num_subsets, permutation))
+            elif method_type == 'gradient':
+                env_dm_fp = join(in_dir, study, '%s_dm.txt' % category)
+
+                jobs.extend(build_gradient_method_sample_size_testing_commands(
+                        out_study_dir, dm_fp, env_dm_fp, map_fp, metric,
+                        category, methods, subset_sizes, num_subsets,
+                        permutation))
+            else:
+                raise ValueError("Unknown method type '%s'." % method_type)
+
+    run_parallel_jobs(jobs, run_command)
+
 def main():
     in_dir = 'test_datasets'
     out_dir = 'test_output'
@@ -368,6 +420,46 @@ def main():
     num_shuffled = 2
     num_subsets = 2
 
+    # For sample size testing.
+    sample_size_tests = {
+        'grouping': {
+            'study': 'whole_body',
+            'depth': 575,
+            'metric': 'unweighted_unifrac',
+            'subset_sizes': [5, 10, 20, 40, 60, 80],
+            'num_subsets': 10,
+            'permutation': 999,
+            'categories': {
+                'BODY_SITE': ['b', 'Body site'],
+                'SEX': ['r', 'Sex']
+            },
+            'methods': {
+                'adonis': parse_adonis_results,
+                'anosim': parse_anosim_permanova_results,
+                'mrpp': parse_mrpp_results,
+                'permanova': parse_anosim_permanova_results,
+                'dbrda': parse_dbrda_results
+            }
+        },
+
+        'gradient': {
+            'study': '88_soils',
+            'depth': 400,
+            'metric': 'unweighted_unifrac',
+            'subset_sizes': [5, 10, 20, 40, 60, 80],
+            'num_subsets': 10,
+            'permutation': 999,
+            'categories': {
+                'PH': ['b', 'pH'],
+                'LATITUDE': ['r', 'Latitude']
+            },
+            'methods': {
+                'mantel': parse_mantel_results,
+                'morans_i': parse_morans_i_results
+            }
+        }
+    }
+
     generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
             num_subsets, tree_fp)
 
@@ -375,6 +467,9 @@ def main():
 
     summarize_results(out_dir, out_dir, studies, methods, depth_descs, metrics,
                       permutations, num_shuffled, num_subsets)
+
+    run_sample_size_tests(out_dir, join(out_dir, 'sample_size_testing_output'),
+                          sample_size_tests)
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import basename, join, splitext
 from shutil import move
 
+from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import create_dir
 
 from microbiogeo.util import (has_results, run_command, shuffle_dm, subset_dm,
@@ -195,5 +196,111 @@ def build_best_method_commands(depth_dir, dm_fp, map_fp, env_vars):
         cmd = ('compare_categories.py --method best -i %s -m %s -c %s '
                '-o %s' % (dm_fp, map_fp, ','.join(env_vars), results_dir))
         cmds.append(cmd)
+
+    return cmds
+
+def build_grouping_method_sample_size_testing_commands(study_dir, dm_fp,
+                                                       map_fp, metric,
+                                                       category, methods,
+                                                       subset_sizes,
+                                                       num_subsets,
+                                                       permutation):
+    cmds = []
+
+    for subset_size in subset_sizes:
+        for subset_num in range(1, num_subsets + 1):
+            map_f = open(map_fp, 'U')
+            dm_f = open(dm_fp, 'U')
+            subset_dm_fp = join(study_dir, '%s_dm_%s_gs%d_%d.txt' % (metric,
+                    category, subset_size, subset_num))
+            subset_dm_f = open(subset_dm_fp, 'w')
+            subset_dm_f.write(subsample_dm(dm_f, map_f, category,
+                                           subset_size))
+            subset_dm_f.close()
+            dm_f.close()
+            map_f.close()
+
+            for method in methods:
+                results_dir = join(study_dir, '%s_dm_%s_gs%d_%d_%s' % (metric,
+                        category, subset_size, subset_num, method))
+
+                if not has_results(results_dir):
+                    cmd = ('compare_categories.py --method %s -n %d -i %s '
+                           '-m %s -c %s -o %s' % (method, permutation,
+                                                  subset_dm_fp, map_fp,
+                                                  category, results_dir))
+                    cmds.append(cmd)
+
+    return cmds
+
+def build_gradient_method_sample_size_testing_commands(study_dir, dm_fp,
+                                                       env_dm_fp, map_fp,
+                                                       metric, category,
+                                                       methods, subset_sizes,
+                                                       num_subsets,
+                                                       permutation):
+    cmds = []
+
+    mdm, _ = parse_mapping_file_to_dict(open(map_fp, 'U'))
+    dm_labels, dm_data = parse_distmat(open(dm_fp, 'U'))
+
+    # Only keep the sample IDs that are in both the mapping file and distance
+    # matrix.
+    samp_ids = [(samp_id, float(metadata[category]))
+                for samp_id, metadata in mdm.items() if samp_id in dm_labels]
+    samp_ids.sort(key=lambda samp_id: samp_id[1])
+
+    for subset_size in subset_sizes:
+        # Adapted from http://stackoverflow.com/a/9873935
+        # We add 1 to the number of samples we want because we want subset_size
+        # intervals to choose from.
+        bin_idxs = [int(ceil(i * len(samp_ids) / (subset_size + 1)))
+                    for i in range(subset_size + 1)]
+
+        for subset_num in range(1, num_subsets + 1):
+            samp_ids_to_keep = []
+
+            for i in range(len(bin_idxs) - 1):
+                if i == len(bin_idxs) - 2:
+                    # We're at the last bin, so choose from the entire bin
+                    # range.
+                    samp_ids_to_keep.append(
+                            samp_ids[randint(bin_idxs[i], bin_idxs[i + 1])][0])
+                else:
+                    # We subtract 1 since randint is inclusive on both sides,
+                    # and we don't want to choose the same sample ID multiple
+                    # times from different bins.
+                    samp_ids_to_keep.append(
+                            samp_ids[randint(bin_idxs[i],
+                                             bin_idxs[i + 1] - 1)][0])
+
+            assert len(samp_ids_to_keep) == subset_size, \
+                   "%d != %d" % (len(samp_ids_to_keep), subset_size)
+
+            subset_dm_fp = join(study_dir, '%s_dm_%s_n%d_%d.txt' % (metric,
+                    category, subset_size, subset_num))
+            subset_dm_f = open(subset_dm_fp, 'w')
+            subset_dm_f.write(filter_samples_from_distance_matrix(
+                    (dm_labels, dm_data), samp_ids_to_keep, negate=True))
+            subset_dm_f.close()
+
+            for method in methods:
+                results_dir = join(study_dir, '%s_dm_%s_n%d_%d_%s' % (metric,
+                        category, subset_size, subset_num, method))
+                    
+                if method == 'mantel':
+                    in_dm_fps = '%s,%s' % (subset_dm_fp, env_dm_fp)
+
+                    if not has_results(results_dir):
+                        cmd = ('compare_distance_matrices.py --method %s '
+                               '-n %d -i %s -o %s' % (method, permutation,
+                                                      in_dm_fps, results_dir))
+                        cmds.append(cmd)
+                elif method == 'morans_i':
+                    if not has_results(results_dir):
+                        cmd = ('compare_categories.py --method %s -i %s -m %s '
+                               '-c %s -o %s' % (method, subset_dm_fp, map_fp,
+                                                category, results_dir))
+                        cmds.append(cmd)
 
     return cmds

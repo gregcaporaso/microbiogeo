@@ -16,6 +16,8 @@ from os import listdir
 from os.path import exists
 from random import sample, shuffle
 
+from IPython.parallel import Client
+
 from qiime.filter import filter_samples_from_distance_matrix
 from qiime.format import format_distance_matrix
 from qiime.parse import parse_distmat
@@ -32,6 +34,12 @@ def run_command(cmd):
                                          "status %d.\n\nStdout:\n\n%s\n\n"
                                          "Stderr:\n\n%s\n" % (cmd,
                                          ret_val, stdout, stderr))
+
+def run_parallel_jobs(jobs, job_fn):
+    c = Client()
+    lview = c.load_balanced_view()
+    lview.block = True
+    lview.map(job_fn, jobs)
 
 def has_results(results_dir):
     """Returns True if results_dir exists and is not empty, False otherwise."""
