@@ -25,7 +25,12 @@ def parse_anosim_permanova_results(results_f):
     for line in results_f:
         pass
 
-    es, p_value = line.strip().split('\t')[1:]
+    tokens = line.strip().split('\t')
+
+    if len(tokens) != 4:
+        raise UnparsableLineError(line)
+
+    es, p_value = tokens[1:3]
     es = _parse_float(es)
 
     if 'Too few iters to compute p-value' in p_value:
