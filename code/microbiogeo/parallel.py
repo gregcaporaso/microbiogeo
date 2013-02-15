@@ -131,8 +131,8 @@ def build_gradient_method_commands(study_dir, depth_dir, dm_fp, map_fp, method,
     # study because that is the only study we have a control matrix for.
     cmds = []
 
-    for permutation in permutations:
-        if method == 'mantel' or method == 'mantel_corr':
+    if method == 'mantel' or method == 'mantel_corr':
+        for permutation in permutations:
             in_dm_fps = '%s,%s' % (dm_fp, join(study_dir,
                                                '%s_dm.txt' % category))
             results_dir = join(depth_dir,
@@ -143,9 +143,8 @@ def build_gradient_method_commands(study_dir, depth_dir, dm_fp, map_fp, method,
                 cmd = ('compare_distance_matrices.py --method %s -n %d -i %s '
                        '-o %s' % (method, permutation, in_dm_fps, results_dir))
                 cmds.append(cmd)
-
-    # Moran's I does not accept a number of permutations.
-    if method == 'morans_i':
+    elif method == 'morans_i':
+        # Moran's I does not accept a number of permutations.
         results_dir = join(depth_dir,
                            '%s_%s_%s' % (splitext(basename(dm_fp))[0], method,
                                          category))
@@ -161,14 +160,16 @@ def build_gradient_method_keyboard_commands(study_dir, depth_dir, dm_fp,
                                             method, permutations):
     cmds = []
 
-    for permutation in permutations:
-        in_dm_fps = '%s,%s' % (dm_fp, join(study_dir,
-                                           'euclidean_key_distances_dm.txt'))
+    if method in ('mantel', 'mantel_corr', 'partial_mantel'):
+        for permutation in permutations:
+            in_dm_fps = '%s,%s' % (dm_fp,
+                                   join(study_dir,
+                                        'euclidean_key_distances_dm.txt'))
 
-        if method in ('mantel', 'mantel_corr', 'partial_mantel'):
             results_dir = join(depth_dir,
                                '%s_%s_%s_%d' % (splitext(basename(dm_fp))[0],
-                                                method, 'key_distance',
+                                                method,
+                                                'key_distance',
                                                 permutation))
 
             if not has_results(results_dir):

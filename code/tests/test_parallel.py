@@ -67,7 +67,7 @@ class ParallelTests(TestCase):
         """Test building commands to run grouping analysis methods."""
         # Results don't exist.
         exp = [exp_grouping_method_commands1[0] % self.input_dir,
-                exp_grouping_method_commands1[1] % self.input_dir]
+               exp_grouping_method_commands1[1] % self.input_dir]
         obs = build_grouping_method_commands(self.input_dir, '/foo/dm.txt',
                 '/foo/map.txt', 'anosim', 'Treatment', [99, 999])
         self.assertEqual(obs, exp)
@@ -95,9 +95,70 @@ class ParallelTests(TestCase):
                 'Treatment', [99, 999])
         self.assertEqual(obs, [])
 
+    def test_build_gradient_method_commands(self):
+        """Test building commands to run gradient analysis methods."""
+        # Results don't exist (mantel).
+        exp = [exp_gradient_method_commands1[0] % self.input_dir,
+               exp_gradient_method_commands1[1] % self.input_dir]
+        obs = build_gradient_method_commands('/foo/overview', self.input_dir,
+                '/foo/dm.txt', '/foo/map.txt', 'mantel', 'DOB', [999, 9999])
+        self.assertEqual(obs, exp)
+
+        # Results don't exist (morans_i).
+        exp = [exp_gradient_method_commands2[0] % self.input_dir]
+        obs = build_gradient_method_commands('/foo/overview', self.input_dir,
+                '/foo/dm.txt', '/foo/map.txt', 'morans_i', 'DOB', [999, 9999])
+        self.assertEqual(obs, exp)
+
+        # Some dirs exist and are not empty.
+        tmp_results_dir = join(self.input_dir, 'dm_mantel_DOB_9999')
+        create_dir(tmp_results_dir)
+        self.dirs_to_remove.append(tmp_results_dir)
+
+        tmp_fp = join(tmp_results_dir, 'foo.txt')
+        tmp_f = open(tmp_fp, 'w')
+        tmp_f.write('foo')
+        tmp_f.close()
+        self.files_to_remove.append(tmp_fp)
+
+        exp = [exp_gradient_method_commands1[0] % self.input_dir]
+        obs = build_gradient_method_commands('/foo/overview', self.input_dir,
+                '/foo/dm.txt', '/foo/map.txt', 'mantel', 'DOB', [999, 9999])
+        self.assertEqual(obs, exp)
+
+    def test_build_gradient_method_keyboard_commands(self):
+        """Test building commands for running methods on keyboard study."""
+        # Method doesn't apply to keyboard study.
+        obs = build_gradient_method_keyboard_commands('/foo/keyboard',
+                self.input_dir, '/foo/dm.txt', 'morans_i', [99, 9999])
+        self.assertEqual(obs, [])
+
+        # Results don't exist (mantel_corr).
+        exp = [exp_gradient_method_keyboard_commands1[0] % self.input_dir,
+               exp_gradient_method_keyboard_commands1[1] % self.input_dir]
+        obs = build_gradient_method_keyboard_commands('/foo/keyboard',
+                self.input_dir, '/foo/dm.txt', 'mantel_corr', [99, 9999])
+        self.assertEqual(obs, exp)
+
+        # Results don't exist (partial_mantel).
+        exp = [exp_gradient_method_keyboard_commands2[0] % self.input_dir]
+        obs = build_gradient_method_keyboard_commands('/foo/keyboard',
+                self.input_dir, '/foo/dm.txt', 'partial_mantel', [42])
+        self.assertEqual(obs, exp)
+
 
 exp_grouping_method_commands1 = ['compare_categories.py --method anosim -n 99 -i /foo/dm.txt -m /foo/map.txt -c Treatment -o %s/dm_anosim_Treatment_99',
 'compare_categories.py --method anosim -n 999 -i /foo/dm.txt -m /foo/map.txt -c Treatment -o %s/dm_anosim_Treatment_999']
+
+exp_gradient_method_commands1 = ['compare_distance_matrices.py --method mantel -n 999 -i /foo/dm.txt,/foo/overview/DOB_dm.txt -o %s/dm_mantel_DOB_999',
+'compare_distance_matrices.py --method mantel -n 9999 -i /foo/dm.txt,/foo/overview/DOB_dm.txt -o %s/dm_mantel_DOB_9999']
+
+exp_gradient_method_commands2 = ['compare_categories.py --method morans_i -i /foo/dm.txt -m /foo/map.txt -c DOB -o %s/dm_morans_i_DOB']
+
+exp_gradient_method_keyboard_commands1 = ['compare_distance_matrices.py --method mantel_corr -n 99 -i /foo/dm.txt,/foo/keyboard/euclidean_key_distances_dm.txt -o %s/dm_mantel_corr_key_distance_99',
+'compare_distance_matrices.py --method mantel_corr -n 9999 -i /foo/dm.txt,/foo/keyboard/euclidean_key_distances_dm.txt -o %s/dm_mantel_corr_key_distance_9999']
+
+exp_gradient_method_keyboard_commands2 = ['compare_distance_matrices.py --method partial_mantel -n 42 -i /foo/dm.txt,/foo/keyboard/euclidean_key_distances_dm.txt -o %s/dm_partial_mantel_key_distance_42 -c /foo/keyboard/median_unifrac_individual_distances_dm.txt']
 
 
 if __name__ == "__main__":

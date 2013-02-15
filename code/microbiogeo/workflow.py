@@ -25,7 +25,7 @@ from microbiogeo.format import create_results_summary_tables
 from microbiogeo.parallel import (generate_per_study_depth_dms,
                                   build_grouping_method_commands,
                                   build_gradient_method_commands,
-                                  build_gradient_method_keyboard_cmds)
+                                  build_gradient_method_keyboard_commands)
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
                                parse_mantel_results,
@@ -358,11 +358,11 @@ def main():
     num_shuffled = 2
     num_subsets = 2
 
-#    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
-#            num_subsets, tree_fp)
-#
-#    run_methods(out_dir, studies, methods, permutations)
-#
+    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
+            num_subsets, tree_fp)
+
+    run_methods(out_dir, studies, methods, permutations)
+
     summarize_results(out_dir, out_dir, studies, methods, depth_descs, metrics,
                       permutations, num_shuffled, num_subsets)
 
