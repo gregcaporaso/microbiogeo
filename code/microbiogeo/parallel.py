@@ -184,3 +184,16 @@ def build_gradient_method_keyboard_commands(study_dir, depth_dir, dm_fp,
                 cmds.append(cmd)
 
     return cmds
+
+def build_best_method_commands(depth_dir, dm_fp, map_fp, env_vars):
+    cmds = []
+
+    results_dir = join(depth_dir,
+                       '%s_%s' % (splitext(basename(dm_fp))[0], 'best'))
+
+    if not has_results(results_dir):
+        cmd = ('compare_categories.py --method best -i %s -m %s -c %s '
+               '-o %s' % (dm_fp, map_fp, ','.join(env_vars), results_dir))
+        cmds.append(cmd)
+
+    return cmds

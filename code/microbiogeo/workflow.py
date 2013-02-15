@@ -22,10 +22,11 @@ from numpy import median
 from qiime.util import create_dir
 
 from microbiogeo.format import create_results_summary_tables
-from microbiogeo.parallel import (generate_per_study_depth_dms,
+from microbiogeo.parallel import (build_best_method_commands,
                                   build_grouping_method_commands,
                                   build_gradient_method_commands,
-                                  build_gradient_method_keyboard_commands)
+                                  build_gradient_method_keyboard_commands,
+                                  generate_per_study_depth_dms)
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
                                parse_mantel_results,
@@ -102,6 +103,8 @@ def run_methods(in_dir, studies, methods, permutations):
 
     jobs = []
     for study in studies:
+        best_method_env_vars = studies[study]['best_method_env_vars']
+
         for depth in studies[study]['depths']:
             for method_type in methods:
                 for method in methods[method_type]:
@@ -124,11 +127,17 @@ def run_methods(in_dir, studies, methods, permutations):
                                         study_dir, depth_dir, dm_fp, map_fp,
                                         method, category, permutations))
 
+                            # Handle special cases here.
                             if study == 'keyboard':
                                 jobs.extend(
                                     build_gradient_method_keyboard_commands(
                                             study_dir, depth_dir, dm_fp,
                                             method, permutations))
+
+                            if method == 'best' and best_method_env_vars:
+                                jobs.extend(
+                                    build_best_method_commands(depth_dir,
+                                        dm_fp, map_fp, best_method_env_vars))
                         else:
                             raise ValueError("Unknown method type '%s'." %
                                              method_type)
@@ -347,6 +356,7 @@ def main():
         },
 
         'gradient': {
+            'best': None,
             'mantel': parse_mantel_results,
             'mantel_corr': None,
             'morans_i': parse_morans_i_results,

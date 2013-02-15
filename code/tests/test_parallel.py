@@ -20,7 +20,8 @@ from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.util import create_dir, get_qiime_temp_dir
 
-from microbiogeo.parallel import (build_gradient_method_commands,
+from microbiogeo.parallel import (build_best_method_commands,
+                                  build_gradient_method_commands,
                                   build_gradient_method_keyboard_commands,
                                   build_grouping_method_commands)
 
@@ -146,6 +147,29 @@ class ParallelTests(TestCase):
                 self.input_dir, '/foo/dm.txt', 'partial_mantel', [42])
         self.assertEqual(obs, exp)
 
+    def test_build_best_method_commands(self):
+        """Test building commands for running best method."""
+        # Results don't exist.
+        exp = [exp_best_method_commands1[0] % self.input_dir]
+        obs = build_best_method_commands(self.input_dir, '/foo/dm.txt',
+                                         '/foo/map.txt', ['DOB', 'Treatment'])
+        self.assertEqual(obs, exp)
+
+        # Dir exists and is not empty.
+        tmp_results_dir = join(self.input_dir, 'dm_best')
+        create_dir(tmp_results_dir)
+        self.dirs_to_remove.append(tmp_results_dir)
+
+        tmp_fp = join(tmp_results_dir, 'foo.txt')
+        tmp_f = open(tmp_fp, 'w')
+        tmp_f.write('foo')
+        tmp_f.close()
+        self.files_to_remove.append(tmp_fp)
+
+        obs = build_best_method_commands(self.input_dir, '/foo/dm.txt',
+                                         '/foo/map.txt', ['DOB', 'Treatment'])
+        self.assertEqual(obs, [])
+
 
 exp_grouping_method_commands1 = ['compare_categories.py --method anosim -n 99 -i /foo/dm.txt -m /foo/map.txt -c Treatment -o %s/dm_anosim_Treatment_99',
 'compare_categories.py --method anosim -n 999 -i /foo/dm.txt -m /foo/map.txt -c Treatment -o %s/dm_anosim_Treatment_999']
@@ -159,6 +183,8 @@ exp_gradient_method_keyboard_commands1 = ['compare_distance_matrices.py --method
 'compare_distance_matrices.py --method mantel_corr -n 9999 -i /foo/dm.txt,/foo/keyboard/euclidean_key_distances_dm.txt -o %s/dm_mantel_corr_key_distance_9999']
 
 exp_gradient_method_keyboard_commands2 = ['compare_distance_matrices.py --method partial_mantel -n 42 -i /foo/dm.txt,/foo/keyboard/euclidean_key_distances_dm.txt -o %s/dm_partial_mantel_key_distance_42 -c /foo/keyboard/median_unifrac_individual_distances_dm.txt']
+
+exp_best_method_commands1 = ['compare_categories.py --method best -i /foo/dm.txt -m /foo/map.txt -c DOB,Treatment -o %s/dm_best']
 
 
 if __name__ == "__main__":
