@@ -136,11 +136,11 @@ class ParseTests(TestCase):
         self.assertRaises(ValueError, _parse_float, '11.2', max_val=10)
 
 
-anosim_results_str1 = """Method Name\tR-value\tP-value
-ANOSIM\t0.463253142506\t0.01"""
+anosim_results_str1 = """Method name\tR statistic\tp-value\tNumber of permutations
+ANOSIM\t0.463253142506\t0.01\t99"""
 
-anosim_results_str2 = """Method Name\tR-value\tP-value
-ANOSIM\t0.9375\tToo few iters to compute p-value (num_iters=1)"""
+anosim_results_str2 = """Method name\tR statistic\tp-value\tNumber of permutations
+ANOSIM\t0.9375\tToo few iters to compute p-value (num_iters=1)\t1"""
 
 adonis_results_str1 = """
 Call:

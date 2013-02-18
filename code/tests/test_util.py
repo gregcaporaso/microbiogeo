@@ -11,18 +11,114 @@ __email__ = "jai.rideout@gmail.com"
 
 """Test suite for the util.py module."""
 
+from os import chdir, getcwd
+from os.path import exists, join
+from shutil import rmtree
+from tempfile import mkdtemp
+
+from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_distmat
+from qiime.util import get_qiime_temp_dir
 
-from microbiogeo.util import shuffle_dm, subsample_dm, subset_dm
+from microbiogeo.util import (ExternalCommandFailedError, has_results,
+                              is_empty, run_command, shuffle_dm, StatsResults,
+                              subset_dm, subset_groups)
 
 class UtilTests(TestCase):
-    """Tests for the util.py module."""
+    """Tests for the util.py module functions."""
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
         self.dm_f1 = dm_str1.split('\n')
         self.map_f1 = map_str1.split('\n')
+
+        empty = StatsResults()
+        nonempty = StatsResults()
+        nonempty.addResult(0.1, 0.001)
+
+        self.cat_res1 = {
+            'full': empty,
+            'shuffled': nonempty,
+            'subsampled': [nonempty, nonempty]
+        }
+
+        self.cat_res2 = {
+            'full': nonempty,
+            'shuffled': empty,
+            'subsampled': [nonempty, nonempty]
+        }
+
+        self.cat_res3 = {
+            'full': nonempty,
+            'shuffled': nonempty,
+            'subsampled': [nonempty, empty]
+        }
+
+        self.cat_res4 = {
+            'full': nonempty,
+            'shuffled': nonempty,
+            'subsampled': [nonempty, nonempty]
+        }
+
+        # The prefix to use for temporary files/dirs. This prefix may be added
+        # to, but all temp dirs and files created by the tests will have this
+        # prefix at a minimum.
+        self.prefix = 'microbiogeo_tests'
+
+        self.start_dir = getcwd()
+        self.dirs_to_remove = []
+        self.files_to_remove = []
+
+        self.tmp_dir = get_qiime_temp_dir()
+
+        if not exists(self.tmp_dir):
+            makedirs(self.tmp_dir)
+
+            # If test creates the temp dir, also remove it.
+            self.dirs_to_remove.append(self.tmp_dir)
+
+        # Set up temporary directories to use with tests.
+        self.input_dir = mkdtemp(dir=self.tmp_dir,
+                                 prefix='%s_input_dir_' % self.prefix)
+        self.dirs_to_remove.append(self.input_dir)
+
+    def tearDown(self):
+        """Remove temporary files/dirs created by tests."""
+        # Change back to the start dir - some workflows change directory.
+        chdir(self.start_dir)
+        remove_files(self.files_to_remove)
+
+        # Remove directories last, so we don't get errors trying to remove
+        # files which may be in the directories.
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
+
+    def test_run_command(self):
+        """Test running an invalid command."""
+        self.assertRaises(ExternalCommandFailedError, run_command,
+                          'foobarbazbazbarfoo')
+
+    def test_has_results(self):
+        """Test checking a directory for results."""
+        # Dir that doesn't exist.
+        obs = has_results('/foobarbazbazbarfoo1234567890')
+        self.assertFalse(obs)
+
+        # Dir that exists but is empty.
+        obs = has_results(self.input_dir)
+        self.assertFalse(obs)
+
+        # Dir that exists and is not empty.
+        tmp_fp = join(self.input_dir, 'foo.txt')
+        tmp_f = open(tmp_fp, 'w')
+        tmp_f.write('foo')
+        tmp_f.close()
+        self.files_to_remove.append(tmp_fp)
+
+        obs = has_results(self.input_dir)
+        self.assertTrue(obs)
 
     def test_shuffle_dm(self):
         """Test shuffling labels of distance matrix."""
@@ -43,26 +139,6 @@ class UtilTests(TestCase):
 
         self.assertTrue(order_changed)
 
-    def test_subsample_dm(self):
-        """Test picking subsets of sample groups in distance matrix."""
-        # Don't filter anything out.
-        exp = parse_distmat(self.dm_f1)
-        obs = parse_distmat(subsample_dm(
-                self.dm_f1, self.map_f1, 'Category', 2).split('\n'))
-        self.assertFloatEqual(obs, exp)
-
-        obs = parse_distmat(subsample_dm(
-                self.dm_f1, self.map_f1, 'Category', 3).split('\n'))
-        self.assertFloatEqual(obs, exp)
-
-        # Pick groups of size 1.
-        obs_labels, obs_dm = parse_distmat(subsample_dm(
-                self.dm_f1, self.map_f1, 'Category', 1).split('\n'))
-        self.assertTrue('S2' in obs_labels)
-
-        # XOR: either S1 or S3 should be in obs_labels, but not both.
-        self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
-
     def test_subset_dm(self):
         """Test picking a subset of a distance matrix."""
         # Don't actually subset.
@@ -82,6 +158,128 @@ class UtilTests(TestCase):
         self.assertTrue(obs_labels[1] in exp[0])
 
         self.assertRaises(ValueError, subset_dm, self.dm_f1, 4)
+
+    def test_subset_groups(self):
+        """Test picking subsets of sample groups in distance matrix."""
+        # Don't filter anything out.
+        exp = parse_distmat(self.dm_f1)
+        obs = parse_distmat(subset_groups(
+                self.dm_f1, self.map_f1, 'Category', 2).split('\n'))
+        self.assertFloatEqual(obs, exp)
+
+        obs = parse_distmat(subset_groups(
+                self.dm_f1, self.map_f1, 'Category', 3).split('\n'))
+        self.assertFloatEqual(obs, exp)
+
+        # Pick groups of size 1.
+        obs_labels, obs_dm = parse_distmat(subset_groups(
+                self.dm_f1, self.map_f1, 'Category', 1).split('\n'))
+        self.assertTrue('S2' in obs_labels)
+
+        # XOR: either S1 or S3 should be in obs_labels, but not both.
+        self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
+
+    def test_is_empty(self):
+        """Test checking if category results are empty or not."""
+        self.assertTrue(is_empty(self.cat_res1))
+        self.assertTrue(is_empty(self.cat_res2))
+        self.assertTrue(is_empty(self.cat_res3))
+        self.assertTrue(is_empty({}))
+        self.assertFalse(is_empty(self.cat_res4))
+
+
+class StatsResultsTests(TestCase):
+    """Tests for the util.StatsResults class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.sr1 = StatsResults()
+
+    def test_addResult(self):
+        """Adding effect size and p-value works correctly on valid input."""
+        self.sr1.addResult(0.5, 0.01)
+        self.sr1.addResult(0.5, 0.001)
+        self.assertFloatEqual(self.sr1.effect_size, 0.5)
+        self.assertFloatEqual(self.sr1.p_values, [0.01, 0.001])
+
+    def test_addResult_invalid_input(self):
+        """Adding invalid input raises error."""
+        # Effect sizes don't match.
+        self.sr1.addResult(0.5, 0.01)
+        self.assertRaises(ValueError, self.sr1.addResult, 0.6, 0.001)
+        self.assertFloatEqual(self.sr1.effect_size, 0.5)
+        self.assertFloatEqual(self.sr1.p_values, [0.01])
+
+        # Invalid p-value range.
+        self.sr1 = StatsResults()
+        self.assertRaises(ValueError, self.sr1.addResult, 0.5, 1.1)
+        self.assertTrue(self.sr1.effect_size is None)
+        self.assertEqual(self.sr1.p_values, [])
+
+        self.sr1.addResult(0.5, 0.01)
+        self.sr1.addResult(0.5, 0.02)
+        self.assertRaises(ValueError, self.sr1.addResult, 0.5, 1.1)
+        self.assertRaises(ValueError, self.sr1.addResult, 0.5, -0.2)
+        self.assertFloatEqual(self.sr1.effect_size, 0.5)
+        self.assertFloatEqual(self.sr1.p_values, [0.01, 0.02])
+
+    def test_isEmpty(self):
+        """Test checking if results are empty or not."""
+        self.assertTrue(self.sr1.isEmpty())
+
+        self.sr1.addResult(0.5, 0.01)
+        self.assertFalse(self.sr1.isEmpty())
+
+    def test_str(self):
+        """Test __str__ method."""
+        # Empty results.
+        obs = str(self.sr1)
+        self.assertEqual(obs, 'Empty results')
+
+        # Populated results.
+        self.sr1.addResult(0.5, 0.01)
+        self.sr1.addResult(0.5, 0.05)
+        obs = str(self.sr1)
+        self.assertEqual(obs, '0.50; ***, **')
+
+    def test_check_p_value(self):
+        """Raises error on invalid p-value."""
+        self.sr1._check_p_value(0.0)
+        self.sr1._check_p_value(0.5)
+        self.sr1._check_p_value(1.0)
+
+        self.assertRaises(ValueError, self.sr1._check_p_value, 1.5)
+        self.assertRaises(ValueError, self.sr1._check_p_value, -1.5)
+
+    def test_format_p_value_as_asterisk(self):
+        """Test formatting a p-value to indicate statistical significance."""
+        obs = self.sr1._format_p_value_as_asterisk(1.0)
+        self.assertEqual(obs, 'x')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.09)
+        self.assertEqual(obs, '*')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.045)
+        self.assertEqual(obs, '**')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.01)
+        self.assertEqual(obs, '***')
+
+        obs = self.sr1._format_p_value_as_asterisk(0.0005)
+        self.assertEqual(obs, '****')
+
+    def test_format_p_value_as_asterisk_invalid_input(self):
+        """Test supplying an invalid p-value results in error being thrown."""
+        self.assertRaises(TypeError, self.sr1._format_p_value_as_asterisk, 1)
+        self.assertRaises(TypeError, self.sr1._format_p_value_as_asterisk,
+                          "0.05")
+        self.assertRaises(TypeError, self.sr1._format_p_value_as_asterisk,
+                          [0.05])
+
+        self.assertRaises(ValueError, self.sr1._format_p_value_as_asterisk,
+                          1.1)
+        self.assertRaises(ValueError, self.sr1._format_p_value_as_asterisk,
+                          -0.042)
 
 
 dm_str1 = """\tS1\tS2\tS3
