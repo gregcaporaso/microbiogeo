@@ -21,7 +21,8 @@ from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_distmat
 from qiime.util import get_qiime_temp_dir
 
-from microbiogeo.util import (ExternalCommandFailedError, has_results,
+from microbiogeo.util import (choose_gradient_subsets,
+                              ExternalCommandFailedError, has_results,
                               is_empty, run_command, run_parallel_jobs,
                               shuffle_dm, StatsResults, subset_dm,
                               subset_groups)
@@ -33,6 +34,9 @@ class UtilTests(TestCase):
         """Define some sample data that will be used by the tests."""
         self.dm_f1 = dm_str1.split('\n')
         self.map_f1 = map_str1.split('\n')
+
+        self.dm_f2 = dm_str2.split('\n')
+        self.map_f2 = map_str2.split('\n')
 
         empty = StatsResults()
         nonempty = StatsResults()
@@ -186,6 +190,41 @@ class UtilTests(TestCase):
         # XOR: either S1 or S3 should be in obs_labels, but not both.
         self.assertTrue(('S1' in obs_labels) != ('S3' in obs_labels))
 
+    def test_choose_gradient_subsets(self):
+        """Test picking subsets of gradients from a distance matrix."""
+        # TODO test with size 3 (throws error).
+        obs = choose_gradient_subsets(self.dm_f2, self.map_f2, 'Gradient',
+                                      [2, 1, 5], 2)
+        self.assertEqual(len(obs), 6)
+
+        self.assertEqual(len(obs[0]), 2)
+        self.assertEqual(len(obs[1]), 2)
+        self.assertEqual(len(obs[2]), 1)
+        self.assertEqual(len(obs[3]), 1)
+        self.assertEqual(len(obs[4]), 5)
+        self.assertEqual(len(obs[5]), 5)
+
+        self.assertEqual(len(obs[0]), len(set(obs[0])))
+        self.assertEqual(len(obs[1]), len(set(obs[1])))
+        self.assertEqual(len(obs[2]), len(set(obs[2])))
+        self.assertEqual(len(obs[3]), len(set(obs[3])))
+        self.assertEqual(len(obs[4]), len(set(obs[4])))
+        self.assertEqual(len(obs[5]), len(set(obs[5])))
+
+        self.assertTrue(obs[0][0] in ['S5', 'S2'])
+        self.assertTrue(obs[0][1] in ['S3', 'S1', 'S4'])
+
+        self.assertTrue(obs[1][0] in ['S5', 'S2'])
+        self.assertTrue(obs[1][1] in ['S3', 'S1', 'S4'])
+
+        exp = ['S5', 'S2', 'S3', 'S1']
+        self.assertTrue(obs[2][0] in exp)
+        self.assertTrue(obs[3][0] in exp)
+
+        exp = ['S5', 'S2', 'S3', 'S1', 'S4']
+        self.assertEqual(obs[4], exp)
+        self.assertEqual(obs[5], exp)
+
     def test_is_empty(self):
         """Test checking if category results are empty or not."""
         self.assertTrue(is_empty(self.cat_res1))
@@ -294,11 +333,26 @@ S1\t0\t0.5\t0.7
 S2\t0.5\t0\t0.1
 S3\t0.7\t0.1\t0"""
 
-map_str1 = """#SampleID\tBarcodeSequence\tCategory
-S1\tAGCACGAGCCTA\tCat1
-S2\tAGCACGAGCCTG\tCat2
-S3\tAGCACGAGCCTC\tCat1
-S4\tAGCACGAGCCTT\tCat1"""
+map_str1 = """#SampleID\tBarcodeSequence\tCategory\tGradient
+S1\tAGCACGAGCCTA\tCat1\t4
+S2\tAGCACGAGCCTG\tCat2\t2
+S3\tAGCACGAGCCTC\tCat1\t3
+S4\tAGCACGAGCCTT\tCat1\t2"""
+
+dm_str2 = """\tS1\tS2\tS3\tS4\tS5
+S1\t0\t0.5\t0.7\t0.2\t0.2
+S2\t0.5\t0\t0.1\t0.4\t0.75
+S3\t0.7\t0.1\t0\t0.1\t0.23
+S4\t0.2\t0.4\t0.1\t0\t0.02
+S5\t0.2\t0.75\t0.23\t0.02\t0"""
+
+map_str2 = """#SampleID\tBarcodeSequence\tGradient
+S1\tAGCACGAGCCTA\t4
+S2\tAGCACGAGCCTG\t2
+S3\tAGCACGAGCCTC\t3
+S4\tAGCACGAGCCTT\t5
+S5\tAGCACGAGCCTT\t1
+S6\tAGCACGAGCCTT\t2"""
 
 
 if __name__ == "__main__":

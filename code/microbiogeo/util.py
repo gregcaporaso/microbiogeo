@@ -14,13 +14,15 @@ __email__ = "jai.rideout@gmail.com"
 from collections import defaultdict
 from os import listdir
 from os.path import exists
-from random import sample, shuffle
+from random import randint, sample, shuffle
 
 from IPython.parallel import Client
 
+from numpy import ceil
+
 from qiime.filter import filter_samples_from_distance_matrix
 from qiime.format import format_distance_matrix
-from qiime.parse import parse_distmat
+from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 from qiime.util import MetadataMap, qiime_system_call
 
 class ExternalCommandFailedError(Exception):
@@ -78,6 +80,54 @@ def subset_groups(dm_f, map_f, category, max_group_size):
 
     return filter_samples_from_distance_matrix((dm_labels, dm_data),
                                                samp_ids_to_keep, negate=True)
+
+def choose_gradient_subsets(dm_f, map_f, gradient, subset_sizes, num_subsets):
+    subsets = []
+
+    mdm, _ = parse_mapping_file_to_dict(map_f)
+    dm_labels, dm_data = parse_distmat(dm_f)
+
+    # Only keep the sample IDs that are in both the mapping file and distance
+    # matrix.
+    samp_ids = [(samp_id, float(metadata[gradient]))
+                for samp_id, metadata in mdm.items() if samp_id in dm_labels]
+    samp_ids.sort(key=lambda samp_id: samp_id[1])
+
+    for subset_size in subset_sizes:
+        # Adapted from http://stackoverflow.com/a/9873935
+        # We add 1 to the number of samples we want because we want subset_size
+        # intervals to choose from.
+        bin_idxs = [int(ceil(i * len(samp_ids) / (subset_size + 1)))
+                    for i in range(subset_size + 1)]
+
+        for subset_num in range(num_subsets):
+            samp_ids_to_keep = []
+
+            for i in range(len(bin_idxs) - 1):
+                if i == len(bin_idxs) - 2:
+                    # We're at the last bin, so choose from the entire bin
+                    # range.
+                    if bin_idxs[i + 1] < len(samp_ids):
+                        end_idx = bin_idxs[i + 1]
+                    else:
+                        end_idx = bin_idxs[i + 1] - 1
+
+                    samp_ids_to_keep.append(
+                            samp_ids[randint(bin_idxs[i], end_idx)][0])
+                else:
+                    # We subtract 1 since randint is inclusive on both sides,
+                    # and we don't want to choose the same sample ID multiple
+                    # times from different bins.
+                    samp_ids_to_keep.append(
+                            samp_ids[randint(bin_idxs[i],
+                                             bin_idxs[i + 1] - 1)][0])
+
+            assert len(samp_ids_to_keep) == subset_size, \
+                   "%d != %d" % (len(samp_ids_to_keep), subset_size)
+
+            subsets.append(samp_ids_to_keep)
+
+    return subsets
 
 def is_empty(category_results):
     return (len(category_results) == 0) or \
