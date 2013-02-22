@@ -378,87 +378,200 @@ def run_sample_size_tests(in_dir, out_dir, sample_size_tests):
     run_parallel_jobs(jobs, run_command)
 
 def main():
-    in_dir = 'test_datasets'
-    out_dir = 'test_output'
-    tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
-    depth_descs = ['5_percent', '25_percent', '50_percent']
-    studies = {
-               'overview': {
-                            'depths': [50, 100, 146],
-                            'grouping_categories': ['Treatment'],
-                            'gradient_categories': ['DOB'],
-                            'group_sizes': [3, 4],
-                            'subset_sizes': [3, 4],
-                            'best_method_env_vars': ['DOB']
-                           },
-               'overview2': {
-                             'depths': [50, 100, 146],
-                             'grouping_categories': ['Treatment'],
-                             'gradient_categories': [],
-                             'group_sizes': [3, 4],
-                             'subset_sizes': [],
-                             'best_method_env_vars': []
-                            }
-              }
-    metrics = ['euclidean', 'bray_curtis']
-    methods = {
-        'grouping': {
-            'adonis': parse_adonis_results,
-            'anosim': parse_anosim_permanova_results
-        },
+    test = True
 
-        'gradient': {
-            'best': None,
-            'mantel': parse_mantel_results,
-            'mantel_corr': None,
-            'morans_i': parse_morans_i_results,
-            'partial_mantel': parse_partial_mantel_results
-        }
-    }
-
-    permutations = [99, 999]
-    num_shuffled = 2
-    num_subsets = 2
-
-    # For sample size testing.
-    sample_size_tests = {
-        'grouping': {
-            'study': 'whole_body',
-            'depth': 575,
-            'metric': 'unweighted_unifrac',
-            'subset_sizes': [5, 10, 20, 40, 60, 80],
-            'num_subsets': 10,
-            'permutation': 999,
-            'categories': {
-                'BODY_SITE': ['b', 'Body site'],
-                'SEX': ['r', 'Sex']
+    if test:
+        in_dir = 'test_datasets'
+        out_dir = 'test_output'
+        tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
+        depth_descs = ['5_percent', '25_percent', '50_percent']
+        studies = {
+                   'overview': {
+                                'depths': [50, 100, 146],
+                                'grouping_categories': ['Treatment'],
+                                'gradient_categories': ['DOB'],
+                                'group_sizes': [3, 4],
+                                'subset_sizes': [3, 4],
+                                'best_method_env_vars': ['DOB']
+                               },
+                   'overview2': {
+                                 'depths': [50, 100, 146],
+                                 'grouping_categories': ['Treatment'],
+                                 'gradient_categories': [],
+                                 'group_sizes': [3, 4],
+                                 'subset_sizes': [],
+                                 'best_method_env_vars': []
+                                }
+                  }
+        metrics = ['euclidean', 'bray_curtis']
+        methods = {
+            'grouping': {
+                'adonis': parse_adonis_results,
+                'anosim': parse_anosim_permanova_results
             },
-            'methods': {
+
+            'gradient': {
+                'best': None,
+                'mantel': parse_mantel_results,
+                'mantel_corr': None,
+                'morans_i': parse_morans_i_results,
+                'partial_mantel': parse_partial_mantel_results
+            }
+        }
+
+        permutations = [99, 999]
+        num_shuffled = 2
+        num_subsets = 2
+
+        # For sample size testing.
+        sample_size_tests = {
+            'grouping': {
+                'study': 'overview',
+                'depth': 100,
+                'metric': 'bray_curtis',
+                'subset_sizes': [3, 4],
+                'num_subsets': 10,
+                'permutation': 999,
+                'categories': {
+                    'Treatment': ['b', 'Treatment'],
+                    'DOB': ['r', 'Date of birth']
+                },
+                'methods': {
+                    'adonis': parse_adonis_results,
+                    'anosim': parse_anosim_permanova_results
+                }
+            },
+
+            'gradient': {
+                'study': 'overview',
+                'depth': 146,
+                'metric': 'euclidean',
+                'subset_sizes': [3, 4],
+                'num_subsets': 20,
+                'permutation': 999,
+                'categories': {
+                    'DOB': ['b', 'Date of birth']
+                },
+                'methods': {
+                    'mantel': parse_mantel_results,
+                    'morans_i': parse_morans_i_results
+                }
+            }
+        }
+    else:
+        in_dir = 'datasets'
+        out_dir = 'microbiogeo_output'
+        tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
+        depth_descs = ['5_percent', '25_percent', '50_percent']
+        studies = {
+                   '88_soils': {
+                                'depths': [400, 580, 660],
+                                'grouping_categories': ['ENV_BIOME'],
+                                'gradient_categories': ['LATITUDE', 'PH'],
+                                'group_sizes': [5, 10, 20, 40],
+                                'subset_sizes': [10, 20, 30],
+                                'best_method_env_vars': ['TOT_ORG_CARB',
+                                    'SILT_CLAY', 'ELEVATION',
+                                    'SOIL_MOISTURE_DEFICIT',
+                                    'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP',
+                                    'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE',
+                                    'LONGITUDE', 'LATITUDE']
+                               }, 
+                   'glen_canyon': {
+                                   'depths': [15000, 29000, 53000],
+                                   'grouping_categories': ['CurrentlyWet'],
+                                   'gradient_categories': ['estimated_years_since_submerged_for_plotting'],
+                                   'group_sizes': [5, 10, 20, 40],
+                                   'subset_sizes': [10, 20, 30],
+                                   'best_method_env_vars': ['sample_pH',
+                                       'estimated_years_since_submerged_for_plotting',
+                                       'Month', 'Day', 'Year',
+                                       'days_since_epoch', 'Hour', 'Replicate',
+                                       'DNA.I.D.No.']
+                                  },
+                   'keyboard': {
+                                'depths': [390, 780, 1015],
+                                'grouping_categories': ['HOST_SUBJECT_ID'],
+                                'gradient_categories': [],
+                                'group_sizes': [5, 10, 20, 40],
+                                'subset_sizes': [10, 20, 30],
+                                'best_method_env_vars': []
+                               },
+                   'whole_body': {
+                                  'depths': [575, 877, 1110],
+                                  'grouping_categories': ['BODY_SITE', 'SEX'],
+                                  'gradient_categories': [],
+                                  'group_sizes': [5, 10, 20, 40],
+                                  'subset_sizes': [10, 20, 30],
+                                  'best_method_env_vars': []
+                                 }
+                  }
+
+        metrics = ['euclidean', 'bray_curtis', 'weighted_unifrac',
+                   'unweighted_unifrac']
+
+        methods = {
+            'grouping': {
                 'adonis': parse_adonis_results,
                 'anosim': parse_anosim_permanova_results,
                 'mrpp': parse_mrpp_results,
                 'permanova': parse_anosim_permanova_results,
-                'dbrda': parse_dbrda_results
-            }
-        },
-
-        'gradient': {
-            'study': '88_soils',
-            'depth': 400,
-            'metric': 'unweighted_unifrac',
-            'subset_sizes': [5, 10, 20, 40, 60, 80],
-            'num_subsets': 10,
-            'permutation': 999,
-            'categories': {
-                'PH': ['b', 'pH'],
-                'LATITUDE': ['r', 'Latitude']
+                'dbrda': parse_dbrda_results,
+                'permdisp': parse_permdisp_results
             },
-            'methods': {
+
+            'gradient': {
+                'best': None,
                 'mantel': parse_mantel_results,
-                'morans_i': parse_morans_i_results
+                'mantel_corr': None,
+                'morans_i': parse_morans_i_results,
+                'partial_mantel': parse_partial_mantel_results
             }
         }
-    }
+
+        permutations = [99, 999]
+        num_shuffled = 5
+        num_subsets = 5
+
+        # For sample size testing.
+        sample_size_tests = {
+            'grouping': {
+                'study': 'whole_body',
+                'depth': 575,
+                'metric': 'unweighted_unifrac',
+                'subset_sizes': [5, 10, 20, 40, 60, 80],
+                'num_subsets': 10,
+                'permutation': 999,
+                'categories': {
+                    'BODY_SITE': ['b', 'Body site'],
+                    'SEX': ['r', 'Sex']
+                },
+                'methods': {
+                    'adonis': parse_adonis_results,
+                    'anosim': parse_anosim_permanova_results,
+                    'mrpp': parse_mrpp_results,
+                    'permanova': parse_anosim_permanova_results,
+                    'dbrda': parse_dbrda_results
+                }
+            },
+
+            'gradient': {
+                'study': '88_soils',
+                'depth': 400,
+                'metric': 'unweighted_unifrac',
+                'subset_sizes': [5, 10, 20, 40, 60, 80],
+                'num_subsets': 10,
+                'permutation': 999,
+                'categories': {
+                    'PH': ['b', 'pH'],
+                    'LATITUDE': ['r', 'Latitude']
+                },
+                'methods': {
+                    'mantel': parse_mantel_results,
+                    'morans_i': parse_morans_i_results
+                }
+            }
+        }
 
     generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
             num_subsets, tree_fp)
