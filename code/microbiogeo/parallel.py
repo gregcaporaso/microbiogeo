@@ -12,9 +12,13 @@ __email__ = "jai.rideout@gmail.com"
 """Module for functionality meant to be run in parallel."""
 
 from os.path import basename, join, splitext
+from random import randint
 from shutil import move
 
-from qiime.parse import parse_mapping_file_to_dict
+from numpy import ceil
+
+from qiime.filter import filter_samples_from_distance_matrix
+from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 from qiime.util import create_dir
 
 from microbiogeo.util import (has_results, run_command, shuffle_dm, subset_dm,
@@ -214,8 +218,8 @@ def build_grouping_method_sample_size_testing_commands(study_dir, dm_fp,
             subset_dm_fp = join(study_dir, '%s_dm_%s_gs%d_%d.txt' % (metric,
                     category, subset_size, subset_num))
             subset_dm_f = open(subset_dm_fp, 'w')
-            subset_dm_f.write(subsample_dm(dm_f, map_f, category,
-                                           subset_size))
+            subset_dm_f.write(
+                    subset_groups(dm_f, map_f, category, subset_size))
             subset_dm_f.close()
             dm_f.close()
             map_f.close()

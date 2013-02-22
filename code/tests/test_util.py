@@ -22,8 +22,9 @@ from qiime.parse import parse_distmat
 from qiime.util import get_qiime_temp_dir
 
 from microbiogeo.util import (ExternalCommandFailedError, has_results,
-                              is_empty, run_command, shuffle_dm, StatsResults,
-                              subset_dm, subset_groups)
+                              is_empty, run_command, run_parallel_jobs,
+                              shuffle_dm, StatsResults, subset_dm,
+                              subset_groups)
 
 class UtilTests(TestCase):
     """Tests for the util.py module functions."""
@@ -99,6 +100,12 @@ class UtilTests(TestCase):
         """Test running an invalid command."""
         self.assertRaises(ExternalCommandFailedError, run_command,
                           'foobarbazbazbarfoo')
+
+    def test_run_parallel_jobs(self):
+        """Test running jobs in parallel."""
+        # Doesn't error out if no jobs are submitted, which can happend during
+        # a rerun of the workflow.
+        self.assertTrue(run_parallel_jobs([], int) is None)
 
     def test_has_results(self):
         """Test checking a directory for results."""

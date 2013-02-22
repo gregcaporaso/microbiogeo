@@ -96,6 +96,7 @@ def run_methods(in_dir, studies, methods, permutations):
     # Process each compare_categories.py/compare_distance_matrices.py run in
     # parallel.
     jobs = []
+
     for study in studies:
         best_method_env_vars = studies[study]['best_method_env_vars']
 
@@ -191,13 +192,14 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                             categories = studies[study]['grouping_categories']
                         elif method_type == 'gradient':
                             subset_sizes = studies[study]['subset_sizes']
+                            categories = studies[study]['gradient_categories']
 
                             # Add our fictional 'key_distance' category, which
                             # isn't actually a category (i.e. not in a mapping
                             # file), but can be treated the same way as the
                             # others in this case.
-                            categories = studies[study]['gradient_categories']\
-                                    + ['key_distance']
+                            if study == 'keyboard':
+                                categories = categories + ['key_distance']
                         else:
                             raise ValueError("Unknown method type '%s'." %
                                              method_type)

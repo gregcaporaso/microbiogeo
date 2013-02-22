@@ -36,10 +36,12 @@ def run_command(cmd):
                                          ret_val, stdout, stderr))
 
 def run_parallel_jobs(jobs, job_fn):
-    c = Client()
-    lview = c.load_balanced_view()
-    lview.block = True
-    lview.map(job_fn, jobs)
+    # IPython will error out if jobs is empty.
+    if jobs:
+        c = Client()
+        lview = c.load_balanced_view()
+        lview.block = True
+        lview.map(job_fn, jobs)
 
 def has_results(results_dir):
     """Returns True if results_dir exists and is not empty, False otherwise."""
