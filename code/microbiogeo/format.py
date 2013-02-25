@@ -15,12 +15,15 @@ from collections import defaultdict
 from csv import writer
 from os.path import join
 
-from numpy import ones
+from numpy import mean, ones, std
 
-from matplotlib.pyplot import (colorbar, figure, imshow, matshow, savefig,
-                               subplot, tight_layout, xticks, yticks)
+from matplotlib.pyplot import (colorbar, figure, imshow, legend, matshow,
+                               savefig, subplot, tight_layout, title, xlim,
+                               xticks, yticks)
 
 from cogent.maths.stats.test import pearson, spearman
+
+from qiime.util import create_dir
 
 from microbiogeo.util import is_empty
 
@@ -223,3 +226,96 @@ def format_method_comparison_heatmaps(results, methods):
             heatmaps[method_type][correlation_name] = heatmap_data
 
     return heatmaps
+
+def create_sample_size_plots(in_dir, out_dir, sample_size_tests):
+    create_dir(out_dir)
+
+    for method_type, method_type_tests in sample_size_tests.items():
+        study = method_type_tests['study']
+        metric = method_type_tests['metric']
+        categories = method_type_tests['categories']
+        subset_sizes = method_type_tests['subset_sizes']
+        num_subsets = method_type_tests['num_subsets']
+        methods = method_type_tests['methods']
+
+        out_method_type_dir = join(out_dir, method_type)
+        out_study_dir = join(out_method_type_dir, study)
+        create_dir(out_method_type_dir)
+        create_dir(out_study_dir)
+
+        for method, parse_fn in methods.items():
+            # Twin y-axis code is based on
+            # http://matplotlib.org/examples/api/two_scales.html
+            fig = figure()
+            ax1 = fig.add_subplot(111)
+            ax2 = ax1.twinx()
+
+            for category, plot_options in categories.items():
+                avg_test_stats = []
+                std_test_stats = []
+                avg_p_vals = []
+                std_p_vals = []
+
+                for subset_size in subset_sizes:
+                    test_stats = []
+                    p_vals = []
+
+                    for subset_num in range(1, num_subsets + 1):
+                        if method_type == 'grouping':
+                            results_dir = join(in_dir, method_type, study,
+                                    '%s_dm_%s_gs%d_%d_%s' % (metric,
+                                                             category,
+                                                             subset_size,
+                                                             subset_num,
+                                                             method))
+                        elif method_type == 'gradient':
+                            results_dir = join(in_dir, method_type, study,
+                                    '%s_dm_%s_n%d_%d_%s' % (metric,
+                                                            category,
+                                                            subset_size,
+                                                            subset_num,
+                                                            method))
+                        else:
+                            raise ValueError("Unknown method type '%s'." %
+                                             method_type)
+
+                        test_stat, p_val = parse_fn(open(join(results_dir,
+                                '%s_results.txt' % method), 'U'))
+                        test_stats.append(test_stat)
+                        p_vals.append(p_val)
+
+                    avg_test_stats.append(mean(test_stats))
+                    std_test_stats.append(std(test_stats))
+                    avg_p_vals.append(mean(p_vals))
+                    std_p_vals.append(std(p_vals))
+
+                # Plot test statistics on left axis.
+                ax1.errorbar(subset_sizes, avg_test_stats, yerr=std_test_stats,
+                             color=plot_options[0], label=plot_options[1],
+                             fmt='-')
+
+                # Plot p-values on the right axis.
+                ax2.errorbar(subset_sizes, avg_p_vals, yerr=std_p_vals,
+                             color=plot_options[0], label=plot_options[1],
+                             fmt='-', linestyle='--')
+
+            xlim(0, 85)
+            #ax2.set_ylim(0.0, 1.0)
+            title('%s: %s' % (study, method))
+            #lines, labels = ax1.get_legend_handles_labels()
+            #lines2, labels2 = ax2.get_legend_handles_labels()
+            #ax2.legend(lines + lines2, labels + labels2)
+
+            if method_type == 'grouping':
+                x_label = 'Samples per group'
+            elif method_type == 'gradient':
+                x_label = 'Number of samples'
+            else:
+                raise ValueError("Unknown method type '%s'." % method_type)
+
+            ax1.set_xlabel(x_label)
+            ax1.set_ylabel('Average test statistic with standard deviation')
+            ax2.set_ylabel('Average p-value with standard deviation')
+            legend()
+            fig.savefig(join(out_study_dir, '%s_analysis_plot_%s_%s.pdf' % (
+                    method_type, study, method)), format='pdf')

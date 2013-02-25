@@ -19,7 +19,9 @@ from numpy import median
 
 from qiime.util import create_dir
 
-from microbiogeo.format import create_results_summary_tables
+from microbiogeo.format import (create_method_comparison_heatmaps,
+                                create_results_summary_tables,
+                                create_sample_size_plots)
 from microbiogeo.parallel import (build_best_method_commands,
         build_gradient_method_commands,
         build_gradient_method_keyboard_commands,
@@ -139,8 +141,9 @@ def run_methods(in_dir, studies, methods, permutations):
 
     run_parallel_jobs(jobs, run_command)
 
-def summarize_results(in_dir, out_dir, studies, methods, depth_descs, metrics,
-                      permutations, num_shuffled, num_subsets):
+def summarize_results(in_dir, out_dir, studies, methods, heatmap_methods,
+                      depth_descs, metrics, permutations, num_shuffled,
+                      num_subsets):
     """Summarizes the results of the various method runs.
 
     Effect size statistics and p-values are collected for each of the tests
@@ -150,7 +153,10 @@ def summarize_results(in_dir, out_dir, studies, methods, depth_descs, metrics,
     """
     results = _collate_results(in_dir, studies, methods, depth_descs, metrics,
                                permutations, num_shuffled, num_subsets)
+
     create_results_summary_tables(results, out_dir)
+
+    create_method_comparison_heatmaps(results, heatmap_methods, out_dir)
 
 def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                      permutations, num_shuffled, num_subsets):
@@ -379,6 +385,8 @@ def run_sample_size_tests(in_dir, out_dir, sample_size_tests):
 
     run_parallel_jobs(jobs, run_command)
 
+    create_sample_size_plots(out_dir, out_dir, sample_size_tests)
+
 def main():
     test = True
 
@@ -419,6 +427,11 @@ def main():
                 'morans_i': parse_morans_i_results,
                 'partial_mantel': parse_partial_mantel_results
             }
+        }
+
+        heatmap_methods = {
+            'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM']),
+            'gradient': (['mantel', 'morans_i'], ['Mantel', 'Moran\'s I'])
         }
 
         permutations = [99, 999]
@@ -580,8 +593,9 @@ def main():
 
     run_methods(out_dir, studies, methods, permutations)
 
-    summarize_results(out_dir, out_dir, studies, methods, depth_descs, metrics,
-                      permutations, num_shuffled, num_subsets)
+    summarize_results(out_dir, out_dir, studies, methods, heatmap_methods,
+                      depth_descs, metrics, permutations, num_shuffled,
+                      num_subsets)
 
     run_sample_size_tests(out_dir, join(out_dir, 'sample_size_testing_output'),
                           sample_size_tests)
