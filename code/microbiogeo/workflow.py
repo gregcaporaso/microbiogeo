@@ -544,6 +544,12 @@ def main():
             }
         }
 
+        heatmap_methods = {
+            'grouping': (['adonis', 'anosim', 'mrpp', 'permanova', 'dbrda'],
+                         ['Adonis', 'ANOSIM', 'MRPP', 'PERMANOVA', 'db-RDA']),
+            'gradient': (['mantel', 'morans_i'], ['Mantel', 'Moran\'s I'])
+        }
+
         permutations = [99, 999]
         num_shuffled = 5
         num_subsets = 5
