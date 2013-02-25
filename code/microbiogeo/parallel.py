@@ -14,10 +14,12 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import basename, join, splitext
 from shutil import move
 
-from qiime.parse import parse_mapping_file_to_dict
+from qiime.filter import filter_samples_from_distance_matrix
+from qiime.parse import parse_distmat
 from qiime.util import create_dir
 
-from microbiogeo.util import (has_results, run_command, shuffle_dm, subset_dm,
+from microbiogeo.util import (choose_gradient_subsets, has_results,
+                              run_command, shuffle_dm, subset_dm,
                               subset_groups)
 
 # The parameters need to be wrapped in parens in order to work with map. We put
@@ -214,8 +216,8 @@ def build_grouping_method_sample_size_testing_commands(study_dir, dm_fp,
             subset_dm_fp = join(study_dir, '%s_dm_%s_gs%d_%d.txt' % (metric,
                     category, subset_size, subset_num))
             subset_dm_f = open(subset_dm_fp, 'w')
-            subset_dm_f.write(subsample_dm(dm_f, map_f, category,
-                                           subset_size))
+            subset_dm_f.write(
+                    subset_groups(dm_f, map_f, category, subset_size))
             subset_dm_f.close()
             dm_f.close()
             map_f.close()
@@ -241,47 +243,26 @@ def build_gradient_method_sample_size_testing_commands(study_dir, dm_fp,
                                                        permutation):
     cmds = []
 
-    mdm, _ = parse_mapping_file_to_dict(open(map_fp, 'U'))
-    dm_labels, dm_data = parse_distmat(open(dm_fp, 'U'))
+    dm_f = open(dm_fp, 'U')
+    map_f = open(map_fp, 'U')
+    sid_subsets = choose_gradient_subsets(dm_f, map_f, category, subset_sizes,
+                                          num_subsets)
+    map_f.close()
 
-    # Only keep the sample IDs that are in both the mapping file and distance
-    # matrix.
-    samp_ids = [(samp_id, float(metadata[category]))
-                for samp_id, metadata in mdm.items() if samp_id in dm_labels]
-    samp_ids.sort(key=lambda samp_id: samp_id[1])
+    dm_f.seek(0)
+    dm = parse_distmat(dm_f)
+    dm_f.close()
 
+    results_idx = 0
     for subset_size in subset_sizes:
-        # Adapted from http://stackoverflow.com/a/9873935
-        # We add 1 to the number of samples we want because we want subset_size
-        # intervals to choose from.
-        bin_idxs = [int(ceil(i * len(samp_ids) / (subset_size + 1)))
-                    for i in range(subset_size + 1)]
-
         for subset_num in range(1, num_subsets + 1):
-            samp_ids_to_keep = []
-
-            for i in range(len(bin_idxs) - 1):
-                if i == len(bin_idxs) - 2:
-                    # We're at the last bin, so choose from the entire bin
-                    # range.
-                    samp_ids_to_keep.append(
-                            samp_ids[randint(bin_idxs[i], bin_idxs[i + 1])][0])
-                else:
-                    # We subtract 1 since randint is inclusive on both sides,
-                    # and we don't want to choose the same sample ID multiple
-                    # times from different bins.
-                    samp_ids_to_keep.append(
-                            samp_ids[randint(bin_idxs[i],
-                                             bin_idxs[i + 1] - 1)][0])
-
-            assert len(samp_ids_to_keep) == subset_size, \
-                   "%d != %d" % (len(samp_ids_to_keep), subset_size)
-
+            # Write filtered distance matrix subset.
             subset_dm_fp = join(study_dir, '%s_dm_%s_n%d_%d.txt' % (metric,
                     category, subset_size, subset_num))
+
             subset_dm_f = open(subset_dm_fp, 'w')
-            subset_dm_f.write(filter_samples_from_distance_matrix(
-                    (dm_labels, dm_data), samp_ids_to_keep, negate=True))
+            subset_dm_f.write(filter_samples_from_distance_matrix(dm,
+                              sid_subsets[results_idx], negate=True))
             subset_dm_f.close()
 
             for method in methods:
@@ -302,5 +283,7 @@ def build_gradient_method_sample_size_testing_commands(study_dir, dm_fp,
                                '-c %s -o %s' % (method, subset_dm_fp, map_fp,
                                                 category, results_dir))
                         cmds.append(cmd)
+
+            results_idx += 1
 
     return cmds

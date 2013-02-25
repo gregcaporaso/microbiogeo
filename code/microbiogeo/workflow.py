@@ -19,7 +19,9 @@ from numpy import median
 
 from qiime.util import create_dir
 
-from microbiogeo.format import create_results_summary_tables
+from microbiogeo.format import (create_method_comparison_heatmaps,
+                                create_results_summary_tables,
+                                create_sample_size_plots)
 from microbiogeo.parallel import (build_best_method_commands,
         build_gradient_method_commands,
         build_gradient_method_keyboard_commands,
@@ -96,6 +98,7 @@ def run_methods(in_dir, studies, methods, permutations):
     # Process each compare_categories.py/compare_distance_matrices.py run in
     # parallel.
     jobs = []
+
     for study in studies:
         best_method_env_vars = studies[study]['best_method_env_vars']
 
@@ -138,8 +141,9 @@ def run_methods(in_dir, studies, methods, permutations):
 
     run_parallel_jobs(jobs, run_command)
 
-def summarize_results(in_dir, out_dir, studies, methods, depth_descs, metrics,
-                      permutations, num_shuffled, num_subsets):
+def summarize_results(in_dir, out_dir, studies, methods, heatmap_methods,
+                      depth_descs, metrics, permutations, num_shuffled,
+                      num_subsets):
     """Summarizes the results of the various method runs.
 
     Effect size statistics and p-values are collected for each of the tests
@@ -149,7 +153,10 @@ def summarize_results(in_dir, out_dir, studies, methods, depth_descs, metrics,
     """
     results = _collate_results(in_dir, studies, methods, depth_descs, metrics,
                                permutations, num_shuffled, num_subsets)
+
     create_results_summary_tables(results, out_dir)
+
+    create_method_comparison_heatmaps(results, heatmap_methods, out_dir)
 
 def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                      permutations, num_shuffled, num_subsets):
@@ -191,13 +198,14 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                             categories = studies[study]['grouping_categories']
                         elif method_type == 'gradient':
                             subset_sizes = studies[study]['subset_sizes']
+                            categories = studies[study]['gradient_categories']
 
                             # Add our fictional 'key_distance' category, which
                             # isn't actually a category (i.e. not in a mapping
                             # file), but can be treated the same way as the
                             # others in this case.
-                            categories = studies[study]['gradient_categories']\
-                                    + ['key_distance']
+                            if study == 'keyboard':
+                                categories = categories + ['key_distance']
                         else:
                             raise ValueError("Unknown method type '%s'." %
                                              method_type)
@@ -377,96 +385,223 @@ def run_sample_size_tests(in_dir, out_dir, sample_size_tests):
 
     run_parallel_jobs(jobs, run_command)
 
+    create_sample_size_plots(out_dir, out_dir, sample_size_tests)
+
 def main():
-    in_dir = 'test_datasets'
-    out_dir = 'test_output'
-    tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
-    depth_descs = ['5_percent', '25_percent', '50_percent']
-    studies = {
-               'overview': {
-                            'depths': [50, 100, 146],
-                            'grouping_categories': ['Treatment'],
-                            'gradient_categories': ['DOB'],
-                            'group_sizes': [3, 4],
-                            'subset_sizes': [3, 4],
-                            'best_method_env_vars': ['DOB']
-                           },
-               'overview2': {
-                             'depths': [50, 100, 146],
-                             'grouping_categories': ['Treatment'],
-                             'gradient_categories': [],
-                             'group_sizes': [3, 4],
-                             'subset_sizes': [],
-                             'best_method_env_vars': []
-                            }
-              }
-    metrics = ['euclidean', 'bray_curtis']
-    methods = {
-        'grouping': {
-            'adonis': parse_adonis_results,
-            'anosim': parse_anosim_permanova_results
-        },
+    test = True
 
-        'gradient': {
-            'best': None,
-            'mantel': parse_mantel_results,
-            'mantel_corr': None,
-            'morans_i': parse_morans_i_results,
-            'partial_mantel': parse_partial_mantel_results
-        }
-    }
-
-    permutations = [99, 999]
-    num_shuffled = 2
-    num_subsets = 2
-
-    # For sample size testing.
-    sample_size_tests = {
-        'grouping': {
-            'study': 'whole_body',
-            'depth': 575,
-            'metric': 'unweighted_unifrac',
-            'subset_sizes': [5, 10, 20, 40, 60, 80],
-            'num_subsets': 10,
-            'permutation': 999,
-            'categories': {
-                'BODY_SITE': ['b', 'Body site'],
-                'SEX': ['r', 'Sex']
+    if test:
+        in_dir = 'test_datasets'
+        out_dir = 'test_output'
+        tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
+        depth_descs = ['5_percent', '25_percent', '50_percent']
+        studies = {
+                   'overview': {
+                                'depths': [50, 100, 146],
+                                'grouping_categories': ['Treatment'],
+                                'gradient_categories': ['DOB'],
+                                'group_sizes': [3, 4],
+                                'subset_sizes': [3, 4],
+                                'best_method_env_vars': ['DOB']
+                               },
+                   'overview2': {
+                                 'depths': [50, 100, 146],
+                                 'grouping_categories': ['Treatment'],
+                                 'gradient_categories': [],
+                                 'group_sizes': [3, 4],
+                                 'subset_sizes': [],
+                                 'best_method_env_vars': []
+                                }
+                  }
+        metrics = ['euclidean', 'bray_curtis']
+        methods = {
+            'grouping': {
+                'adonis': parse_adonis_results,
+                'anosim': parse_anosim_permanova_results
             },
-            'methods': {
+
+            'gradient': {
+                'best': None,
+                'mantel': parse_mantel_results,
+                'mantel_corr': None,
+                'morans_i': parse_morans_i_results,
+                'partial_mantel': parse_partial_mantel_results
+            }
+        }
+
+        heatmap_methods = {
+            'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM']),
+            'gradient': (['mantel', 'morans_i'], ['Mantel', 'Moran\'s I'])
+        }
+
+        permutations = [99, 999]
+        num_shuffled = 2
+        num_subsets = 2
+
+        # For sample size testing.
+        sample_size_tests = {
+            'grouping': {
+                'study': 'overview',
+                'depth': 100,
+                'metric': 'bray_curtis',
+                'subset_sizes': [3, 4],
+                'num_subsets': 10,
+                'permutation': 999,
+                'categories': {
+                    'Treatment': ['b', 'Treatment'],
+                    'DOB': ['r', 'Date of birth']
+                },
+                'methods': {
+                    'adonis': parse_adonis_results,
+                    'anosim': parse_anosim_permanova_results
+                }
+            },
+
+            'gradient': {
+                'study': 'overview',
+                'depth': 146,
+                'metric': 'euclidean',
+                'subset_sizes': [3, 4],
+                'num_subsets': 20,
+                'permutation': 999,
+                'categories': {
+                    'DOB': ['b', 'Date of birth']
+                },
+                'methods': {
+                    'mantel': parse_mantel_results,
+                    'morans_i': parse_morans_i_results
+                }
+            }
+        }
+    else:
+        in_dir = 'datasets'
+        out_dir = 'microbiogeo_output'
+        tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
+        depth_descs = ['5_percent', '25_percent', '50_percent']
+        studies = {
+                   '88_soils': {
+                                'depths': [400, 580, 660],
+                                'grouping_categories': ['ENV_BIOME'],
+                                'gradient_categories': ['LATITUDE', 'PH'],
+                                'group_sizes': [5, 10, 20, 40],
+                                'subset_sizes': [10, 20, 30],
+                                'best_method_env_vars': ['TOT_ORG_CARB',
+                                    'SILT_CLAY', 'ELEVATION',
+                                    'SOIL_MOISTURE_DEFICIT',
+                                    'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP',
+                                    'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE',
+                                    'LONGITUDE', 'LATITUDE']
+                               }, 
+                   'glen_canyon': {
+                                   'depths': [15000, 29000, 53000],
+                                   'grouping_categories': ['CurrentlyWet'],
+                                   'gradient_categories': ['estimated_years_since_submerged_for_plotting'],
+                                   'group_sizes': [5, 10, 20, 40],
+                                   'subset_sizes': [10, 20, 30],
+                                   'best_method_env_vars': ['sample_pH',
+                                       'estimated_years_since_submerged_for_plotting',
+                                       'Month', 'Day', 'Year',
+                                       'days_since_epoch', 'Hour', 'Replicate',
+                                       'DNA.I.D.No.']
+                                  },
+                   'keyboard': {
+                                'depths': [390, 780, 1015],
+                                'grouping_categories': ['HOST_SUBJECT_ID'],
+                                'gradient_categories': [],
+                                'group_sizes': [5, 10, 20, 40],
+                                'subset_sizes': [10, 20, 30],
+                                'best_method_env_vars': []
+                               },
+                   'whole_body': {
+                                  'depths': [575, 877, 1110],
+                                  'grouping_categories': ['BODY_SITE', 'SEX'],
+                                  'gradient_categories': [],
+                                  'group_sizes': [5, 10, 20, 40],
+                                  'subset_sizes': [10, 20, 30],
+                                  'best_method_env_vars': []
+                                 }
+                  }
+
+        metrics = ['euclidean', 'bray_curtis', 'weighted_unifrac',
+                   'unweighted_unifrac']
+
+        methods = {
+            'grouping': {
                 'adonis': parse_adonis_results,
                 'anosim': parse_anosim_permanova_results,
                 'mrpp': parse_mrpp_results,
                 'permanova': parse_anosim_permanova_results,
-                'dbrda': parse_dbrda_results
-            }
-        },
-
-        'gradient': {
-            'study': '88_soils',
-            'depth': 400,
-            'metric': 'unweighted_unifrac',
-            'subset_sizes': [5, 10, 20, 40, 60, 80],
-            'num_subsets': 10,
-            'permutation': 999,
-            'categories': {
-                'PH': ['b', 'pH'],
-                'LATITUDE': ['r', 'Latitude']
+                'dbrda': parse_dbrda_results,
+                'permdisp': parse_permdisp_results
             },
-            'methods': {
+
+            'gradient': {
+                'best': None,
                 'mantel': parse_mantel_results,
-                'morans_i': parse_morans_i_results
+                'mantel_corr': None,
+                'morans_i': parse_morans_i_results,
+                'partial_mantel': parse_partial_mantel_results
             }
         }
-    }
+
+        heatmap_methods = {
+            'grouping': (['adonis', 'anosim', 'mrpp', 'permanova', 'dbrda'],
+                         ['Adonis', 'ANOSIM', 'MRPP', 'PERMANOVA', 'db-RDA']),
+            'gradient': (['mantel', 'morans_i'], ['Mantel', 'Moran\'s I'])
+        }
+
+        permutations = [99, 999]
+        num_shuffled = 5
+        num_subsets = 5
+
+        # For sample size testing.
+        sample_size_tests = {
+            'grouping': {
+                'study': 'whole_body',
+                'depth': 575,
+                'metric': 'unweighted_unifrac',
+                'subset_sizes': [5, 10, 20, 40, 60, 80],
+                'num_subsets': 10,
+                'permutation': 999,
+                'categories': {
+                    'BODY_SITE': ['b', 'Body site'],
+                    'SEX': ['r', 'Sex']
+                },
+                'methods': {
+                    'adonis': parse_adonis_results,
+                    'anosim': parse_anosim_permanova_results,
+                    'mrpp': parse_mrpp_results,
+                    'permanova': parse_anosim_permanova_results,
+                    'dbrda': parse_dbrda_results
+                }
+            },
+
+            'gradient': {
+                'study': '88_soils',
+                'depth': 400,
+                'metric': 'unweighted_unifrac',
+                'subset_sizes': [5, 10, 20, 40, 60, 80],
+                'num_subsets': 10,
+                'permutation': 999,
+                'categories': {
+                    'PH': ['b', 'pH'],
+                    'LATITUDE': ['r', 'Latitude']
+                },
+                'methods': {
+                    'mantel': parse_mantel_results,
+                    'morans_i': parse_morans_i_results
+                }
+            }
+        }
 
     generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
             num_subsets, tree_fp)
 
     run_methods(out_dir, studies, methods, permutations)
 
-    summarize_results(out_dir, out_dir, studies, methods, depth_descs, metrics,
-                      permutations, num_shuffled, num_subsets)
+    summarize_results(out_dir, out_dir, studies, methods, heatmap_methods,
+                      depth_descs, metrics, permutations, num_shuffled,
+                      num_subsets)
 
     run_sample_size_tests(out_dir, join(out_dir, 'sample_size_testing_output'),
                           sample_size_tests)
