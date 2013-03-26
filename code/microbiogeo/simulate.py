@@ -58,7 +58,6 @@ def choose_gradient_subsets(otu_table_f, map_f, gradient, num_samples):
                 for i in range(num_samples + 1)]
 
     samp_ids_to_keep = []
-
     for i in range(len(bin_idxs) - 1):
         if i == len(bin_idxs) - 2:
             # We're at the last bin, so choose from the entire bin range.

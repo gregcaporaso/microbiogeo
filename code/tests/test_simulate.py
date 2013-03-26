@@ -55,6 +55,24 @@ class SimulateTests(TestCase):
                                       self.tutorial_mapping_f, 'Gradient', 9)
         self.assertEqual(obs, exp)
 
+        # Pick single sample from gradient.
+        obs = choose_gradient_subsets(self.tutorial_otu_table_f,
+                                      self.tutorial_mapping_f, 'Gradient', 1)
+        self.assertEqual(list(obs[0].SampleIds),
+                MetadataMap.parseMetadataMap(obs[1].split('\n')).SampleIds)
+        self.assertEqual(len(obs[0].SampleIds), 1)
+
+        # Choose two.
+        obs = choose_gradient_subsets(self.tutorial_otu_table_f,
+                                      self.tutorial_mapping_f, 'Gradient', 2)
+        obs_map = MetadataMap.parseMetadataMap(obs[1].split('\n'))
+        self.assertEqual(list(obs[0].SampleIds), obs_map.SampleIds)
+        self.assertEqual(len(obs[0].SampleIds), 2)
+        print obs_map.SampleIds
+
+
+        #self.assertTrue(obs_map.SampleIds[0] in ['PC.634', 'PC.635', 'PC.356'])
+
 
 tutorial_mapping_f = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	Gradient	DOB	Description
 PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Control	5	20061218	Control_mouse_I.D._354
