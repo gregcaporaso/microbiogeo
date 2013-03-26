@@ -16,8 +16,8 @@ from cogent.util.unit_test import TestCase, main
 from qiime.util import MetadataMap
 
 from microbiogeo.simulate import (choose_cluster_subsets,
-                                  _choose_evenly_spaced_items,
-                                  choose_gradient_subsets)
+                                  choose_gradient_subsets,
+                                  _choose_items_from_bins)
 
 class SimulateTests(TestCase):
     """Tests for the simulate.py module functions."""
@@ -70,26 +70,39 @@ class SimulateTests(TestCase):
         self.assertEqual(list(obs[0].SampleIds), obs_map.SampleIds)
         self.assertEqual(len(obs[0].SampleIds), 2)
 
-    def test_choose_evenly_spaced_items(self):
-        """Test picking items from a sequence that are evenly-spaced."""
-        # Choose all items.
+    def test_choose_items_from_bins(self):
+        """Test picking items from a sequence that is split into bins."""
         sequence = [1, 2, 3, 4]
-        obs = _choose_evenly_spaced_items(sequence, 4)
-        self.assertEqual(obs, sequence)
 
         # Choose one item.
-        obs = _choose_evenly_spaced_items(sequence, 1)
+        obs = _choose_items_from_bins(sequence, 1)
         self.assertEqual(len(obs), 1)
         self.assertTrue(obs[0] in sequence)
 
         # Choose two items.
-        obs = _choose_evenly_spaced_items(sequence, 2)
+        obs = _choose_items_from_bins(sequence, 2)
         self.assertEqual(len(obs), 2)
         self.assertTrue(obs[0] in sequence)
         self.assertTrue(obs[1] in sequence)
         self.assertTrue(obs[0] != obs[1])
         self.assertTrue(obs[0] in sequence[:2])
         self.assertTrue(obs[1] in sequence[2:])
+
+        # Choose three items.
+        obs = _choose_items_from_bins(sequence, 3)
+        self.assertEqual(len(obs), 3)
+        self.assertTrue(obs[0] in sequence)
+        self.assertTrue(obs[1] in sequence)
+        self.assertTrue(obs[2] in sequence)
+        self.assertTrue(obs[0] != obs[1] and obs[1] != obs[2] and
+                        obs[0] != obs[2])
+        self.assertTrue(obs[0] in sequence[:2])
+        self.assertTrue(obs[1] == sequence[2])
+        self.assertTrue(obs[2] == sequence[3])
+
+        # Choose all items.
+        obs = _choose_items_from_bins(sequence, 4)
+        self.assertEqual(obs, sequence)
 
 
 tutorial_mapping_f = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	Gradient	DOB	Description
