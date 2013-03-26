@@ -46,34 +46,14 @@ def choose_gradient_subsets(otu_table_f, map_f, gradient, num_samples):
     mdm, _ = parse_mapping_file_to_dict(map_f)
 
     # Only keep the sample IDs that are in both the mapping file and OTU table.
+    # Sort the samples according to the gradient.
     samp_ids = [(samp_id, float(metadata[gradient]))
                 for samp_id, metadata in mdm.items()
                 if samp_id in otu_table.SampleIds]
     samp_ids.sort(key=lambda samp_id: samp_id[1])
 
-    # We add 1 to the number of samples we want because we want num_samples
-    # intervals to choose from.
-    bin_idxs = [int(ceil(i * len(samp_ids) / (num_samples + 1)))
-                for i in range(num_samples + 1)]
-
-    samp_ids_to_keep = []
-    for i in range(len(bin_idxs) - 1):
-        if i == len(bin_idxs) - 2:
-            # We're at the last bin, so choose from the entire bin range.
-            if bin_idxs[i + 1] < len(samp_ids):
-                end_idx = bin_idxs[i + 1]
-            else:
-                end_idx = bin_idxs[i + 1] - 1
-
-            samp_ids_to_keep.append(
-                    samp_ids[randint(bin_idxs[i], end_idx)][0])
-        else:
-            # We subtract 1 since randint is inclusive on both sides, and we
-            # don't want to choose the same sample ID multiple times from
-            # different bins.
-            samp_ids_to_keep.append(
-                    samp_ids[randint(bin_idxs[i],
-                                     bin_idxs[i + 1] - 1)][0])
+    samp_ids_to_keep = [samp_id[0] for samp_id in
+                        _choose_evenly_spaced_items(samp_ids, num_samples)]
 
     assert len(samp_ids_to_keep) == num_samples, \
            "%d != %d" % (len(samp_ids_to_keep), num_samples)

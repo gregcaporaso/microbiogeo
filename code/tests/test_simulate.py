@@ -69,8 +69,6 @@ class SimulateTests(TestCase):
         obs_map = MetadataMap.parseMetadataMap(obs[1].split('\n'))
         self.assertEqual(list(obs[0].SampleIds), obs_map.SampleIds)
         self.assertEqual(len(obs[0].SampleIds), 2)
-        #print obs_map.SampleIds
-        #self.assertTrue(obs_map.SampleIds[0] in ['PC.634', 'PC.635', 'PC.356'])
 
     def test_choose_evenly_spaced_items(self):
         """Test picking items from a sequence that are evenly-spaced."""
