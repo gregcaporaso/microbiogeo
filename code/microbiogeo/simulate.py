@@ -71,3 +71,35 @@ def _choose_items_from_bins(sequence, num_items):
         items.append(sequence[randint(start, end)])
 
     return items
+
+def process_gradient_simulated_data(in_dir, out_dir, methods, category,
+                                    metric, num_perms):
+    dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % metric)))
+    map_fps = sorted(glob(join(in_dir, 'map_*.txt')))
+    grad_dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % category)))
+    assert len(dm_fps) == len(map_fps) and len(map_fps) == len(grad_dm_fps)
+
+    cmds = []
+    for method in methods:
+        method_dir = join(out_dir, method)
+        create_dir(method_dir)
+
+        for dm_fp, map_fp, grad_dm_fp in zip(dm_fps, map_fps, grad_dm_fps):
+            n, d = dm_fp.split('_dm_', 2)[1].split('.txt', 2)[0].split('_')
+            n = int(n.split('n', 2)[1])
+            d = float(d.split('d', 2)[1])
+            results_dir = join(method_dir, 'n%d_d%f' % (n, d))
+
+            if not has_results(results_dir):
+                if method == 'mantel' or method == 'mantel_corr':
+                    in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+
+                    cmds.append('compare_distance_matrices.py --method %s '
+                                '-n %d -i %s -o %s' % (method, num_perms,
+                                                       in_dm_fps, results_dir))
+                elif method == 'morans_i':
+                    cmds.append('compare_categories.py --method %s -i %s '
+                                '-m %s -c %s -o %s' % (method, dm_fp, map_fp,
+                                                       category, results_dir))
+
+    run_parallel_jobs(cmds, run_command)
