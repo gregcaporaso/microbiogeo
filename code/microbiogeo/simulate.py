@@ -41,22 +41,22 @@ def choose_cluster_subsets(otu_table_f, map_f, category,
             filter_mapping_file_from_mapping_f(map_f, samp_ids_to_keep),
             len(samp_ids_to_keep))
 
-def choose_gradient_subsets(otu_table_f, map_f, gradient, num_samples):
+def choose_gradient_subsets(otu_table_f, map_f, category, num_total_samples):
     otu_table = parse_biom_table(otu_table_f)
     mdm, _ = parse_mapping_file_to_dict(map_f)
 
     # Only keep the sample IDs that are in both the mapping file and OTU table.
-    # Sort the samples according to the gradient.
-    samp_ids = [(samp_id, float(metadata[gradient]))
+    # Sort the samples according to the gradient category.
+    samp_ids = [(samp_id, float(metadata[category]))
                 for samp_id, metadata in mdm.items()
                 if samp_id in otu_table.SampleIds]
     samp_ids.sort(key=lambda samp_id: samp_id[1])
 
     samp_ids_to_keep = [samp_id[0] for samp_id in
-                        _choose_items_from_bins(samp_ids, num_samples)]
+                        _choose_items_from_bins(samp_ids, num_total_samples)]
 
-    assert len(samp_ids_to_keep) == num_samples, \
-           "%d != %d" % (len(samp_ids_to_keep), num_samples)
+    assert len(samp_ids_to_keep) == num_total_samples, \
+           "%d != %d" % (len(samp_ids_to_keep), num_total_samples)
 
     return (filter_samples_from_otu_table(otu_table, samp_ids_to_keep, 0, inf),
             filter_mapping_file_from_mapping_f(map_f, samp_ids_to_keep))
