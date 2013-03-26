@@ -16,6 +16,7 @@ from cogent.util.unit_test import TestCase, main
 from qiime.util import MetadataMap
 
 from microbiogeo.simulate import (choose_cluster_subsets,
+                                  _choose_evenly_spaced_items,
                                   choose_gradient_subsets)
 
 class SimulateTests(TestCase):
@@ -68,10 +69,29 @@ class SimulateTests(TestCase):
         obs_map = MetadataMap.parseMetadataMap(obs[1].split('\n'))
         self.assertEqual(list(obs[0].SampleIds), obs_map.SampleIds)
         self.assertEqual(len(obs[0].SampleIds), 2)
-        print obs_map.SampleIds
-
-
+        #print obs_map.SampleIds
         #self.assertTrue(obs_map.SampleIds[0] in ['PC.634', 'PC.635', 'PC.356'])
+
+    def test_choose_evenly_spaced_items(self):
+        """Test picking items from a sequence that are evenly-spaced."""
+        # Choose all items.
+        sequence = [1, 2, 3, 4]
+        obs = _choose_evenly_spaced_items(sequence, 4)
+        self.assertEqual(obs, sequence)
+
+        # Choose one item.
+        obs = _choose_evenly_spaced_items(sequence, 1)
+        self.assertEqual(len(obs), 1)
+        self.assertTrue(obs[0] in sequence)
+
+        # Choose two items.
+        obs = _choose_evenly_spaced_items(sequence, 2)
+        self.assertEqual(len(obs), 2)
+        self.assertTrue(obs[0] in sequence)
+        self.assertTrue(obs[1] in sequence)
+        self.assertTrue(obs[0] != obs[1])
+        self.assertTrue(obs[0] in sequence[:2])
+        self.assertTrue(obs[1] in sequence[2:])
 
 
 tutorial_mapping_f = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	Gradient	DOB	Description

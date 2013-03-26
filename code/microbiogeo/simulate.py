@@ -51,7 +51,6 @@ def choose_gradient_subsets(otu_table_f, map_f, gradient, num_samples):
                 if samp_id in otu_table.SampleIds]
     samp_ids.sort(key=lambda samp_id: samp_id[1])
 
-    # Adapted from http://stackoverflow.com/a/9873935
     # We add 1 to the number of samples we want because we want num_samples
     # intervals to choose from.
     bin_idxs = [int(ceil(i * len(samp_ids) / (num_samples + 1)))
@@ -81,3 +80,8 @@ def choose_gradient_subsets(otu_table_f, map_f, gradient, num_samples):
 
     return (filter_samples_from_otu_table(otu_table, samp_ids_to_keep, 0, inf),
             filter_mapping_file_from_mapping_f(map_f, samp_ids_to_keep))
+
+def _choose_evenly_spaced_items(sequence, num_items):
+    # Adapted from http://stackoverflow.com/a/9873935
+    return [sequence[int(ceil(i * float(len(sequence)) / num_items))]
+            for i in range(num_items)]
