@@ -14,6 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 from biom.parse import parse_biom_table
 from collections import defaultdict
 from numpy import ceil, inf
+from os import listdir
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import parse_mapping_file_to_dict
@@ -103,3 +104,11 @@ def process_gradient_simulated_data(in_dir, out_dir, methods, category,
                                                        category, results_dir))
 
     run_parallel_jobs(cmds, run_command)
+
+def create_sample_size_plots(in_dir, methods, category, metric, num_perms):
+    for method, parse_fn in methods.items():
+        method_dir = join(in_dir, method)
+
+        results = {}
+        for res_dir in listdir(method_dir):
+            pass
