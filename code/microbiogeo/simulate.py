@@ -109,6 +109,36 @@ def create_sample_size_plots(in_dir, methods, category, metric, num_perms):
     for method, parse_fn in methods.items():
         method_dir = join(in_dir, method)
 
-        results = {}
-        for res_dir in listdir(method_dir):
-            pass
+        results = defaultdict(dict)
+        for res_dir in sorted(listdir(method_dir)):
+            n, d = res_dir.split('_', 2)
+            n = int(n.split('n', 2)[1])
+            d = float(n.split('d', 2)[1])
+
+def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
+    pass
+
+def main():
+    in_dir = 'test_datasets'
+    out_dir = 'test_simulated_output'
+    tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
+    gradient_tests = {
+        'study': 'overview',
+        'depth': 146,
+        'metric': 'unweighted_unifrac',
+        'num_perms': 999,
+        'dissim': [0.001, 0.01, 0.1],
+        'sample_sizes': [2, 3, 4, 5],
+        'pos_control': ['Gradient', 'b', 'Gradient (positive control)'],
+        'neg_control': ['DOB', 'r', 'Date of birth (negative control)'],
+        'methods': {
+            'mantel': parse_mantel_results,
+            'morans_i': parse_morans_i_results
+        }
+    }
+
+    generate_gradient_simulated_data(in_dir, out_dir, gradient_tests, tree_fp)
+
+
+if __name__ == "__main__":
+    main()
