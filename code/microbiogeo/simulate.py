@@ -15,11 +15,15 @@ from biom.parse import parse_biom_table
 from collections import defaultdict
 from numpy import ceil, inf
 from os import listdir
+from os.path import basename, join
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import parse_mapping_file_to_dict
-from qiime.util import MetadataMap
+from qiime.util import create_dir, MetadataMap
 from random import randint, sample
+
+from microbiogeo.parse import parse_mantel_results, parse_morans_i_results
+from microbiogeo.util import run_command, run_parallel_jobs
 
 def choose_cluster_subsets(otu_table_f, map_f, category,
                            num_samples_per_group):
@@ -45,6 +49,11 @@ def choose_cluster_subsets(otu_table_f, map_f, category,
 def choose_gradient_subsets(otu_table_f, map_f, category, num_total_samples):
     otu_table = parse_biom_table(otu_table_f)
     mdm, _ = parse_mapping_file_to_dict(map_f)
+
+    try:
+        map_f.seek(0)
+    except AttributeError:
+        pass
 
     # Only keep the sample IDs that are in both the mapping file and OTU table.
     # Sort the samples according to the gradient category.
@@ -116,7 +125,60 @@ def create_sample_size_plots(in_dir, methods, category, metric, num_perms):
             d = float(n.split('d', 2)[1])
 
 def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
-    pass
+    create_dir(out_dir)
+    otu_table_fp = join(in_dir, tests['study'], 'otu_table.biom')
+    map_fp = join(in_dir, tests['study'], 'map.txt')
+    map_f = open(map_fp, 'U')
+    category = tests['category'][0]
+
+    otu_table_f = open(otu_table_fp, 'U')
+    otu_table = parse_biom_table(otu_table_f)
+    otu_table_f.seek(0)
+    num_samps = len(otu_table.SampleIds)
+
+    cmds = []
+    for samp_size in tests['sample_sizes']:
+        samp_size_dir = join(out_dir, '%d' % samp_size)
+        create_dir(samp_size_dir)
+
+        if samp_size <= num_samps:
+            simsam_rep_num = 1
+
+            subset_otu_table, subset_map_str = choose_gradient_subsets(
+                    otu_table_f, map_f, category, samp_size)
+            otu_table_f.seek(0)
+            map_f.seek(0)
+
+            subset_otu_table_fp = join(samp_size_dir, basename(otu_table_fp))
+            subset_otu_table_f = open(subset_otu_table_fp, 'w')
+            subset_otu_table.getBiomFormatJsonString('microbiogeo workflow',
+                                                     subset_otu_table_f)
+            subset_otu_table_f.close()
+
+            subset_map_fp = join(samp_size_dir, basename(map_fp))
+            subset_map_f = open(subset_map_fp, 'w')
+            subset_map_f.write(subset_map_str)
+            subset_map_f.close()
+
+            for d in tests['dissim']:
+                dissim_dir = join(samp_size_dir, '%r' % d)
+                cmd = 'simsam.py -i %s -t %s -o %r -d %r -n %d -m %s;' % (
+                        subset_otu_table_fp, tree_fp, dissim_dir, d, 1,
+                        subset_map_fp)
+                cmd += 'distance_matrix_from_mapping.py -i %s -c %s -o %s' % (
+                        join(dissim_dir, 'map_n%d_d%r.txt' %
+                        (simsam_rep_num, d)), category,
+                        join(dissim_dir, '%s_dm.txt' % category))
+                cmds.append(cmd)
+        else:
+            #simsam_rep_num = int(ceil(samp_size / num_samps))
+            #otu_table = choose_gradient_subsets(otu_table_f, map_f, category,
+            #                                    samp_size)
+            # Make sure to choose subset afterwards.
+            # TODO finish
+            pass
+
+    run_parallel_jobs(cmds, run_command)
 
 def main():
     in_dir = 'test_datasets'
@@ -129,8 +191,7 @@ def main():
         'num_perms': 999,
         'dissim': [0.001, 0.01, 0.1],
         'sample_sizes': [2, 3, 4, 5],
-        'pos_control': ['Gradient', 'b', 'Gradient (positive control)'],
-        'neg_control': ['DOB', 'r', 'Date of birth (negative control)'],
+        'category': ['Gradient', 'b', 'Gradient'],
         'methods': {
             'mantel': parse_mantel_results,
             'morans_i': parse_morans_i_results

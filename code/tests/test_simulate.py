@@ -27,10 +27,6 @@ class SimulateTests(TestCase):
         self.tutorial_mapping_f = tutorial_mapping_f.split('\n')
         self.tutorial_otu_table_f = tutorial_otu_table_f.split('\n')
 
-    def tearDown(self):
-        """Remove temporary files/dirs created by tests."""
-        pass
-
     def test_choose_cluster_subsets(self):
         """Test picking subsets of sample groups."""
         # Don't filter anything out.
