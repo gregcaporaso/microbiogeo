@@ -82,48 +82,6 @@ def _choose_items_from_bins(sequence, num_items):
 
     return items
 
-def process_gradient_simulated_data(in_dir, out_dir, methods, category,
-                                    metric, num_perms):
-    dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % metric)))
-    map_fps = sorted(glob(join(in_dir, 'map_*.txt')))
-    grad_dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % category)))
-    assert len(dm_fps) == len(map_fps) and len(map_fps) == len(grad_dm_fps)
-
-    cmds = []
-    for method in methods:
-        method_dir = join(out_dir, method)
-        create_dir(method_dir)
-
-        for dm_fp, map_fp, grad_dm_fp in zip(dm_fps, map_fps, grad_dm_fps):
-            n, d = dm_fp.split('_dm_', 2)[1].split('.txt', 2)[0].split('_')
-            n = int(n.split('n', 2)[1])
-            d = float(d.split('d', 2)[1])
-            results_dir = join(method_dir, 'n%d_d%f' % (n, d))
-
-            if not has_results(results_dir):
-                if method == 'mantel' or method == 'mantel_corr':
-                    in_dm_fps = ','.join((dm_fp, grad_dm_fp))
-
-                    cmds.append('compare_distance_matrices.py --method %s '
-                                '-n %d -i %s -o %s' % (method, num_perms,
-                                                       in_dm_fps, results_dir))
-                elif method == 'morans_i':
-                    cmds.append('compare_categories.py --method %s -i %s '
-                                '-m %s -c %s -o %s' % (method, dm_fp, map_fp,
-                                                       category, results_dir))
-
-    run_parallel_jobs(cmds, run_command)
-
-def create_sample_size_plots(in_dir, methods, category, metric, num_perms):
-    for method, parse_fn in methods.items():
-        method_dir = join(in_dir, method)
-
-        results = defaultdict(dict)
-        for res_dir in sorted(listdir(method_dir)):
-            n, d = res_dir.split('_', 2)
-            n = int(n.split('n', 2)[1])
-            d = float(n.split('d', 2)[1])
-
 def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
     create_dir(out_dir)
     otu_table_fp = join(in_dir, tests['study'], 'otu_table.biom')
@@ -152,6 +110,8 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
         samp_size_dir = join(out_dir, '%d' % samp_size)
         create_dir(samp_size_dir)
 
+        # Lots of duplicate code between these two blocks... need to refactor
+        # and test.
         if samp_size <= num_samps:
             simsam_rep_num = 1
 
@@ -222,6 +182,48 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
                 cmds.append(cmd)
 
     run_parallel_jobs(cmds, run_command)
+
+def process_gradient_simulated_data(in_dir, out_dir, methods, category,
+                                    metric, num_perms):
+    dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % metric)))
+    map_fps = sorted(glob(join(in_dir, 'map_*.txt')))
+    grad_dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % category)))
+    assert len(dm_fps) == len(map_fps) and len(map_fps) == len(grad_dm_fps)
+
+    cmds = []
+    for method in methods:
+        method_dir = join(out_dir, method)
+        create_dir(method_dir)
+
+        for dm_fp, map_fp, grad_dm_fp in zip(dm_fps, map_fps, grad_dm_fps):
+            n, d = dm_fp.split('_dm_', 2)[1].split('.txt', 2)[0].split('_')
+            n = int(n.split('n', 2)[1])
+            d = float(d.split('d', 2)[1])
+            results_dir = join(method_dir, 'n%d_d%f' % (n, d))
+
+            if not has_results(results_dir):
+                if method == 'mantel' or method == 'mantel_corr':
+                    in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+
+                    cmds.append('compare_distance_matrices.py --method %s '
+                                '-n %d -i %s -o %s' % (method, num_perms,
+                                                       in_dm_fps, results_dir))
+                elif method == 'morans_i':
+                    cmds.append('compare_categories.py --method %s -i %s '
+                                '-m %s -c %s -o %s' % (method, dm_fp, map_fp,
+                                                       category, results_dir))
+
+    run_parallel_jobs(cmds, run_command)
+
+#def create_sample_size_plots(in_dir, methods, category, metric, num_perms):
+#    for method, parse_fn in methods.items():
+#        method_dir = join(in_dir, method)
+#
+#        results = defaultdict(dict)
+#        for res_dir in sorted(listdir(method_dir)):
+#            n, d = res_dir.split('_', 2)
+#            n = int(n.split('n', 2)[1])
+#            d = float(n.split('d', 2)[1])
 
 def main():
     in_dir = 'test_datasets'
