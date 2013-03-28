@@ -155,22 +155,12 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
         if samp_size <= num_samps:
             simsam_rep_num = 1
 
-            subset_otu_table, subset_map_str = choose_gradient_subset(
-                    even_otu_table_f, map_f, category, samp_size)
-            even_otu_table_f.seek(0)
-            map_f.seek(0)
-
+            run_command('choose_gradient_subset.py -i %s -m %s -c %s -n %d '
+                        '-o %s' % (even_otu_table_fp, map_fp, category,
+                                   samp_size, samp_size_dir))
             subset_otu_table_fp = join(samp_size_dir,
                                        basename(even_otu_table_fp))
-            subset_otu_table_f = open(subset_otu_table_fp, 'w')
-            subset_otu_table.getBiomFormatJsonString('microbiogeo workflow',
-                                                     subset_otu_table_f)
-            subset_otu_table_f.close()
-
             subset_map_fp = join(samp_size_dir, basename(map_fp))
-            subset_map_f = open(subset_map_fp, 'w')
-            subset_map_f.write(subset_map_str)
-            subset_map_f.close()
 
             for d in tests['dissim']:
                 dissim_dir = join(samp_size_dir, repr(d))
@@ -232,7 +222,7 @@ def main():
         'depth': 146,
         'metric': 'unweighted_unifrac',
         'num_perms': 999,
-        'dissim': [0.001, 0.01],
+        'dissim': [0.0001, 0.001],
         'sample_sizes': [2, 3, 4, 5],
         'category': ['Gradient', 'b', 'Gradient'],
         'methods': {
