@@ -179,9 +179,11 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
                         join(dissim_dir, '%s_dm.txt' % category))
                 cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
                         simsam_otu_table_fp, dissim_dir, metric, tree_fp)
-                cmd += 'mv %s %s' % (join(dissim_dir, '%s_%s.txt' % (
+                cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
                         metric, splitext(basename(simsam_otu_table_fp))[0])),
                         '%s_dm.txt' % join(dissim_dir, metric))
+                cmd += 'cp %s %s' % (simsam_map_fp,
+                                     join(dissim_dir, 'map.txt'))
                 cmds.append(cmd)
         else:
             # We need to simulate more samples than we originally have.
@@ -198,18 +200,26 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
                 cmd = 'simsam.py -i %s -t %s -o %s -d %r -n %d -m %s;' % (
                         even_otu_table_fp, tree_fp, dissim_dir, d,
                         simsam_rep_num, map_fp)
+
+                subset_dir = join(dissim_dir, 'subset')
+                cmd += ('choose_gradient_subset.py -i %s -m %s -c %s -n %d '
+                        '-o %s;' % (simsam_otu_table_fp, simsam_map_fp,
+                                    category, samp_size, subset_dir))
+                subset_otu_table_fp = join(subset_dir,
+                                           basename(simsam_otu_table_fp))
+                subset_map_fp = join(subset_dir, basename(simsam_map_fp))
+
                 cmd += 'distance_matrix_from_mapping.py -i %s -c %s -o %s;' % (
-                        simsam_map_fp, category,
+                        subset_map_fp, category,
                         join(dissim_dir, '%s_dm.txt' % category))
                 cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
-                        simsam_otu_table_fp, dissim_dir, metric, tree_fp)
+                        subset_otu_table_fp, dissim_dir, metric, tree_fp)
                 cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
-                        metric, splitext(basename(simsam_otu_table_fp))[0])),
+                        metric, splitext(basename(subset_otu_table_fp))[0])),
                         '%s_dm.txt' % join(dissim_dir, metric))
-                cmd += ''
+                cmd += 'cp %s %s' % (subset_map_fp,
+                                     join(dissim_dir, 'map.txt'))
                 cmds.append(cmd)
-
-            # Make sure to choose subset afterwards.
 
     run_parallel_jobs(cmds, run_command)
 
@@ -222,8 +232,8 @@ def main():
         'depth': 146,
         'metric': 'unweighted_unifrac',
         'num_perms': 999,
-        'dissim': [0.0001, 0.001],
-        'sample_sizes': [2, 3, 4, 5],
+        'dissim': [0.001, 0.01, 0.1],
+        'sample_sizes': [3, 5, 13],
         'category': ['Gradient', 'b', 'Gradient'],
         'methods': {
             'mantel': parse_mantel_results,
