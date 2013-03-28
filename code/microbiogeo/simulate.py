@@ -133,10 +133,19 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
     metric = tests['metric']
     category = tests['category'][0]
 
-    otu_table_f = open(otu_table_fp, 'U')
-    otu_table = parse_biom_table(otu_table_f)
-    otu_table_f.seek(0)
-    num_samps = len(otu_table.SampleIds)
+    # Rarefy the table first since simsam.py's output tables will still have
+    # even sampling depth and we don't want to lose simulated samples after the
+    # fact.
+    even_otu_table_fp = join(out_dir,
+            add_filename_suffix(otu_table_fp, '_even%d' % depth))
+    run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp,
+            even_otu_table_fp, depth))
+    
+    # Figure out how many samples we have in the rarefied table.
+    even_otu_table_f = open(even_otu_table_fp, 'U')
+    even_otu_table = parse_biom_table(even_otu_table_f)
+    even_otu_table_f.seek(0)
+    num_samps = len(even_otu_table.SampleIds)
 
     cmds = []
     for samp_size in tests['sample_sizes']:
@@ -147,11 +156,12 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
             simsam_rep_num = 1
 
             subset_otu_table, subset_map_str = choose_gradient_subsets(
-                    otu_table_f, map_f, category, samp_size)
-            otu_table_f.seek(0)
+                    even_otu_table_f, map_f, category, samp_size)
+            even_otu_table_f.seek(0)
             map_f.seek(0)
 
-            subset_otu_table_fp = join(samp_size_dir, basename(otu_table_fp))
+            subset_otu_table_fp = join(samp_size_dir,
+                                       basename(even_otu_table_fp))
             subset_otu_table_f = open(subset_otu_table_fp, 'w')
             subset_otu_table.getBiomFormatJsonString('microbiogeo workflow',
                                                      subset_otu_table_f)
@@ -164,26 +174,23 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
 
             for d in tests['dissim']:
                 dissim_dir = join(samp_size_dir, '%r' % d)
-                simsam_map_fp = join(dissim_dir, 'map_n%d_d%r.txt' % (
-                    simsam_rep_num, d))
+                simsam_map_fp = join(dissim_dir,
+                        add_filename_suffix(subset_map_fp,
+                                            '_n%d_d%r' % (simsam_rep_num, d)))
                 simsam_otu_table_fp = join(dissim_dir,
-                        'otu_table_n%d_d%r.biom' % (simsam_rep_num, d))
-                even_otu_table_fp = join(dissim_dir,
-                        add_filename_suffix(simsam_otu_table_fp,
-                                            '_even%d' % depth))
+                        add_filename_suffix(subset_otu_table_fp,
+                                            '_n%d_d%r' % (simsam_rep_num, d)))
 
-                cmd = 'simsam.py -i %s -t %s -o %r -d %r -n %d -m %s;' % (
+                cmd = 'simsam.py -i %s -t %s -o %s -d %r -n %d -m %s;' % (
                         subset_otu_table_fp, tree_fp, dissim_dir, d, 1,
                         subset_map_fp)
                 cmd += 'distance_matrix_from_mapping.py -i %s -c %s -o %s;' % (
                         simsam_map_fp, category,
                         join(dissim_dir, '%s_dm.txt' % category))
-                cmd += 'single_rarefaction.py -i %s -o %s -d %d;' % (
-                        simsam_otu_table_fp, even_otu_table_fp, depth)
                 cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
-                        even_otu_table_fp, dissim_dir, metric, tree_fp)
+                        simsam_otu_table_fp, dissim_dir, metric, tree_fp)
                 cmd += 'mv %s %s' % (join(dissim_dir, '%s_%s.txt' % (
-                        metric, splitext(basename(even_otu_table_fp))[0])),
+                        metric, splitext(basename(simsam_otu_table_fp))[0])),
                         '%s_dm.txt' % join(dissim_dir, metric))
                 cmds.append(cmd)
         else:
@@ -205,7 +212,7 @@ def main():
         'depth': 146,
         'metric': 'unweighted_unifrac',
         'num_perms': 999,
-        'dissim': [0.001, 0.01, 0.1],
+        'dissim': [0.001, 0.01],
         'sample_sizes': [2, 3, 4, 5],
         'category': ['Gradient', 'b', 'Gradient'],
         'methods': {
