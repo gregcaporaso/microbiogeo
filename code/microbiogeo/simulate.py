@@ -15,11 +15,11 @@ from biom.parse import parse_biom_table
 from collections import defaultdict
 from numpy import ceil, inf
 from os import listdir
-from os.path import basename, join
+from os.path import basename, join, splitext
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import parse_mapping_file_to_dict
-from qiime.util import create_dir, MetadataMap
+from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
 from microbiogeo.parse import parse_mantel_results, parse_morans_i_results
@@ -129,6 +129,8 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
     otu_table_fp = join(in_dir, tests['study'], 'otu_table.biom')
     map_fp = join(in_dir, tests['study'], 'map.txt')
     map_f = open(map_fp, 'U')
+    depth = tests['depth']
+    metric = tests['metric']
     category = tests['category'][0]
 
     otu_table_f = open(otu_table_fp, 'U')
@@ -162,13 +164,27 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
 
             for d in tests['dissim']:
                 dissim_dir = join(samp_size_dir, '%r' % d)
+                simsam_map_fp = join(dissim_dir, 'map_n%d_d%r.txt' % (
+                    simsam_rep_num, d))
+                simsam_otu_table_fp = join(dissim_dir,
+                        'otu_table_n%d_d%r.biom' % (simsam_rep_num, d))
+                even_otu_table_fp = join(dissim_dir,
+                        add_filename_suffix(simsam_otu_table_fp,
+                                            '_even%d' % depth))
+
                 cmd = 'simsam.py -i %s -t %s -o %r -d %r -n %d -m %s;' % (
                         subset_otu_table_fp, tree_fp, dissim_dir, d, 1,
                         subset_map_fp)
-                cmd += 'distance_matrix_from_mapping.py -i %s -c %s -o %s' % (
-                        join(dissim_dir, 'map_n%d_d%r.txt' %
-                        (simsam_rep_num, d)), category,
+                cmd += 'distance_matrix_from_mapping.py -i %s -c %s -o %s;' % (
+                        simsam_map_fp, category,
                         join(dissim_dir, '%s_dm.txt' % category))
+                cmd += 'single_rarefaction.py -i %s -o %s -d %d;' % (
+                        simsam_otu_table_fp, even_otu_table_fp, depth)
+                cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
+                        even_otu_table_fp, dissim_dir, metric, tree_fp)
+                cmd += 'mv %s %s' % (join(dissim_dir, '%s_%s.txt' % (
+                        metric, splitext(basename(even_otu_table_fp))[0])),
+                        '%s_dm.txt' % join(dissim_dir, metric))
                 cmds.append(cmd)
         else:
             #simsam_rep_num = int(ceil(samp_size / num_samps))
