@@ -16,7 +16,7 @@ from cogent.util.unit_test import TestCase, main
 from qiime.util import MetadataMap
 
 from microbiogeo.simulate import (choose_cluster_subsets,
-                                  choose_gradient_subsets,
+                                  choose_gradient_subset,
                                   _choose_items_from_bins)
 
 class SimulateTests(TestCase):
@@ -43,24 +43,24 @@ class SimulateTests(TestCase):
                 MetadataMap.parseMetadataMap(obs[1].split('\n')).SampleIds)
         self.assertEqual(obs[2], 2)
 
-    def test_choose_gradient_subsets(self):
+    def test_choose_gradient_subset(self):
         """Test picking subsets of samples along a gradient."""
         # Don't filter anything out.
         exp = (parse_biom_table(self.tutorial_otu_table_f),
                tutorial_mapping_f)
-        obs = choose_gradient_subsets(self.tutorial_otu_table_f,
+        obs = choose_gradient_subset(self.tutorial_otu_table_f,
                                       self.tutorial_mapping_f, 'Gradient', 9)
         self.assertEqual(obs, exp)
 
         # Pick single sample from gradient.
-        obs = choose_gradient_subsets(self.tutorial_otu_table_f,
+        obs = choose_gradient_subset(self.tutorial_otu_table_f,
                                       self.tutorial_mapping_f, 'Gradient', 1)
         self.assertEqual(list(obs[0].SampleIds),
                 MetadataMap.parseMetadataMap(obs[1].split('\n')).SampleIds)
         self.assertEqual(len(obs[0].SampleIds), 1)
 
         # Choose two.
-        obs = choose_gradient_subsets(self.tutorial_otu_table_f,
+        obs = choose_gradient_subset(self.tutorial_otu_table_f,
                                       self.tutorial_mapping_f, 'Gradient', 2)
         obs_map = MetadataMap.parseMetadataMap(obs[1].split('\n'))
         self.assertEqual(list(obs[0].SampleIds), obs_map.SampleIds)
