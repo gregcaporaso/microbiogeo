@@ -221,15 +221,65 @@ def process_gradient_simulated_data(in_dir, tests):
 
     run_parallel_jobs(cmds, run_command)
 
-#def create_sample_size_plots(in_dir, methods, category, metric, num_perms):
-#    for method, parse_fn in methods.items():
-#        method_dir = join(in_dir, method)
+#def create_sample_size_plots(in_dir, tests):
+#    """Create plots of sample size vs effect size/p-val for each dissim."""
+#    category = tests['category']
 #
-#        results = defaultdict(dict)
-#        for res_dir in sorted(listdir(method_dir)):
-#            n, d = res_dir.split('_', 2)
-#            n = int(n.split('n', 2)[1])
-#            d = float(n.split('d', 2)[1])
+#    # dissim -> {'sample_sizes': list, 'effect_sizes': list, 'p_vals' -> list}
+#    plots_data = defaultdict(defaultdict(list))
+#
+#    for samp_size in tests['sample_sizes']:
+#        samp_size_dir = join(in_dir, '%d' % samp_size)
+#
+#        for d in tests['dissim']:
+#            dissim_dir = join(samp_size_dir, repr(d))
+#
+#            # TODO fix for multiple methods
+#            for method, parse_fn in tests['methods'].items():
+#                method_dir = join(dissim_dir, method)
+#
+#                effect_size, p_val = parse_fn(
+#                        open(join(method_dir, '%s_results.txt' % method), 'U'))
+#                plots_data[d]['sample_sizes'].append(samp_size)
+#                plots_data[d]['effect_sizes'].append(effect_size)
+#                plots_data[d]['p_vals'].append(p_val)
+#
+#    for d, plot_data in plots_data.items():
+#        # Twin y-axis code is based on
+#        # http://matplotlib.org/examples/api/two_scales.html
+#        fig = figure()
+#        ax1 = fig.add_subplot(111)
+#        ax2 = ax1.twinx()
+#
+#        # Plot test statistics on left axis.
+#        ax1.errorbar(plot_data['sample_sizes'], plot_data['effect_sizes'],
+#                     color=category[1], label=category[2], fmt='-')
+#
+#        # Plot p-values on the right axis.
+#        ax2.errorbar(plot_data['sample_sizes'], plot_data['p_vals'],
+#                     color=category[1], label=category[2], fmt='-',
+#                     linestyle='--')
+#
+#        xlim(0, max(plot_data['sample_sizes']))
+#        #ax2.set_ylim(0.0, 1.0)
+#        title('%s: %s' % (tests['study'], method))
+#        #lines, labels = ax1.get_legend_handles_labels()
+#        #lines2, labels2 = ax2.get_legend_handles_labels()
+#        #ax2.legend(lines + lines2, labels + labels2)
+#
+#    if method_type == 'grouping':
+#        x_label = 'Samples per group'
+#    elif method_type == 'gradient':
+#        x_label = 'Number of samples'
+#    else:
+#        raise ValueError("Unknown method type '%s'." % method_type)
+#
+#    ax1.set_xlabel(x_label)
+#    ax1.set_ylabel('Average test statistic with standard deviation')
+#    ax2.set_ylabel('Average p-value with standard deviation')
+#    legend()
+#    fig.savefig(join(out_study_dir, '%s_analysis_plot_%s_%s.pdf' % (
+#            method_type, study, method)), format='pdf')
 
 def main():
     in_dir = 'test_datasets'
@@ -242,7 +292,7 @@ def main():
         'num_perms': 999,
         'dissim': [0.001, 0.01, 0.1],
         'sample_sizes': [3, 5, 13, 100],
-        'category': ['Gradient', 'b', 'Gradient'],
+        'category': ['Gradient', 'b', 'Gradient (positive control)'],
         'methods': {
             'mantel': parse_mantel_results,
             'morans_i': parse_morans_i_results
@@ -251,6 +301,7 @@ def main():
 
     generate_gradient_simulated_data(in_dir, out_dir, gradient_tests, tree_fp)
     process_gradient_simulated_data(out_dir, gradient_tests)
+    #create_sample_size_plots(out_dir, gradient_tests)
 
 
 if __name__ == "__main__":
