@@ -23,7 +23,7 @@ from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
 from microbiogeo.parse import parse_mantel_results, parse_morans_i_results
-from microbiogeo.util import run_command, run_parallel_jobs
+from microbiogeo.util import has_results, run_command, run_parallel_jobs
 
 def choose_cluster_subsets(otu_table_f, map_f, category,
                            num_samples_per_group):
@@ -83,6 +83,7 @@ def _choose_items_from_bins(sequence, num_items):
     return items
 
 def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
+    """Simulate gradient data with simsam.py."""
     create_dir(out_dir)
     otu_table_fp = join(in_dir, tests['study'], 'otu_table.biom')
     map_fp = join(in_dir, tests['study'], 'map.txt')
@@ -183,35 +184,40 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
 
     run_parallel_jobs(cmds, run_command)
 
-def process_gradient_simulated_data(in_dir, out_dir, methods, category,
-                                    metric, num_perms):
-    dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % metric)))
-    map_fps = sorted(glob(join(in_dir, 'map_*.txt')))
-    grad_dm_fps = sorted(glob(join(in_dir, '%s_dm_*.txt' % category)))
-    assert len(dm_fps) == len(map_fps) and len(map_fps) == len(grad_dm_fps)
+def process_gradient_simulated_data(in_dir, tests):
+    """Run statistical methods over gradient simulated data."""
+    metric = tests['metric']
+    category = tests['category'][0]
+    num_perms = tests['num_perms']
 
     cmds = []
-    for method in methods:
-        method_dir = join(out_dir, method)
-        create_dir(method_dir)
+    for samp_size in tests['sample_sizes']:
+        samp_size_dir = join(in_dir, '%d' % samp_size)
 
-        for dm_fp, map_fp, grad_dm_fp in zip(dm_fps, map_fps, grad_dm_fps):
-            n, d = dm_fp.split('_dm_', 2)[1].split('.txt', 2)[0].split('_')
-            n = int(n.split('n', 2)[1])
-            d = float(d.split('d', 2)[1])
-            results_dir = join(method_dir, 'n%d_d%f' % (n, d))
+        for d in tests['dissim']:
+            dissim_dir = join(samp_size_dir, repr(d))
 
-            if not has_results(results_dir):
-                if method == 'mantel' or method == 'mantel_corr':
-                    in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+            dm_fp = join(dissim_dir, '%s_dm.txt' % metric)
+            map_fp = join(dissim_dir, 'map.txt')
+            grad_dm_fp = join(dissim_dir, '%s_dm.txt' % category)
 
-                    cmds.append('compare_distance_matrices.py --method %s '
-                                '-n %d -i %s -o %s' % (method, num_perms,
-                                                       in_dm_fps, results_dir))
-                elif method == 'morans_i':
-                    cmds.append('compare_categories.py --method %s -i %s '
-                                '-m %s -c %s -o %s' % (method, dm_fp, map_fp,
-                                                       category, results_dir))
+            for method in tests['methods']:
+                method_dir = join(dissim_dir, method)
+                create_dir(method_dir)
+
+                if not has_results(method_dir):
+                    if method == 'mantel' or method == 'mantel_corr':
+                        in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+
+                        cmds.append('compare_distance_matrices.py --method %s '
+                                    '-n %d -i %s -o %s' % (method, num_perms,
+                                                           in_dm_fps,
+                                                           method_dir))
+                    elif method == 'morans_i':
+                        cmds.append('compare_categories.py --method %s -i %s '
+                                    '-m %s -c %s -o %s' % (method, dm_fp,
+                                                           map_fp, category,
+                                                           method_dir))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -235,7 +241,7 @@ def main():
         'metric': 'unweighted_unifrac',
         'num_perms': 999,
         'dissim': [0.001, 0.01, 0.1],
-        'sample_sizes': [3, 5, 13],
+        'sample_sizes': [3, 5, 13, 100],
         'category': ['Gradient', 'b', 'Gradient'],
         'methods': {
             'mantel': parse_mantel_results,
@@ -244,6 +250,7 @@ def main():
     }
 
     generate_gradient_simulated_data(in_dir, out_dir, gradient_tests, tree_fp)
+    process_gradient_simulated_data(out_dir, gradient_tests)
 
 
 if __name__ == "__main__":
