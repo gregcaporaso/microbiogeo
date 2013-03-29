@@ -280,22 +280,42 @@ def create_sample_size_plots(in_dir, tests):
                                                    category)), format='pdf')
 
 def main():
-    in_dir = 'test_datasets'
-    out_dir = 'test_simulated_output'
-    tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
-    gradient_tests = {
-        'study': 'overview',
-        'depth': 146,
-        'metric': 'unweighted_unifrac',
-        'num_perms': 999,
-        'dissim': [0.001, 0.01, 0.1],
-        'sample_sizes': [3, 5, 13, 100],
-        'category': 'Gradient',
-        'methods': {
-            'mantel': parse_mantel_results,
-            'morans_i': parse_morans_i_results
+    test = True
+
+    if test:
+        in_dir = 'test_datasets'
+        out_dir = 'test_simulated_output'
+        tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
+        gradient_tests = {
+            'study': 'overview',
+            'depth': 146,
+            'metric': 'unweighted_unifrac',
+            'num_perms': 999,
+            'dissim': [0.001, 0.01, 0.1],
+            'sample_sizes': [3, 5, 13, 100],
+            'category': 'Gradient',
+            'methods': {
+                'mantel': parse_mantel_results,
+                'morans_i': parse_morans_i_results
+            }
         }
-    }
+    else:
+        in_dir = 'datasets'
+        out_dir = 'sim_data_output'
+        tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
+        gradient_tests = {
+            'study': '88_soils',
+            'depth': 400,
+            'metric': 'unweighted_unifrac',
+            'num_perms': 999,
+            'dissim': [0.001, 0.01, 0.1, 0.5, 1, 10],
+            'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+            'category': 'PH',
+            'methods': {
+                'mantel': parse_mantel_results,
+                'morans_i': parse_morans_i_results
+            }
+        }
 
     generate_gradient_simulated_data(in_dir, out_dir, gradient_tests, tree_fp)
     process_gradient_simulated_data(out_dir, gradient_tests)
