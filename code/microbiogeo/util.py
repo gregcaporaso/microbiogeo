@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from collections import defaultdict
 from os import listdir
-from os.path import exists
+from os.path import exists, join
 from random import randint, sample, shuffle
 
 from IPython.parallel import Client
@@ -45,9 +45,22 @@ def run_parallel_jobs(jobs, job_fn):
         lview.block = True
         lview.map(job_fn, jobs)
 
-def has_results(results_dir):
-    """Returns True if results_dir exists and is not empty, False otherwise."""
-    return exists(results_dir) and len(listdir(results_dir)) > 0
+def has_results(results_dir, required_files=None):
+    """Returns True if results_dir exists and is not empty, False otherwise.
+    
+    If required_files is provided, each filename in the list must be present in
+    results_dir in order for this function to return True. Otherwise, a simple
+    check that the directory exists and isn't empty is performed.
+    """
+    has_results = exists(results_dir) and len(listdir(results_dir)) > 0
+
+    if has_results and required_files:
+        for req_file in required_files:
+            if not exists(join(results_dir, req_file)):
+                has_results = False
+                break
+
+    return has_results
 
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)

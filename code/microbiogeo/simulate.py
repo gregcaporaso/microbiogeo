@@ -308,7 +308,7 @@ def main():
             'depth': 400,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.001, 0.01, 0.1, 0.5, 1, 10],
+            'dissim': [0.001, 0.01, 0.1, 0.5, 1.0, 10.0],
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'category': 'PH',
             'methods': {
