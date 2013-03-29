@@ -121,6 +121,10 @@ class UtilTests(TestCase):
         obs = has_results(self.input_dir)
         self.assertFalse(obs)
 
+        # Dir that exists, with no required files, but is empty.
+        obs = has_results(self.input_dir, required_files=[])
+        self.assertFalse(obs)
+
         # Dir that exists and is not empty.
         tmp_fp = join(self.input_dir, 'foo.txt')
         tmp_f = open(tmp_fp, 'w')
@@ -130,6 +134,19 @@ class UtilTests(TestCase):
 
         obs = has_results(self.input_dir)
         self.assertTrue(obs)
+
+        # Dir that exists and is not empty, with no required files.
+        obs = has_results(self.input_dir, required_files=[])
+        self.assertTrue(obs)
+
+        # Dir that exists, is not empty, and has the required file.
+        obs = has_results(self.input_dir, required_files=['foo.txt'])
+        self.assertTrue(obs)
+
+        # Dir that exists and is not empty, but doesn't have required files.
+        obs = has_results(self.input_dir,
+                          required_files=['foo.txt', 'bar.txt', 'baz.txt'])
+        self.assertFalse(obs)
 
     def test_shuffle_dm(self):
         """Test shuffling labels of distance matrix."""
