@@ -9,7 +9,7 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Module with functionality for simulating data."""
+"""Module with functionality for simulating gradient and cluster data."""
 
 from biom.parse import parse_biom_table
 from collections import defaultdict
@@ -25,7 +25,10 @@ from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
-from microbiogeo.parse import parse_mantel_results, parse_morans_i_results
+from microbiogeo.parse import (parse_adonis_results,
+                               parse_anosim_permanova_results,
+                               parse_mantel_results,
+                               parse_morans_i_results)
 from microbiogeo.util import (get_num_samples, has_results, run_command,
                               run_parallel_jobs)
 
@@ -35,6 +38,12 @@ class InvalidSubsetSize(Exception):
 def choose_cluster_subsets(otu_table_f, map_f, category, num_total_samples):
     otu_table = parse_biom_table(otu_table_f)
     metadata_map = MetadataMap.parseMetadataMap(map_f)
+
+    # Dirty... :(
+    try:
+        map_f.seek(0)
+    except AttributeError:
+        pass
 
     if num_total_samples > len(otu_table.SampleIds):
         raise InvalidSubsetSize("Too many total samples (%d) were specified "
@@ -68,25 +77,25 @@ def _choose_items_from_clusters(category_map, all_samp_ids, num_total_samples):
     # The number of samples to choose from each cluster.
     cluster_subset_size = num_total_samples // num_cat_states
 
-    # The number of remaining samples that we need to randomly choose from
-    # (regardless of what cluster they are in) in order to meet our
-    # num_total_samples quota.
-    num_extra_samps = num_total_samples % num_cat_states
-
     # Sort category states to facilitate unit testing.
     samp_ids_to_keep = []
     for category_val, samp_ids in sorted(category_map.items()):
         samp_ids_to_keep.extend(
-                sample(samp_ids, cluster_subset_size))
+                sample(samp_ids, min(cluster_subset_size, len(samp_ids))))
 
     remaining_samp_ids = set(all_samp_ids) - set(samp_ids_to_keep)
-    return samp_ids_to_keep, sample(remaining_samp_ids, num_extra_samps)
+
+    # The number of remaining samples that we need to randomly choose from
+    # (regardless of what cluster they are in) in order to meet our
+    # num_total_samples quota.
+    num_remaining_samps = num_total_samples - len(samp_ids_to_keep)
+
+    return samp_ids_to_keep, sample(remaining_samp_ids, num_remaining_samps)
 
 def choose_gradient_subset(otu_table_f, map_f, category, num_total_samples):
     otu_table = parse_biom_table(otu_table_f)
     mdm, _ = parse_mapping_file_to_dict(map_f)
 
-    # Dirty... :(
     try:
         map_f.seek(0)
     except AttributeError:
@@ -127,8 +136,11 @@ def _choose_items_from_bins(sequence, num_items):
 
     return items
 
-def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
-    """Simulate gradient data with simsam.py."""
+def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
+    """Simulate gradient or cluster data with simsam.py.
+
+    sim_data_type should be either 'gradient' or 'cluster'.
+    """
     create_dir(out_dir)
     otu_table_fp = join(in_dir, tests['study'], 'otu_table.biom')
     map_fp = join(in_dir, tests['study'], 'map.txt')
@@ -166,18 +178,19 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
             if not has_results(samp_size_dir,
                                required_files=[basename(subset_otu_table_fp),
                                                basename(subset_map_fp)]):
-                run_command('choose_gradient_subset.py -i %s -m %s -c %s '
-                            '-n %d -o %s' % (even_otu_table_fp, map_fp,
-                                             category, samp_size,
+                run_command('choose_data_subset.py -t %s -i %s -m %s -c %s '
+                            '-n %d -o %s' % (sim_data_type, even_otu_table_fp,
+                                             map_fp, category, samp_size,
                                              samp_size_dir))
 
             for d in tests['dissim']:
                 dissim_dir = join(samp_size_dir, repr(d))
 
-                if not has_results(dissim_dir,
-                        required_files=['%s_dm.txt' % category,
-                                        '%s_dm.txt' % metric,
-                                        'map.txt']):
+                required_files = ['%s_dm.txt' % metric, 'map.txt']
+                if sim_data_type == 'gradient':
+                    required_files.append('%s_dm.txt' % category)
+
+                if not has_results(dissim_dir, required_files=required_files):
                     simsam_map_fp = join(dissim_dir,
                             add_filename_suffix(subset_map_fp,
                             '_n%d_d%r' % (simsam_rep_num, d)))
@@ -188,10 +201,13 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
                     cmd = 'simsam.py -i %s -t %s -o %s -d %r -n %d -m %s;' % (
                             subset_otu_table_fp, tree_fp, dissim_dir, d,
                             simsam_rep_num, subset_map_fp)
-                    cmd += ('distance_matrix_from_mapping.py -i %s -c %s '
-                            '-o %s;' % (simsam_map_fp, category,
-                                        join(dissim_dir,
-                                        '%s_dm.txt' % category)))
+
+                    if sim_data_type == 'gradient':
+                        cmd += ('distance_matrix_from_mapping.py -i %s -c %s '
+                                '-o %s;' % (simsam_map_fp, category,
+                                            join(dissim_dir,
+                                            '%s_dm.txt' % category)))
+
                     cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
                             simsam_otu_table_fp, dissim_dir, metric, tree_fp)
                     cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
@@ -208,10 +224,11 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
             for d in tests['dissim']:
                 dissim_dir = join(samp_size_dir, repr(d))
 
-                if not has_results(dissim_dir,
-                        required_files=['%s_dm.txt' % category,
-                                        '%s_dm.txt' % metric,
-                                        'map.txt']):
+                required_files = ['%s_dm.txt' % metric, 'map.txt']
+                if sim_data_type == 'gradient':
+                    required_files.append('%s_dm.txt' % category)
+
+                if not has_results(dissim_dir, required_files=required_files):
                     simsam_map_fp = join(dissim_dir,
                             add_filename_suffix(map_fp,
                             '_n%d_d%r' % (simsam_rep_num, d)))
@@ -224,18 +241,21 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
                             simsam_rep_num, map_fp)
 
                     subset_dir = join(dissim_dir, 'subset')
-                    cmd += ('choose_gradient_subset.py -i %s -m %s -c %s '
-                            '-n %d -o %s;' % (simsam_otu_table_fp,
+                    cmd += ('choose_data_subset.py -t %s -i %s -m %s -c %s '
+                            '-n %d -o %s;' % (sim_data_type,
+                                              simsam_otu_table_fp,
                                               simsam_map_fp, category,
                                               samp_size, subset_dir))
                     subset_otu_table_fp = join(subset_dir,
                                                basename(simsam_otu_table_fp))
                     subset_map_fp = join(subset_dir, basename(simsam_map_fp))
 
-                    cmd += ('distance_matrix_from_mapping.py -i %s -c %s '
-                            '-o %s;' % (subset_map_fp, category,
-                                        join(dissim_dir,
-                                        '%s_dm.txt' % category)))
+                    if sim_data_type == 'gradient':
+                        cmd += ('distance_matrix_from_mapping.py -i %s -c %s '
+                                '-o %s;' % (subset_map_fp, category,
+                                            join(dissim_dir,
+                                            '%s_dm.txt' % category)))
+
                     cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
                             subset_otu_table_fp, dissim_dir, metric, tree_fp)
                     cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
@@ -248,8 +268,8 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
 
     run_parallel_jobs(cmds, run_command)
 
-def process_gradient_simulated_data(in_dir, tests):
-    """Run statistical methods over gradient simulated data."""
+def process_simulated_data(in_dir, tests):
+    """Run statistical methods over simulated data."""
     metric = tests['metric']
     category = tests['category']
     num_perms = tests['num_perms']
@@ -277,11 +297,16 @@ def process_gradient_simulated_data(in_dir, tests):
                                     '-n %d -i %s -o %s' % (method, num_perms,
                                                            in_dm_fps,
                                                            method_dir))
-                    elif method == 'morans_i':
+                    elif method == 'partial_mantel' or method == 'best':
+                        raise ValueError("%s method is not currently "
+                                         "supported." % method)
+                    else:
                         cmds.append('compare_categories.py --method %s -i %s '
-                                    '-m %s -c %s -o %s' % (method, dm_fp,
-                                                           map_fp, category,
-                                                           method_dir))
+                                    '-m %s -c %s -o %s -n %d' % (method, dm_fp,
+                                                                 map_fp,
+                                                                 category,
+                                                                 method_dir,
+                                                                 num_perms))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -341,11 +366,13 @@ def create_sample_size_plots(in_dir, tests):
                                                    category)), format='pdf')
 
 def main():
-    test = False
+    test = True
 
     if test:
         in_dir = 'test_datasets'
         out_dir = 'test_simulated_output'
+        out_gradient_dir = join(out_dir, 'gradient')
+        out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
         gradient_tests = {
             'study': 'overview',
@@ -394,9 +421,14 @@ def main():
             }
         }
 
-    generate_gradient_simulated_data(in_dir, out_dir, gradient_tests, tree_fp)
-    process_gradient_simulated_data(out_dir, gradient_tests)
-    create_sample_size_plots(out_dir, gradient_tests)
+    generate_simulated_data('gradient', in_dir, out_gradient_dir,
+                            gradient_tests, tree_fp)
+    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+                            tree_fp)
+    process_simulated_data(out_gradient_dir, gradient_tests)
+    process_simulated_data(out_cluster_dir, cluster_tests)
+    create_sample_size_plots(out_gradient_dir, gradient_tests)
+    create_sample_size_plots(out_cluster_dir, cluster_tests)
 
 
 if __name__ == "__main__":

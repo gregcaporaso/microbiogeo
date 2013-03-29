@@ -82,6 +82,20 @@ class SimulateTests(TestCase):
         self.assertTrue(obs[0][0] in category_map['bar'])
         self.assertTrue(obs[0][1] in category_map['foo'])
 
+        # Test cluster sizes that aren't close to being equal.
+        category_map = {'foo': ['S1', 'S4', 'S5', 'S7', 'S6'],
+                        'bar': ['S2', 'S3']}
+        obs = _choose_items_from_clusters(category_map,
+                ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7'], 6)
+        self.assertEqual(len(obs[0]), 5)
+        self.assertEqual(len(obs[1]), 1)
+
+        # We should have sample IDs from the smaller 'bar' cluster.
+        self.assertTrue('S2' in obs[0])
+        self.assertTrue('S3' in obs[0])
+        self.assertTrue('S2' not in obs[1])
+        self.assertTrue('S3' not in obs[1])
+
     def test_choose_gradient_subset(self):
         """Test picking subsets of samples along a gradient."""
         # Don't filter anything out.
