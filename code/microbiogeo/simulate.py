@@ -17,8 +17,10 @@ from numpy import ceil, inf
 from os import listdir
 from os.path import basename, join, splitext
 from matplotlib.pyplot import figure, legend, title, xlim
+from qiime.colors import data_colors, data_color_order
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
+from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
@@ -91,7 +93,7 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
     map_f = open(map_fp, 'U')
     depth = tests['depth']
     metric = tests['metric']
-    category = tests['category'][0]
+    category = tests['category']
 
     # Rarefy the table first since simsam.py's output tables will still have
     # even sampling depth and we don't want to lose simulated samples after the
@@ -188,7 +190,7 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
 def process_gradient_simulated_data(in_dir, tests):
     """Run statistical methods over gradient simulated data."""
     metric = tests['metric']
-    category = tests['category'][0]
+    category = tests['category']
     num_perms = tests['num_perms']
 
     cmds = []
@@ -244,34 +246,38 @@ def create_sample_size_plots(in_dir, tests):
                 plots_data[d]['effect_sizes'].append(effect_size)
                 plots_data[d]['p_vals'].append(p_val)
 
-        for d, plot_data in plots_data.items():
-            # Twin y-axis code is based on
-            # http://matplotlib.org/examples/api/two_scales.html
-            fig = figure()
-            ax1 = fig.add_subplot(111)
-            ax2 = ax1.twinx()
+        # Twin y-axis code is based on
+        # http://matplotlib.org/examples/api/two_scales.html
+        fig = figure()
+        ax1 = fig.add_subplot(111)
+        ax2 = ax1.twinx()
+
+        color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
+                      for color in data_color_order]
+
+        for d, plot_data in sorted(plots_data.items()):
+            color = color_pool.pop(0)
 
             # Plot test statistics on left axis.
             ax1.errorbar(plot_data['sample_sizes'], plot_data['effect_sizes'],
-                         color=category[1], label=category[2], fmt='-')
+                         color=color, label='d=%r' % d, fmt='-')
 
             # Plot p-values on the right axis.
             ax2.errorbar(plot_data['sample_sizes'], plot_data['p_vals'],
-                         color=category[1], label=category[2], fmt='-',
-                         linestyle='--')
+                         color=color, label='d=%r' % d, linestyle='--')
 
-            xlim(0, max(plot_data['sample_sizes']))
-            #ax2.set_ylim(0.0, 1.0)
-            title('%s: %s' % (tests['study'], method))
-            #lines, labels = ax1.get_legend_handles_labels()
-            #lines2, labels2 = ax2.get_legend_handles_labels()
-            #ax2.legend(lines + lines2, labels + labels2)
-            ax1.set_xlabel('Number of samples')
-            ax1.set_ylabel('test statistic')
-            ax2.set_ylabel('p-value')
-            legend()
-            fig.savefig(join(in_dir, '%s_%s_%r.pdf' % (tests['study'], method,
-                                                       d)), format='pdf')
+        #xlim(0, max(plot_data['sample_sizes']))
+        #ax2.set_ylim(0.0, 1.0)
+        title('%s: %s: %s' % (tests['study'], method, category))
+        #lines, labels = ax1.get_legend_handles_labels()
+        #lines2, labels2 = ax2.get_legend_handles_labels()
+        #ax2.legend(lines + lines2, labels + labels2)
+        ax1.set_xlabel('Number of samples')
+        ax1.set_ylabel('test statistic')
+        ax2.set_ylabel('p-value')
+        legend()
+        fig.savefig(join(in_dir, '%s_%s_%s.pdf' % (tests['study'], method,
+                                                   category)), format='pdf')
 
 def main():
     in_dir = 'test_datasets'
@@ -284,7 +290,7 @@ def main():
         'num_perms': 999,
         'dissim': [0.001, 0.01, 0.1],
         'sample_sizes': [3, 5, 13, 100],
-        'category': ['Gradient', 'b', 'Gradient (positive control)'],
+        'category': 'Gradient',
         'methods': {
             'mantel': parse_mantel_results,
             'morans_i': parse_morans_i_results
