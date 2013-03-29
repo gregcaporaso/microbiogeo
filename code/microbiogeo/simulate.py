@@ -366,7 +366,7 @@ def create_sample_size_plots(in_dir, tests):
                                                    category)), format='pdf')
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
@@ -404,6 +404,8 @@ def main():
     else:
         in_dir = '../data'
         out_dir = 'sim_data_output'
+        out_gradient_dir = join(out_dir, 'gradient')
+        out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
         gradient_tests = {
             'study': '88_soils',
@@ -421,13 +423,32 @@ def main():
             }
         }
 
-    generate_simulated_data('gradient', in_dir, out_gradient_dir,
-                            gradient_tests, tree_fp)
+        cluster_tests = {
+            'study': 'keyboard',
+            'depth': 390,
+            'metric': 'unweighted_unifrac',
+            'num_perms': 999,
+            # dissim must all be floats!
+            'dissim': [0.001, 0.01, 0.1, 0.5, 1.0, 10.0],
+            # sample_sizes must all be ints!
+            'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+            'category': 'HOST_SUBJECT_ID',
+            'methods': {
+                'adonis': parse_adonis_results,
+                'anosim': parse_anosim_permanova_results,
+                'mrpp': parse_mrpp_results,
+                'permanova': parse_anosim_permanova_results,
+                'dbrda': parse_dbrda_results
+            }
+        }
+
+    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
+    #                        gradient_tests, tree_fp)
     generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
                             tree_fp)
-    process_simulated_data(out_gradient_dir, gradient_tests)
+    #process_simulated_data(out_gradient_dir, gradient_tests)
     process_simulated_data(out_cluster_dir, cluster_tests)
-    create_sample_size_plots(out_gradient_dir, gradient_tests)
+    #create_sample_size_plots(out_gradient_dir, gradient_tests)
     create_sample_size_plots(out_cluster_dir, cluster_tests)
 
 
