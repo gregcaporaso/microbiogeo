@@ -280,7 +280,7 @@ def create_sample_size_plots(in_dir, tests):
                                                    category)), format='pdf')
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
@@ -300,7 +300,7 @@ def main():
             }
         }
     else:
-        in_dir = 'datasets'
+        in_dir = '../datasets'
         out_dir = 'sim_data_output'
         tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
         gradient_tests = {
