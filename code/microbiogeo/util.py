@@ -11,6 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module with various utility functions."""
 
+from biom.parse import parse_biom_table
 from collections import defaultdict
 from os import listdir
 from os.path import exists, join
@@ -61,6 +62,12 @@ def has_results(results_dir, required_files=None):
                 break
 
     return has_results
+
+def get_num_samples(table_fp):
+    """Returns the number of samples in the table."""
+    with open(table_fp, 'U') as table_f:
+        table = parse_biom_table(table_f)
+        return len(table.SampleIds)
 
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)

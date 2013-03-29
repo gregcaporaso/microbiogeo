@@ -26,12 +26,21 @@ from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
 from microbiogeo.parse import parse_mantel_results, parse_morans_i_results
-from microbiogeo.util import has_results, run_command, run_parallel_jobs
+from microbiogeo.util import (get_num_samples, has_results, run_command,
+                              run_parallel_jobs)
 
-def choose_cluster_subsets(otu_table_f, map_f, category,
-                           num_samples_per_group):
+class InvalidSubsetSize(Exception):
+    pass
+
+def choose_cluster_subsets(otu_table_f, map_f, category, num_total_samples):
     otu_table = parse_biom_table(otu_table_f)
     metadata_map = MetadataMap.parseMetadataMap(map_f)
+
+    if num_total_samples > len(otu_table.SampleIds):
+        raise InvalidSubsetSize("Too many total samples (%d) were specified "
+                                "as a subset size. There are only %d total "
+                                "samples to choose a subset from." %
+                                (num_total_samples, len(otu_table.SampleIds)))
 
     category_map = defaultdict(list)
     for samp_id in metadata_map.SampleIds:
@@ -40,23 +49,54 @@ def choose_cluster_subsets(otu_table_f, map_f, category,
             category_val = metadata_map.getCategoryValue(samp_id, category)
             category_map[category_val].append(samp_id)
 
-    samp_ids_to_keep = []
-    for category_val, samp_ids in category_map.items():
-        samp_ids_to_keep.extend(
-                sample(samp_ids, min(num_samples_per_group, len(samp_ids))))
+    samp_ids_to_keep, extra_samps = _choose_items_from_clusters(
+            category_map, otu_table.SampleIds, num_total_samples)
+    samp_ids_to_keep.extend(extra_samps)
+
+    assert len(samp_ids_to_keep) == num_total_samples, \
+           "%d != %d" % (len(samp_ids_to_keep), num_total_samples)
+    assert len(samp_ids_to_keep) == len(set(samp_ids_to_keep)), \
+           "Duplicate sample IDs in subset"
 
     return (filter_samples_from_otu_table(otu_table, samp_ids_to_keep, 0, inf),
-            filter_mapping_file_from_mapping_f(map_f, samp_ids_to_keep),
-            len(samp_ids_to_keep))
+            filter_mapping_file_from_mapping_f(map_f, samp_ids_to_keep))
+
+def _choose_items_from_clusters(category_map, all_samp_ids, num_total_samples):
+    # How many clusters we have.
+    num_cat_states = len(category_map)
+
+    # The number of samples to choose from each cluster.
+    cluster_subset_size = num_total_samples // num_cat_states
+
+    # The number of remaining samples that we need to randomly choose from
+    # (regardless of what cluster they are in) in order to meet our
+    # num_total_samples quota.
+    num_extra_samps = num_total_samples % num_cat_states
+
+    # Sort category states to facilitate unit testing.
+    samp_ids_to_keep = []
+    for category_val, samp_ids in sorted(category_map.items()):
+        samp_ids_to_keep.extend(
+                sample(samp_ids, cluster_subset_size))
+
+    remaining_samp_ids = set(all_samp_ids) - set(samp_ids_to_keep)
+    return samp_ids_to_keep, sample(remaining_samp_ids, num_extra_samps)
 
 def choose_gradient_subset(otu_table_f, map_f, category, num_total_samples):
     otu_table = parse_biom_table(otu_table_f)
     mdm, _ = parse_mapping_file_to_dict(map_f)
 
+    # Dirty... :(
     try:
         map_f.seek(0)
     except AttributeError:
         pass
+
+    if num_total_samples > len(otu_table.SampleIds):
+        raise InvalidSubsetSize("Too many total samples (%d) were specified "
+                                "as a gradient subset size. There are only %d "
+                                "total samples to choose a subset from." %
+                                (num_total_samples, len(otu_table.SampleIds)))
 
     # Only keep the sample IDs that are in both the mapping file and OTU table.
     # Sort the samples according to the gradient category.
@@ -70,6 +110,8 @@ def choose_gradient_subset(otu_table_f, map_f, category, num_total_samples):
 
     assert len(samp_ids_to_keep) == num_total_samples, \
            "%d != %d" % (len(samp_ids_to_keep), num_total_samples)
+    assert len(samp_ids_to_keep) == len(set(samp_ids_to_keep)), \
+           "Duplicate sample IDs in subset"
 
     return (filter_samples_from_otu_table(otu_table, samp_ids_to_keep, 0, inf),
             filter_mapping_file_from_mapping_f(map_f, samp_ids_to_keep))
@@ -105,11 +147,7 @@ def generate_gradient_simulated_data(in_dir, out_dir, tests, tree_fp):
         run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp,
                 even_otu_table_fp, depth))
 
-    # Figure out how many samples we have in the rarefied table.
-    even_otu_table_f = open(even_otu_table_fp, 'U')
-    even_otu_table = parse_biom_table(even_otu_table_f)
-    even_otu_table_f.seek(0)
-    num_samps = len(even_otu_table.SampleIds)
+    num_samps = get_num_samples(even_otu_table_fp)
 
     cmds = []
     for samp_size in tests['sample_sizes']:
@@ -278,7 +316,7 @@ def create_sample_size_plots(in_dir, tests):
         color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
                       for color in data_color_order]
 
-        for d, plot_data in sorted(plots_data.items()):
+        for d, plot_data in sorted(plots_data.items(), reverse=True):
             color = color_pool.pop(0)
 
             # Plot test statistics on left axis.
@@ -322,6 +360,20 @@ def main():
                 'morans_i': parse_morans_i_results
             }
         }
+
+        cluster_tests = {
+            'study': 'overview',
+            'depth': 146,
+            'metric': 'unweighted_unifrac',
+            'num_perms': 999,
+            'dissim': [0.001, 0.01, 0.1],
+            'sample_sizes': [3, 5, 13, 100],
+            'category': 'Treatment',
+            'methods': {
+                'adonis': parse_adonis_results,
+                'anosim': parse_anosim_permanova_results
+            }
+        }
     else:
         in_dir = '../data'
         out_dir = 'sim_data_output'
@@ -331,12 +383,14 @@ def main():
             'depth': 400,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
+            # dissim must all be floats!
             'dissim': [0.001, 0.01, 0.1, 0.5, 1.0, 10.0],
+            # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'category': 'PH',
             'methods': {
                 'mantel': parse_mantel_results,
-                'morans_i': parse_morans_i_results
+                #'morans_i': parse_morans_i_results
             }
         }
 
