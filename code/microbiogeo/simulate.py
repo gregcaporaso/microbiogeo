@@ -16,6 +16,7 @@ from collections import defaultdict
 from numpy import ceil, inf
 from os import listdir
 from os.path import basename, join, splitext
+from matplotlib.pyplot import figure, legend, title, xlim
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import parse_mapping_file_to_dict
@@ -221,65 +222,56 @@ def process_gradient_simulated_data(in_dir, tests):
 
     run_parallel_jobs(cmds, run_command)
 
-#def create_sample_size_plots(in_dir, tests):
-#    """Create plots of sample size vs effect size/p-val for each dissim."""
-#    category = tests['category']
-#
-#    # dissim -> {'sample_sizes': list, 'effect_sizes': list, 'p_vals' -> list}
-#    plots_data = defaultdict(defaultdict(list))
-#
-#    for samp_size in tests['sample_sizes']:
-#        samp_size_dir = join(in_dir, '%d' % samp_size)
-#
-#        for d in tests['dissim']:
-#            dissim_dir = join(samp_size_dir, repr(d))
-#
-#            # TODO fix for multiple methods
-#            for method, parse_fn in tests['methods'].items():
-#                method_dir = join(dissim_dir, method)
-#
-#                effect_size, p_val = parse_fn(
-#                        open(join(method_dir, '%s_results.txt' % method), 'U'))
-#                plots_data[d]['sample_sizes'].append(samp_size)
-#                plots_data[d]['effect_sizes'].append(effect_size)
-#                plots_data[d]['p_vals'].append(p_val)
-#
-#    for d, plot_data in plots_data.items():
-#        # Twin y-axis code is based on
-#        # http://matplotlib.org/examples/api/two_scales.html
-#        fig = figure()
-#        ax1 = fig.add_subplot(111)
-#        ax2 = ax1.twinx()
-#
-#        # Plot test statistics on left axis.
-#        ax1.errorbar(plot_data['sample_sizes'], plot_data['effect_sizes'],
-#                     color=category[1], label=category[2], fmt='-')
-#
-#        # Plot p-values on the right axis.
-#        ax2.errorbar(plot_data['sample_sizes'], plot_data['p_vals'],
-#                     color=category[1], label=category[2], fmt='-',
-#                     linestyle='--')
-#
-#        xlim(0, max(plot_data['sample_sizes']))
-#        #ax2.set_ylim(0.0, 1.0)
-#        title('%s: %s' % (tests['study'], method))
-#        #lines, labels = ax1.get_legend_handles_labels()
-#        #lines2, labels2 = ax2.get_legend_handles_labels()
-#        #ax2.legend(lines + lines2, labels + labels2)
-#
-#    if method_type == 'grouping':
-#        x_label = 'Samples per group'
-#    elif method_type == 'gradient':
-#        x_label = 'Number of samples'
-#    else:
-#        raise ValueError("Unknown method type '%s'." % method_type)
-#
-#    ax1.set_xlabel(x_label)
-#    ax1.set_ylabel('Average test statistic with standard deviation')
-#    ax2.set_ylabel('Average p-value with standard deviation')
-#    legend()
-#    fig.savefig(join(out_study_dir, '%s_analysis_plot_%s_%s.pdf' % (
-#            method_type, study, method)), format='pdf')
+def create_sample_size_plots(in_dir, tests):
+    """Create plots of sample size vs effect size/p-val for each dissim."""
+    category = tests['category']
+
+    for method, parse_fn in tests['methods'].items():
+        # dissim -> {'sample_sizes': list,
+        #            'effect_sizes': list,
+        #            'p_vals' -> list}
+        plots_data = defaultdict(lambda: defaultdict(list))
+
+        for samp_size in tests['sample_sizes']:
+            samp_size_dir = join(in_dir, '%d' % samp_size)
+
+            for d in tests['dissim']:
+                method_dir = join(samp_size_dir, repr(d), method)
+
+                effect_size, p_val = parse_fn(
+                        open(join(method_dir, '%s_results.txt' % method), 'U'))
+                plots_data[d]['sample_sizes'].append(samp_size)
+                plots_data[d]['effect_sizes'].append(effect_size)
+                plots_data[d]['p_vals'].append(p_val)
+
+        for d, plot_data in plots_data.items():
+            # Twin y-axis code is based on
+            # http://matplotlib.org/examples/api/two_scales.html
+            fig = figure()
+            ax1 = fig.add_subplot(111)
+            ax2 = ax1.twinx()
+
+            # Plot test statistics on left axis.
+            ax1.errorbar(plot_data['sample_sizes'], plot_data['effect_sizes'],
+                         color=category[1], label=category[2], fmt='-')
+
+            # Plot p-values on the right axis.
+            ax2.errorbar(plot_data['sample_sizes'], plot_data['p_vals'],
+                         color=category[1], label=category[2], fmt='-',
+                         linestyle='--')
+
+            xlim(0, max(plot_data['sample_sizes']))
+            #ax2.set_ylim(0.0, 1.0)
+            title('%s: %s' % (tests['study'], method))
+            #lines, labels = ax1.get_legend_handles_labels()
+            #lines2, labels2 = ax2.get_legend_handles_labels()
+            #ax2.legend(lines + lines2, labels + labels2)
+            ax1.set_xlabel('Number of samples')
+            ax1.set_ylabel('test statistic')
+            ax2.set_ylabel('p-value')
+            legend()
+            fig.savefig(join(in_dir, '%s_%s_%r.pdf' % (tests['study'], method,
+                                                       d)), format='pdf')
 
 def main():
     in_dir = 'test_datasets'
@@ -301,7 +293,7 @@ def main():
 
     generate_gradient_simulated_data(in_dir, out_dir, gradient_tests, tree_fp)
     process_gradient_simulated_data(out_dir, gradient_tests)
-    #create_sample_size_plots(out_dir, gradient_tests)
+    create_sample_size_plots(out_dir, gradient_tests)
 
 
 if __name__ == "__main__":
