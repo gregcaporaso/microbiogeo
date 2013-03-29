@@ -300,7 +300,7 @@ def main():
             }
         }
     else:
-        in_dir = '../datasets'
+        in_dir = '../data'
         out_dir = 'sim_data_output'
         tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
         gradient_tests = {
