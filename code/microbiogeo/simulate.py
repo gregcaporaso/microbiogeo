@@ -27,8 +27,10 @@ from random import randint, sample
 
 from microbiogeo.parse import (parse_adonis_results,
                                parse_anosim_permanova_results,
+                               parse_dbrda_results,
                                parse_mantel_results,
-                               parse_morans_i_results)
+                               parse_morans_i_results,
+                               parse_mrpp_results)
 from microbiogeo.util import (get_num_samples, has_results, run_command,
                               run_parallel_jobs)
 
