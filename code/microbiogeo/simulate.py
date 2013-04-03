@@ -316,6 +316,11 @@ def create_sample_size_plots(in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
     category = tests['category']
 
+    # We don't like yellow...
+    color_order = data_color_order[:]
+    color_order.remove('yellow1')
+    color_order.remove('yellow2')
+
     for method, parse_fn in tests['methods'].items():
         # dissim -> {'sample_sizes': list,
         #            'effect_sizes': list,
@@ -341,7 +346,7 @@ def create_sample_size_plots(in_dir, tests):
         ax2 = ax1.twinx()
 
         color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
-                      for color in data_color_order]
+                      for color in color_order]
 
         for d, plot_data in sorted(plots_data.items(), reverse=True):
             color = color_pool.pop(0)
@@ -381,7 +386,7 @@ def main():
             'depth': 146,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.0, 0.001, 0.01, 0.1],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             'sample_sizes': [3, 5, 13, 100],
             'category': 'Gradient',
             'methods': {
@@ -395,7 +400,7 @@ def main():
             'depth': 146,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.0, 0.001, 0.01, 0.1],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             'sample_sizes': [3, 5, 13, 100],
             'category': 'Treatment',
             'methods': {
