@@ -361,6 +361,7 @@ def create_sample_size_plots(in_dir, tests):
 
         #xlim(0, max(plot_data['sample_sizes']))
         #ax2.set_ylim(0.0, 1.0)
+        ax2.set_yscale('log')
         title('%s: %s: %s' % (tests['study'], method, category))
         #lines, labels = ax1.get_legend_handles_labels()
         #lines2, labels2 = ax2.get_legend_handles_labels()
