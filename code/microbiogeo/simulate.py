@@ -368,7 +368,7 @@ def create_sample_size_plots(in_dir, tests):
                                                    category)), format='pdf')
 
 def main():
-    test = False
+    test = True
 
     if test:
         in_dir = 'test_datasets'
@@ -381,12 +381,12 @@ def main():
             'depth': 146,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.001, 0.01, 0.1],
+            'dissim': [0.0, 0.001, 0.01, 0.1],
             'sample_sizes': [3, 5, 13, 100],
             'category': 'Gradient',
             'methods': {
                 'mantel': parse_mantel_results,
-                'morans_i': parse_morans_i_results
+                #'morans_i': parse_morans_i_results
             }
         }
 
@@ -395,7 +395,7 @@ def main():
             'depth': 146,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.001, 0.01, 0.1],
+            'dissim': [0.0, 0.001, 0.01, 0.1],
             'sample_sizes': [3, 5, 13, 100],
             'category': 'Treatment',
             'methods': {
@@ -415,7 +415,7 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             # dissim must all be floats!
-            'dissim': [0.001, 0.01, 0.1, 0.5, 1.0, 10.0],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'category': 'PH',
@@ -431,7 +431,7 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             # dissim must all be floats!
-            'dissim': [0.001, 0.01, 0.1, 0.5, 1.0, 10.0],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'category': 'HOST_SUBJECT_ID',
@@ -444,13 +444,13 @@ def main():
             }
         }
 
-    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
-    #                        gradient_tests, tree_fp)
+    generate_simulated_data('gradient', in_dir, out_gradient_dir,
+                            gradient_tests, tree_fp)
     generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
                             tree_fp)
-    #process_simulated_data(out_gradient_dir, gradient_tests)
+    process_simulated_data(out_gradient_dir, gradient_tests)
     process_simulated_data(out_cluster_dir, cluster_tests)
-    #create_sample_size_plots(out_gradient_dir, gradient_tests)
+    create_sample_size_plots(out_gradient_dir, gradient_tests)
     create_sample_size_plots(out_cluster_dir, cluster_tests)
 
 
