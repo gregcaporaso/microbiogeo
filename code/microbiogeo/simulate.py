@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from biom.parse import parse_biom_table
 from collections import defaultdict
-from numpy import ceil, inf
+from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.pyplot import figure, legend, title, xlim
@@ -340,55 +340,83 @@ def create_sample_size_plots(in_dir, tests):
 
     for method, parse_fn in tests['methods'].items():
         # dissim -> {'sample_sizes': list,
-        #            'effect_sizes': list,
-        #            'p_vals' -> list}
+        #            'effect_sizes': list of lists, one for each trial,
+        #            'p_vals' -> list of lists, one for each trial}
         plots_data = defaultdict(lambda: defaultdict(list))
 
-        for samp_size in tests['sample_sizes']:
-            samp_size_dir = join(in_dir, '%d' % samp_size)
+        for trial_num in range(tests['num_trials']):
+            trial_num_dir = join(in_dir, '%d' % trial_num)
 
-            for d in tests['dissim']:
-                method_dir = join(samp_size_dir, repr(d), method)
+            for samp_size in tests['sample_sizes']:
+                samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
-                effect_size, p_val = parse_fn(
-                        open(join(method_dir, '%s_results.txt' % method), 'U'))
-                plots_data[d]['sample_sizes'].append(samp_size)
-                plots_data[d]['effect_sizes'].append(effect_size)
-                plots_data[d]['p_vals'].append(p_val)
+                for d in tests['dissim']:
+                    method_dir = join(samp_size_dir, repr(d), method)
 
-        # Twin y-axis code is based on
-        # http://matplotlib.org/examples/api/two_scales.html
-        fig = figure()
-        ax1 = fig.add_subplot(111)
-        ax2 = ax1.twinx()
+                    effect_size, p_val = parse_fn(open(join(method_dir,
+                            '%s_results.txt' % method), 'U'))
 
-        color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
-                      for color in color_order]
+                    if samp_size not in plots_data[d]['sample_sizes']:
+                        plots_data[d]['sample_sizes'].append(samp_size)
+                        plots_data[d]['effect_sizes'].append([])
+                        plots_data[d]['p_vals'].append([])
 
-        for d, plot_data in sorted(plots_data.items(), reverse=True):
-            color = color_pool.pop(0)
+                    samp_size_idx = \
+                            plots_data[d]['sample_sizes'].index(samp_size)
+                    plots_data[d]['effect_sizes'][samp_size_idx].append(
+                            effect_size)
+                    plots_data[d]['p_vals'][samp_size_idx].append(p_val)
 
-            # Plot test statistics on left axis.
-            ax1.errorbar(plot_data['sample_sizes'], plot_data['effect_sizes'],
-                         color=color, label='d=%r' % d, fmt='-')
+            # Twin y-axis code is based on
+            # http://matplotlib.org/examples/api/two_scales.html
+            fig = figure()
+            ax1 = fig.add_subplot(111)
+            ax2 = ax1.twinx()
 
-            # Plot p-values on the right axis.
-            ax2.errorbar(plot_data['sample_sizes'], plot_data['p_vals'],
-                         color=color, label='d=%r' % d, linestyle='--')
+            color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
+                          for color in color_order]
 
-        #xlim(0, max(plot_data['sample_sizes']))
-        #ax2.set_ylim(0.0, 1.0)
-        ax2.set_yscale('log')
-        title('%s: %s: %s' % (tests['study'], method, category))
-        #lines, labels = ax1.get_legend_handles_labels()
-        #lines2, labels2 = ax2.get_legend_handles_labels()
-        #ax2.legend(lines + lines2, labels + labels2)
-        ax1.set_xlabel('Number of samples')
-        ax1.set_ylabel('test statistic')
-        ax2.set_ylabel('p-value')
-        legend()
-        fig.savefig(join(in_dir, '%s_%s_%s.pdf' % (tests['study'], method,
-                                                   category)), format='pdf')
+            for d, plot_data in sorted(plots_data.items(), reverse=True):
+                color = color_pool.pop(0)
+
+                avg_effect_sizes = [mean(e) for e in plot_data['effect_sizes']]
+                std_effect_sizes = [std(e) for e in plot_data['effect_sizes']]
+                avg_p_vals = [mean(e) for e in plot_data['p_vals']]
+                std_p_vals = [std(e) for e in plot_data['p_vals']]
+
+                assert len(plot_data['sample_sizes']) == \
+                       len(avg_effect_sizes), "%d != %d" % (
+                       len(plot_data['sample_sizes']),
+                       len(avg_effect_sizes))
+
+                assert len(plot_data['sample_sizes']) == \
+                       len(avg_p_vals), "%d != %d" % (
+                       len(plot_data['sample_sizes']),
+                       len(avg_p_vals))
+
+                # Plot test statistics on left axis.
+                ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
+                             yerr=std_effect_sizes, color=color,
+                             label='d=%r' % d, fmt='-')
+
+                # Plot p-values on the right axis.
+                ax2.errorbar(plot_data['sample_sizes'], avg_p_vals,
+                             yerr=std_p_vals, color=color, label='d=%r' % d,
+                             linestyle='--')
+
+            #xlim(0, max(plot_data['sample_sizes']))
+            #ax2.set_ylim(0.0, 1.0)
+            ax2.set_yscale('log')
+            title('%s: %s: %s' % (tests['study'], method, category))
+            #lines, labels = ax1.get_legend_handles_labels()
+            #lines2, labels2 = ax2.get_legend_handles_labels()
+            #ax2.legend(lines + lines2, labels + labels2)
+            ax1.set_xlabel('Number of samples')
+            ax1.set_ylabel('test statistic')
+            ax2.set_ylabel('p-value')
+            legend()
+            fig.savefig(join(in_dir, '%s_%s_%s.pdf' % (tests['study'], method,
+                                                       category)), format='pdf')
 
 def main():
     test = True
@@ -443,7 +471,7 @@ def main():
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-            'num_trials': 20,
+            'num_trials': 10,
             'category': 'PH',
             'methods': {
                 'mantel': parse_mantel_results,
@@ -460,7 +488,7 @@ def main():
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-            'num_trials': 20,
+            'num_trials': 10,
             'category': 'HOST_SUBJECT_ID',
             'methods': {
                 'adonis': parse_adonis_results,
@@ -473,12 +501,12 @@ def main():
 
     generate_simulated_data('gradient', in_dir, out_gradient_dir,
                             gradient_tests, tree_fp)
-    #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-    #                        tree_fp)
+    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+                            tree_fp)
     process_simulated_data(out_gradient_dir, gradient_tests)
-    #process_simulated_data(out_cluster_dir, cluster_tests)
-    #create_sample_size_plots(out_gradient_dir, gradient_tests)
-    #create_sample_size_plots(out_cluster_dir, cluster_tests)
+    process_simulated_data(out_cluster_dir, cluster_tests)
+    create_sample_size_plots(out_gradient_dir, gradient_tests)
+    create_sample_size_plots(out_cluster_dir, cluster_tests)
 
 
 if __name__ == "__main__":
