@@ -289,40 +289,43 @@ def process_simulated_data(in_dir, tests):
     metric = tests['metric']
     category = tests['category']
     num_perms = tests['num_perms']
+    num_trials = tests['num_trials']
 
     cmds = []
-    for samp_size in tests['sample_sizes']:
-        samp_size_dir = join(in_dir, '%d' % samp_size)
+    for trial_num in range(num_trials):
+        trial_num_dir = join(in_dir, '%d' % trial_num)
 
-        for d in tests['dissim']:
-            dissim_dir = join(samp_size_dir, repr(d))
+        for samp_size in tests['sample_sizes']:
+            samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
-            dm_fp = join(dissim_dir, '%s_dm.txt' % metric)
-            map_fp = join(dissim_dir, 'map.txt')
-            grad_dm_fp = join(dissim_dir, '%s_dm.txt' % category)
+            for d in tests['dissim']:
+                dissim_dir = join(samp_size_dir, repr(d))
 
-            for method in tests['methods']:
-                method_dir = join(dissim_dir, method)
-                create_dir(method_dir)
+                dm_fp = join(dissim_dir, '%s_dm.txt' % metric)
+                map_fp = join(dissim_dir, 'map.txt')
+                grad_dm_fp = join(dissim_dir, '%s_dm.txt' % category)
 
-                if not has_results(method_dir):
-                    if method == 'mantel' or method == 'mantel_corr':
-                        in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+                for method in tests['methods']:
+                    method_dir = join(dissim_dir, method)
+                    create_dir(method_dir)
 
-                        cmds.append('compare_distance_matrices.py --method %s '
-                                    '-n %d -i %s -o %s' % (method, num_perms,
-                                                           in_dm_fps,
-                                                           method_dir))
-                    elif method == 'partial_mantel' or method == 'best':
-                        raise ValueError("%s method is not currently "
-                                         "supported." % method)
-                    else:
-                        cmds.append('compare_categories.py --method %s -i %s '
-                                    '-m %s -c %s -o %s -n %d' % (method, dm_fp,
-                                                                 map_fp,
-                                                                 category,
-                                                                 method_dir,
-                                                                 num_perms))
+                    if not has_results(method_dir):
+                        if method == 'mantel' or method == 'mantel_corr':
+                            in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+
+                            cmds.append('compare_distance_matrices.py '
+                                        '--method %s -n %d -i %s -o %s' % (
+                                            method, num_perms, in_dm_fps,
+                                            method_dir))
+                        elif method == 'partial_mantel' or method == 'best':
+                            raise NotImplementedError("%s method is not "
+                                                      "currently supported." %
+                                                      method)
+                        else:
+                            cmds.append('compare_categories.py --method %s '
+                                        '-i %s -m %s -c %s -o %s -n %d' % (
+                                            method, dm_fp, map_fp, category,
+                                            method_dir, num_perms))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -472,7 +475,7 @@ def main():
                             gradient_tests, tree_fp)
     #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
     #                        tree_fp)
-    #process_simulated_data(out_gradient_dir, gradient_tests)
+    process_simulated_data(out_gradient_dir, gradient_tests)
     #process_simulated_data(out_cluster_dir, cluster_tests)
     #create_sample_size_plots(out_gradient_dir, gradient_tests)
     #create_sample_size_plots(out_cluster_dir, cluster_tests)
