@@ -16,6 +16,7 @@ from collections import defaultdict
 from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
+from matplotlib.lines import Line2D
 from matplotlib.pyplot import figure, legend, title, xlim
 from qiime.colors import data_colors, data_color_order
 from qiime.filter import (filter_mapping_file_from_mapping_f,
@@ -376,9 +377,9 @@ def create_sample_size_plots(in_dir, tests):
             color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
                           for color in color_order]
 
+            legend_labels = []
+            legend_lines = []
             for d, plot_data in sorted(plots_data.items(), reverse=True):
-                color = color_pool.pop(0)
-
                 avg_effect_sizes = [mean(e) for e in plot_data['effect_sizes']]
                 std_effect_sizes = [std(e) for e in plot_data['effect_sizes']]
                 avg_p_vals = [mean(e) for e in plot_data['p_vals']]
@@ -394,19 +395,26 @@ def create_sample_size_plots(in_dir, tests):
                        len(plot_data['sample_sizes']),
                        len(avg_p_vals))
 
+                color = color_pool.pop(0)
+                label = 'd=%r' % d
+                legend_labels.append(label)
+                legend_lines.append(Line2D([0, 1], [0, 0], color=color))
+
                 # Plot test statistics on left axis.
                 ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
                              yerr=std_effect_sizes, color=color,
-                             label='d=%r' % d, fmt='-')
+                             label=label, fmt='-')
 
                 # Plot p-values on the right axis.
-                ax2.errorbar(plot_data['sample_sizes'], avg_p_vals,
-                             yerr=std_p_vals, color=color, label='d=%r' % d,
-                             linestyle='--')
+                _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'],
+                                                 avg_p_vals, yerr=std_p_vals,
+                                                 color=color, label=label,
+                                                 linestyle='--')
+                barlinecols[0].set_linestyles('dashed')
 
             #xlim(0, max(plot_data['sample_sizes']))
             #ax2.set_ylim(0.0, 1.0)
-            ax2.set_yscale('log')
+            ax2.set_yscale('log', nonposy='clip')
             title('%s: %s: %s' % (tests['study'], method, category))
             #lines, labels = ax1.get_legend_handles_labels()
             #lines2, labels2 = ax2.get_legend_handles_labels()
@@ -414,9 +422,9 @@ def create_sample_size_plots(in_dir, tests):
             ax1.set_xlabel('Number of samples')
             ax1.set_ylabel('test statistic')
             ax2.set_ylabel('p-value')
-            legend()
+            legend(legend_lines, legend_labels)
             fig.savefig(join(in_dir, '%s_%s_%s.pdf' % (tests['study'], method,
-                                                       category)), format='pdf')
+                    category)), format='pdf')
 
 def main():
     test = True
