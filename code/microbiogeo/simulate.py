@@ -17,7 +17,7 @@ from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
-from matplotlib.pyplot import figure, legend, title, xlim
+from matplotlib.pyplot import figure, legend, subplot, title, xlim
 from qiime.colors import data_colors, data_color_order
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
@@ -339,7 +339,14 @@ def create_sample_size_plots(in_dir, tests):
     color_order.remove('yellow1')
     color_order.remove('yellow2')
 
-    for method, parse_fn in tests['methods'].items():
+    # +1 to account for PCoA plot.
+    num_plots = len(tests['methods']) + 1
+    num_rows = 4
+    num_cols = int(ceil(num_plots / 2))
+
+    #fig = figure()
+
+    for plot_idx, (method, parse_fn) in enumerate(tests['methods'].items()):
         # dissim -> {'sample_sizes': list,
         #            'effect_sizes': list of lists, one for each trial,
         #            'p_vals' -> list of lists, one for each trial}
@@ -368,70 +375,77 @@ def create_sample_size_plots(in_dir, tests):
                             effect_size)
                     plots_data[d]['p_vals'][samp_size_idx].append(p_val)
 
-            # Twin y-axis code is based on
-            # http://matplotlib.org/examples/api/two_scales.html
-            fig1 = figure()
-            fig2 = figure()
-            ax1 = fig1.add_subplot(111)
-            ax2 = fig2.add_subplot(111)
+        fig1 = figure()
+        fig2 = figure()
+        ax1 = fig1.add_subplot(111)
+        ax2 = fig2.add_subplot(111)
 
-            color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
-                          for color in color_order]
+        color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
+                      for color in color_order]
 
-            legend_labels = []
-            legend_lines = []
-            for d, plot_data in sorted(plots_data.items(), reverse=True):
-                avg_effect_sizes = [mean(e) for e in plot_data['effect_sizes']]
-                std_effect_sizes = [std(e) for e in plot_data['effect_sizes']]
-                avg_p_vals = [mean(e) for e in plot_data['p_vals']]
-                std_p_vals = [std(e) for e in plot_data['p_vals']]
+        legend_labels = []
+        legend_lines = []
+        for d, plot_data in sorted(plots_data.items(), reverse=True):
+            avg_effect_sizes = []
+            std_effect_sizes = []
+            for e in plot_data['effect_sizes']:
+                assert len(e) == tests['num_trials']
+                avg_effect_sizes.append(mean(e))
+                std_effect_sizes.append(std(e))
 
-                assert len(plot_data['sample_sizes']) == \
-                       len(avg_effect_sizes), "%d != %d" % (
-                       len(plot_data['sample_sizes']),
-                       len(avg_effect_sizes))
+            avg_p_vals = []
+            std_p_vals = []
+            for e in plot_data['p_vals']:
+                assert len(e) == tests['num_trials']
+                avg_p_vals.append(mean(e))
+                std_p_vals.append(std(e))
 
-                assert len(plot_data['sample_sizes']) == \
-                       len(avg_p_vals), "%d != %d" % (
-                       len(plot_data['sample_sizes']),
-                       len(avg_p_vals))
+            assert len(plot_data['sample_sizes']) == \
+                   len(avg_effect_sizes), "%d != %d" % (
+                   len(plot_data['sample_sizes']),
+                   len(avg_effect_sizes))
 
-                color = color_pool.pop(0)
-                label = 'd=%r' % d
-                legend_labels.append(label)
-                legend_lines.append(Line2D([0, 1], [0, 0], color=color))
+            assert len(plot_data['sample_sizes']) == \
+                   len(avg_p_vals), "%d != %d" % (
+                   len(plot_data['sample_sizes']),
+                   len(avg_p_vals))
 
-                # Plot test statistics.
-                ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
-                             yerr=std_effect_sizes, color=color,
-                             label=label, fmt='-')
+            color = color_pool.pop(0)
+            label = 'd=%r' % d
+            legend_labels.append(label)
+            legend_lines.append(Line2D([0, 1], [0, 0], color=color))
 
-                # Plot p-values.
-                _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'],
-                                                 avg_p_vals, yerr=std_p_vals,
-                                                 color=color, label=label,
-                                                 linestyle='--')
-                barlinecols[0].set_linestyles('dashed')
+            # Plot test statistics.
+            ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
+                         yerr=std_effect_sizes, color=color,
+                         label=label, fmt='-')
 
-            #xlim(0, max(plot_data['sample_sizes']))
-            #ax2.set_ylim(0.0, 1.0)
-            ax2.set_yscale('log', nonposy='clip')
-            ax1.set_title('%s: %s: %s' % (tests['study'], method, category))
-            ax2.set_title('%s: %s: %s' % (tests['study'], method, category))
-            #lines, labels = ax1.get_legend_handles_labels()
-            #lines2, labels2 = ax2.get_legend_handles_labels()
-            #ax2.legend(lines + lines2, labels + labels2)
-            ax1.set_xlabel('Number of samples')
-            ax2.set_xlabel('Number of samples')
-            ax1.set_ylabel('test statistic')
-            ax2.set_ylabel('p-value')
-            ax1.legend(legend_lines, legend_labels)
-            ax2.legend(legend_lines, legend_labels)
+            # Plot p-values.
+            _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'],
+                                             avg_p_vals, yerr=std_p_vals,
+                                             color=color, label=label,
+                                             linestyle='--')
+            barlinecols[0].set_linestyles('dashed')
 
-            fig1.savefig(join(in_dir, '%s_%s_%s_test_stats.pdf' % (
-                    tests['study'], method, category)), format='pdf')
-            fig2.savefig(join(in_dir, '%s_%s_%s_p_vals.pdf' % (
-                    tests['study'], method, category)), format='pdf')
+        #xlim(0, max(plot_data['sample_sizes']))
+        #ax2.set_ylim(0.0, 1.0)
+        ax2.set_yscale('log', nonposy='clip')
+        ax1.set_title('%s: %s: %s' % (tests['study'], method, category))
+        ax2.set_title('%s: %s: %s' % (tests['study'], method, category))
+        #lines, labels = ax1.get_legend_handles_labels()
+        #lines2, labels2 = ax2.get_legend_handles_labels()
+        #ax2.legend(lines + lines2, labels + labels2)
+        ax1.set_xlabel('Number of samples')
+        ax2.set_xlabel('Number of samples')
+        ax1.set_ylabel('test statistic')
+        ax2.set_ylabel('p-value')
+        ax1.legend(legend_lines, legend_labels, loc='best')
+        ax2.legend(legend_lines, legend_labels, loc='best')
+
+        fig1.savefig(join(in_dir, '%s_%s_%s_test_stats.pdf' % (
+                tests['study'], method, category)), format='pdf')
+        fig2.savefig(join(in_dir, '%s_%s_%s_p_vals.pdf' % (
+                tests['study'], method, category)), format='pdf')
 
 def main():
     test = False
