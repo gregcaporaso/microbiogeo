@@ -370,9 +370,10 @@ def create_sample_size_plots(in_dir, tests):
 
             # Twin y-axis code is based on
             # http://matplotlib.org/examples/api/two_scales.html
-            fig = figure()
-            ax1 = fig.add_subplot(111)
-            ax2 = ax1.twinx()
+            fig1 = figure()
+            fig2 = figure()
+            ax1 = fig1.add_subplot(111)
+            ax2 = fig2.add_subplot(111)
 
             color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
                           for color in color_order]
@@ -400,12 +401,12 @@ def create_sample_size_plots(in_dir, tests):
                 legend_labels.append(label)
                 legend_lines.append(Line2D([0, 1], [0, 0], color=color))
 
-                # Plot test statistics on left axis.
+                # Plot test statistics.
                 ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
                              yerr=std_effect_sizes, color=color,
                              label=label, fmt='-')
 
-                # Plot p-values on the right axis.
+                # Plot p-values.
                 _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'],
                                                  avg_p_vals, yerr=std_p_vals,
                                                  color=color, label=label,
@@ -415,19 +416,25 @@ def create_sample_size_plots(in_dir, tests):
             #xlim(0, max(plot_data['sample_sizes']))
             #ax2.set_ylim(0.0, 1.0)
             ax2.set_yscale('log', nonposy='clip')
-            title('%s: %s: %s' % (tests['study'], method, category))
+            ax1.set_title('%s: %s: %s' % (tests['study'], method, category))
+            ax2.set_title('%s: %s: %s' % (tests['study'], method, category))
             #lines, labels = ax1.get_legend_handles_labels()
             #lines2, labels2 = ax2.get_legend_handles_labels()
             #ax2.legend(lines + lines2, labels + labels2)
             ax1.set_xlabel('Number of samples')
+            ax2.set_xlabel('Number of samples')
             ax1.set_ylabel('test statistic')
             ax2.set_ylabel('p-value')
-            legend(legend_lines, legend_labels)
-            fig.savefig(join(in_dir, '%s_%s_%s.pdf' % (tests['study'], method,
-                    category)), format='pdf')
+            ax1.legend(legend_lines, legend_labels)
+            ax2.legend(legend_lines, legend_labels)
+
+            fig1.savefig(join(in_dir, '%s_%s_%s_test_stats.pdf' % (
+                    tests['study'], method, category)), format='pdf')
+            fig2.savefig(join(in_dir, '%s_%s_%s_p_vals.pdf' % (
+                    tests['study'], method, category)), format='pdf')
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
@@ -509,12 +516,12 @@ def main():
             }
         }
 
-    generate_simulated_data('gradient', in_dir, out_gradient_dir,
-                            gradient_tests, tree_fp)
-    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-                            tree_fp)
-    process_simulated_data(out_gradient_dir, gradient_tests)
-    process_simulated_data(out_cluster_dir, cluster_tests)
+    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
+    #                        gradient_tests, tree_fp)
+    #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+    #                        tree_fp)
+    #process_simulated_data(out_gradient_dir, gradient_tests)
+    #process_simulated_data(out_cluster_dir, cluster_tests)
     create_sample_size_plots(out_gradient_dir, gradient_tests)
     create_sample_size_plots(out_cluster_dir, cluster_tests)
 
