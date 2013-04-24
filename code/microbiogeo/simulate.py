@@ -440,8 +440,7 @@ def main():
             'depth': 146,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
-                       100.0],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'num_trials': 3,
             'category': 'Gradient',
@@ -456,8 +455,7 @@ def main():
             'depth': 146,
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
-            'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
-                       100.0],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'num_trials': 3,
             'category': 'Treatment',
@@ -478,7 +476,8 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             # dissim must all be floats!
-            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
+                       100.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'num_trials': 10,
@@ -495,7 +494,8 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             # dissim must all be floats!
-            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+            'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
+                       100.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'num_trials': 10,
