@@ -393,7 +393,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
 
         legend_labels = []
         legend_lines = []
-        for d, plot_data in sorted(plots_data.items(), reverse=True):
+        for d, plot_data in sorted(plots_data.items()):
             avg_effect_sizes = []
             std_effect_sizes = []
             for e in plot_data['effect_sizes']:
@@ -467,44 +467,26 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
-    color_pool = get_color_pool()
-
     for d_idx, d in enumerate(tests['pcoa_dissim']):
         dissim_dir = join(samp_size_dir, repr(d))
         pc_fp = join(dissim_dir, '%s_pc.txt' % metric)
         map_fp = join(dissim_dir, 'map.txt')
 
-        pc_data = parse_coords(open(pc_fp, 'U'))
-        coords_d = dict(zip(pc_data[0], pc_data[1]))
+        pc_f = open(pc_fp, 'U')
+        map_f = open(map_fp, 'U')
+        pc_data = parse_coords(pc_f)
+        pc_f.seek(0)
 
         ax = subplot(num_rows, num_cols, plot_num + d_idx)
 
         if sim_data_type == 'gradient':
             # Build list of (gradient value, sid) tuples.
-            map_dict = parse_mapping_file_to_dict(open(map_fp, 'U'))[0]
-            sorted_sids = sorted([(float(md[category]), sid)
-                                  for sid, md in map_dict.items()])
-
-            gradient = [cat_val for cat_val, sid in sorted_sids]
-            xs = [coords_d[sid][0] for cat_val, sid in sorted_sids]
-            ys = [coords_d[sid][1] for cat_val, sid in sorted_sids]
+            xs, ys, gradient = _collate_gradient_pcoa_plot_data(pc_f, map_f,
+                                                                category)
             scatter(xs, ys, s=80, c=gradient, cmap='RdYlBu')
         elif sim_data_type == 'cluster':
-            map_data = parse_mapping_file(open(map_fp, 'U'))
-            full_map_data = [map_data[1]]
-            full_map_data.extend(map_data[0])
-            sid_map = group_by_field(full_map_data, category)
-            sorted_states = sorted(sid_map.keys())
-
-            if len(sorted_states) > len(color_pool):
-                raise ValueError("Not enough colors to uniquely color sample "
-                                 "groups.")
-
-            for state, color in zip(sorted_states,
-                                    color_pool[:len(sorted_states)]):
-                sids = sid_map[state]
-                xs = [coords_d[sid][0] for sid in sids]
-                ys = [coords_d[sid][1] for sid in sids]
+            plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f, category)
+            for xs, ys, color in plot_data:
                 scatter(xs, ys, color=color)
         else:
             raise ValueError("Unrecognized simulated data type '%s'." %
@@ -515,6 +497,47 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
         ylabel('PC2 (%1.2f%%)' % pc_data[3][1])
         xticks([])
         yticks([])
+
+def _collate_gradient_pcoa_plot_data(coords_f, map_f, category):
+    pc_data = parse_coords(coords_f)
+    coords_d = dict(zip(pc_data[0], pc_data[1]))
+
+    # Build list of (gradient value, sid) tuples.
+    map_dict = parse_mapping_file_to_dict(map_f)[0]
+    sorted_sids = sorted([(float(md[category]), sid)
+                          for sid, md in map_dict.items()])
+
+    xs = [coords_d[sid][0] for _, sid in sorted_sids]
+    ys = [coords_d[sid][1] for _, sid in sorted_sids]
+    gradient = [cat_val for cat_val, _ in sorted_sids]
+
+    return xs, ys, gradient
+
+def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
+    pc_data = parse_coords(coords_f)
+    coords_d = dict(zip(pc_data[0], pc_data[1]))
+
+    map_data = parse_mapping_file(map_f)
+    full_map_data = [map_data[1]]
+    full_map_data.extend(map_data[0])
+
+    sid_map = group_by_field(full_map_data, category)
+    sorted_states = sorted(sid_map.keys())
+
+    color_pool = get_color_pool()
+    if len(sorted_states) > len(color_pool):
+        raise ValueError("Not enough colors to uniquely color sample "
+                         "groups.")
+
+    results = []
+    for state, color in zip(sorted_states,
+                            color_pool[:len(sorted_states)]):
+        sids = sid_map[state]
+        xs = [coords_d[sid][0] for sid in sids]
+        ys = [coords_d[sid][1] for sid in sids]
+        results.append((xs, ys, color))
+
+    return results
 
 def main():
     test = False
