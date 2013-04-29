@@ -17,12 +17,14 @@ from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
-from matplotlib.pyplot import figure, legend, figlegend, subplot, title, xlim
+from matplotlib.pyplot import (cm, figure, legend, figlegend, scatter, subplot,
+                               title, xlim, xlabel, ylabel, xticks, yticks)
 from qiime.colors import data_colors, data_color_order
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.make_distance_histograms import matplotlib_rgb_color
-from qiime.parse import parse_mapping_file_to_dict
+from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
+                         parse_coords, group_by_field)
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
@@ -342,7 +344,7 @@ def process_simulated_data(in_dir, tests):
 
     run_parallel_jobs(cmds, run_command)
 
-def create_sample_size_plots(in_dir, tests):
+def create_sample_size_plots(sim_data_type, in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
     study = tests['study']
     category = tests['category']
@@ -354,6 +356,7 @@ def create_sample_size_plots(in_dir, tests):
 
     # +1 to account for PCoA plot.
     num_rows = len(tests['methods']) + 1
+    # test stat, p-val, legend
     num_cols = 3
 
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
@@ -426,7 +429,8 @@ def create_sample_size_plots(in_dir, tests):
             color = color_pool.pop(0)
             label = 'd=%r' % d
             legend_labels.append(label)
-            legend_lines.append(Line2D([0, 1], [0, 0], color=color))
+            legend_lines.append(Line2D([0, 1], [0, 0], color=color,
+                                linewidth=2))
 
             # Plot test statistics.
             ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
@@ -454,6 +458,67 @@ def create_sample_size_plots(in_dir, tests):
             ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend',
                        loc='upper left', fancybox=True, shadow=True)
 
+    # Plot PCoA as last row.
+    trial_num = 0
+    samp_size = tests['pcoa_sample_size']
+    metric = tests['metric']
+    category = tests['category']
+
+    trial_num_dir = join(in_dir, '%d' % trial_num)
+    samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+
+    plot_num = (num_rows - 1) * num_cols + 1
+
+    color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
+                  for color in color_order]
+
+    for d_idx, d in enumerate(tests['pcoa_dissim']):
+        dissim_dir = join(samp_size_dir, repr(d))
+        pc_fp = join(dissim_dir, '%s_pc.txt' % metric)
+        map_fp = join(dissim_dir, 'map.txt')
+
+        pc_data = parse_coords(open(pc_fp, 'U'))
+        coords_d = dict(zip(pc_data[0], pc_data[1]))
+
+        ax = subplot(num_rows, num_cols, plot_num + d_idx)
+
+        if sim_data_type == 'gradient':
+            # Build list of (gradient value, sid) tuples.
+            map_dict = parse_mapping_file_to_dict(open(map_fp, 'U'))[0]
+            sorted_sids = sorted([(float(md[category]), sid)
+                                  for sid, md in map_dict.items()])
+
+            gradient = [cat_val for cat_val, sid in sorted_sids]
+            xs = [coords_d[sid][0] for cat_val, sid in sorted_sids]
+            ys = [coords_d[sid][1] for cat_val, sid in sorted_sids]
+            scatter(xs, ys, s=80, c=gradient, cmap='RdYlBu')
+        elif sim_data_type == 'cluster':
+            map_data = parse_mapping_file(open(map_fp, 'U'))
+            full_map_data = [map_data[1]]
+            full_map_data.extend(map_data[0])
+            sid_map = group_by_field(full_map_data, category)
+            sorted_states = sorted(sid_map.keys())
+
+            if len(sorted_states) > len(color_pool):
+                raise ValueError("Not enough colors to uniquely color sample "
+                                 "groups.")
+
+            for state, color in zip(sorted_states,
+                                    color_pool[:len(sorted_states)]):
+                sids = sid_map[state]
+                xs = [coords_d[sid][0] for sid in sids]
+                ys = [coords_d[sid][1] for sid in sids]
+                scatter(xs, ys, color=color)
+        else:
+            raise ValueError("Unrecognized simulated data type '%s'." %
+                             sim_data_type)
+
+        title('d=%r' % d)
+        xlabel('PC1 (%1.2f%%)' % pc_data[3][0])
+        ylabel('PC2 (%1.2f%%)' % pc_data[3][1])
+        xticks([])
+        yticks([])
+
     fig.tight_layout()
     fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
                 format='pdf')
@@ -473,6 +538,7 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+            'pcoa_dissim': [0.001, 0.1, 1.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
@@ -489,6 +555,7 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+            'pcoa_dissim': [0.001, 0.1, 1.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
@@ -512,6 +579,7 @@ def main():
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
                        100.0],
+            'pcoa_dissim': [0.001, 0.1, 1.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
@@ -531,6 +599,7 @@ def main():
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
                        100.0],
+            'pcoa_dissim': [0.001, 0.1, 1.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
@@ -545,14 +614,14 @@ def main():
             }
         }
 
-    generate_simulated_data('gradient', in_dir, out_gradient_dir,
-                            gradient_tests, tree_fp)
-    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-                            tree_fp)
-    process_simulated_data(out_gradient_dir, gradient_tests)
-    process_simulated_data(out_cluster_dir, cluster_tests)
-    create_sample_size_plots(out_gradient_dir, gradient_tests)
-    create_sample_size_plots(out_cluster_dir, cluster_tests)
+    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
+    #                        gradient_tests, tree_fp)
+    #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+    #                        tree_fp)
+    #process_simulated_data(out_gradient_dir, gradient_tests)
+    #process_simulated_data(out_cluster_dir, cluster_tests)
+    create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
+    create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
 
 
 if __name__ == "__main__":
