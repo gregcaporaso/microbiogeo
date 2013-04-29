@@ -195,57 +195,45 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
 
                 for d in tests['dissim']:
                     dissim_dir = join(samp_size_dir, repr(d))
-                    exp_dm_fp = '%s_dm.txt' % metric
-                    exp_pc_fp = '%s_pc.txt' % metric
-                    exp_map_fp = 'map.txt'
-                    exp_cat_dm_fp = '%s_dm.txt' % category
 
-                    required_files = [exp_dm_fp, exp_pc_fp, exp_map_fp]
+                    required_files = ['%s_dm.txt' % metric,
+                                      '%s_pc.txt' % metric,
+                                      'map.txt']
                     if sim_data_type == 'gradient':
-                        required_files.append(exp_cat_dm_fp)
+                        required_files.append('%s_dm.txt' % category)
 
                     if not has_results(dissim_dir,
                                        required_files=required_files):
-                        required_files = [exp_dm_fp, exp_map_fp]
+                        simsam_map_fp = join(dissim_dir,
+                                add_filename_suffix(subset_map_fp,
+                                '_n%d_d%r' % (simsam_rep_num, d)))
+                        simsam_otu_table_fp = join(dissim_dir,
+                                add_filename_suffix(subset_otu_table_fp,
+                                '_n%d_d%r' % (simsam_rep_num, d)))
+
+                        cmd = ('simsam.py -i %s -t %s -o %s -d %r -n %d '
+                               '-m %s;' % (subset_otu_table_fp, tree_fp,
+                                           dissim_dir, d, simsam_rep_num,
+                                           subset_map_fp))
+
                         if sim_data_type == 'gradient':
-                            required_files.append(exp_cat_dm_fp)
+                            cmd += ('distance_matrix_from_mapping.py -i %s '
+                                    '-c %s -o %s;' % (simsam_map_fp, category,
+                                    join(dissim_dir, '%s_dm.txt' % category)))
 
-                        cmd = ''
-                        if not has_results(dissim_dir,
-                                           required_files=required_files):
-                            simsam_map_fp = join(dissim_dir,
-                                    add_filename_suffix(subset_map_fp,
-                                    '_n%d_d%r' % (simsam_rep_num, d)))
-                            simsam_otu_table_fp = join(dissim_dir,
-                                    add_filename_suffix(subset_otu_table_fp,
-                                    '_n%d_d%r' % (simsam_rep_num, d)))
+                        cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
+                                simsam_otu_table_fp, dissim_dir, metric,
+                                tree_fp)
+                        cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
+                                metric,
+                                splitext(basename(simsam_otu_table_fp))[0])),
+                                '%s_dm.txt' % join(dissim_dir, metric))
+                        cmd += 'cp %s %s;' % (simsam_map_fp,
+                                             join(dissim_dir, 'map.txt'))
+                        cmd += 'principal_coordinates.py -i %s -o %s' % (
+                                join(dissim_dir, '%s_dm.txt' % metric),
+                                join(dissim_dir, '%s_pc.txt' % metric))
 
-                            cmd += ('simsam.py -i %s -t %s -o %s -d %r -n %d '
-                                    '-m %s;' % (subset_otu_table_fp, tree_fp,
-                                                dissim_dir, d, simsam_rep_num,
-                                                subset_map_fp))
-
-                            if sim_data_type == 'gradient':
-                                cmd += ('distance_matrix_from_mapping.py -i %s '
-                                        '-c %s -o %s;' % (simsam_map_fp, category,
-                                        join(dissim_dir, '%s_dm.txt' % category)))
-
-                            cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
-                                    simsam_otu_table_fp, dissim_dir, metric,
-                                    tree_fp)
-                            cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
-                                    metric,
-                                    splitext(basename(simsam_otu_table_fp))[0])),
-                                    '%s_dm.txt' % join(dissim_dir, metric))
-                            cmd += 'cp %s %s;' % (simsam_map_fp,
-                                                 join(dissim_dir, 'map.txt'))
-
-                        required_files = [exp_pc_fp]
-                        if not has_results(dissim_dir,
-                                           required_files=required_files):
-                            cmd += 'principal_coordinates.py -i %s -o %s;' % (
-                                    join(dissim_dir, exp_dm_fp),
-                                    join(dissim_dir, exp_pc_fp))
                         cmds.append(cmd)
             else:
                 # We need to simulate more samples than we originally have.
@@ -253,70 +241,58 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
 
                 for d in tests['dissim']:
                     dissim_dir = join(samp_size_dir, repr(d))
-                    exp_dm_fp = '%s_dm.txt' % metric
-                    exp_pc_fp = '%s_pc.txt' % metric
-                    exp_map_fp = 'map.txt'
-                    exp_cat_dm_fp = '%s_dm.txt' % category
 
-                    required_files = [exp_dm_fp, exp_pc_fp, exp_map_fp]
+                    required_files = ['%s_dm.txt' % metric,
+                                      '%s_pc.txt' % metric,
+                                      'map.txt']
                     if sim_data_type == 'gradient':
-                        required_files.append(exp_cat_dm_fp)
+                        required_files.append('%s_dm.txt' % category)
 
                     if not has_results(dissim_dir,
                                        required_files=required_files):
-                        required_files = [exp_dm_fp, exp_map_fp]
+                        simsam_map_fp = join(dissim_dir,
+                                add_filename_suffix(map_fp,
+                                '_n%d_d%r' % (simsam_rep_num, d)))
+                        simsam_otu_table_fp = join(dissim_dir,
+                                add_filename_suffix(even_otu_table_fp,
+                                '_n%d_d%r' % (simsam_rep_num, d)))
+
+                        cmd = ('simsam.py -i %s -t %s -o %s -d %r -n %d '
+                               '-m %s;' % (even_otu_table_fp, tree_fp,
+                                           dissim_dir, d, simsam_rep_num,
+                                           map_fp))
+
+                        subset_dir = join(dissim_dir, 'subset')
+                        cmd += ('choose_data_subset.py -t %s -i %s -m %s '
+                                '-c %s -n %d -o %s;' % (sim_data_type,
+                                                        simsam_otu_table_fp,
+                                                        simsam_map_fp,
+                                                        category, samp_size,
+                                                        subset_dir))
+                        subset_otu_table_fp = join(subset_dir,
+                                basename(simsam_otu_table_fp))
+                        subset_map_fp = join(subset_dir,
+                                basename(simsam_map_fp))
+
                         if sim_data_type == 'gradient':
-                            required_files.append(exp_cat_dm_fp)
+                            cmd += ('distance_matrix_from_mapping.py -i %s '
+                                    '-c %s -o %s;' % (subset_map_fp, category,
+                                                      join(dissim_dir,
+                                                      '%s_dm.txt' % category)))
 
-                        cmd = ''
-                        if not has_results(dissim_dir,
-                                           required_files=required_files):
-                            simsam_map_fp = join(dissim_dir,
-                                    add_filename_suffix(map_fp,
-                                    '_n%d_d%r' % (simsam_rep_num, d)))
-                            simsam_otu_table_fp = join(dissim_dir,
-                                    add_filename_suffix(even_otu_table_fp,
-                                    '_n%d_d%r' % (simsam_rep_num, d)))
+                        cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
+                                subset_otu_table_fp, dissim_dir, metric,
+                                tree_fp)
+                        cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
+                                metric,
+                                splitext(basename(subset_otu_table_fp))[0])),
+                                '%s_dm.txt' % join(dissim_dir, metric))
+                        cmd += 'cp %s %s;' % (subset_map_fp,
+                                             join(dissim_dir, 'map.txt'))
+                        cmd += 'principal_coordinates.py -i %s -o %s' % (
+                                join(dissim_dir, '%s_dm.txt' % metric),
+                                join(dissim_dir, '%s_pc.txt' % metric))
 
-                            cmd += ('simsam.py -i %s -t %s -o %s -d %r -n %d '
-                                    '-m %s;' % (even_otu_table_fp, tree_fp,
-                                                dissim_dir, d, simsam_rep_num,
-                                                map_fp))
-
-                            subset_dir = join(dissim_dir, 'subset')
-                            cmd += ('choose_data_subset.py -t %s -i %s -m %s '
-                                    '-c %s -n %d -o %s;' % (sim_data_type,
-                                                            simsam_otu_table_fp,
-                                                            simsam_map_fp,
-                                                            category, samp_size,
-                                                            subset_dir))
-                            subset_otu_table_fp = join(subset_dir,
-                                    basename(simsam_otu_table_fp))
-                            subset_map_fp = join(subset_dir,
-                                    basename(simsam_map_fp))
-
-                            if sim_data_type == 'gradient':
-                                cmd += ('distance_matrix_from_mapping.py -i %s '
-                                        '-c %s -o %s;' % (subset_map_fp, category,
-                                                          join(dissim_dir,
-                                                          '%s_dm.txt' % category)))
-
-                            cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
-                                    subset_otu_table_fp, dissim_dir, metric,
-                                    tree_fp)
-                            cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
-                                    metric,
-                                    splitext(basename(subset_otu_table_fp))[0])),
-                                    '%s_dm.txt' % join(dissim_dir, metric))
-                            cmd += 'cp %s %s;' % (subset_map_fp,
-                                                 join(dissim_dir, 'map.txt'))
-
-                        required_files = [exp_pc_fp]
-                        if not has_results(dissim_dir,
-                                           required_files=required_files):
-                            cmd += 'principal_coordinates.py -i %s -o %s;' % (
-                                    join(dissim_dir, exp_dm_fp),
-                                    join(dissim_dir, exp_pc_fp))
                         cmds.append(cmd)
 
     run_parallel_jobs(cmds, run_command)
