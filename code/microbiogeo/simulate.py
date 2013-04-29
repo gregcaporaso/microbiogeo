@@ -17,7 +17,7 @@ from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
-from matplotlib.pyplot import figure, legend, subplot, title, xlim
+from matplotlib.pyplot import figure, legend, figlegend, subplot, title, xlim
 from qiime.colors import data_colors, data_color_order
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
@@ -332,6 +332,7 @@ def process_simulated_data(in_dir, tests):
 
 def create_sample_size_plots(in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
+    study = tests['study']
     category = tests['category']
 
     # We don't like yellow...
@@ -340,13 +341,13 @@ def create_sample_size_plots(in_dir, tests):
     color_order.remove('yellow2')
 
     # +1 to account for PCoA plot.
-    num_plots = len(tests['methods']) + 1
-    num_rows = 4
-    num_cols = int(ceil(num_plots / 2))
+    num_rows = len(tests['methods']) + 1
+    num_cols = 3
 
-    #fig = figure()
+    fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
+    fig.suptitle('%s: %s' % (study, category))
 
-    for plot_idx, (method, parse_fn) in enumerate(tests['methods'].items()):
+    for method_idx, (method, parse_fn) in enumerate(tests['methods'].items()):
         # dissim -> {'sample_sizes': list,
         #            'effect_sizes': list of lists, one for each trial,
         #            'p_vals' -> list of lists, one for each trial}
@@ -375,10 +376,10 @@ def create_sample_size_plots(in_dir, tests):
                             effect_size)
                     plots_data[d]['p_vals'][samp_size_idx].append(p_val)
 
-        fig1 = figure()
-        fig2 = figure()
-        ax1 = fig1.add_subplot(111)
-        ax2 = fig2.add_subplot(111)
+        # plot_num is 1-based indexing.
+        plot_num = method_idx * num_cols + 1
+        ax1 = subplot(num_rows, num_cols, plot_num)
+        ax2 = subplot(num_rows, num_cols, plot_num + 1)
 
         color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
                       for color in color_order]
@@ -427,25 +428,23 @@ def create_sample_size_plots(in_dir, tests):
                                              linestyle='--')
             barlinecols[0].set_linestyles('dashed')
 
-        #xlim(0, max(plot_data['sample_sizes']))
-        #ax2.set_ylim(0.0, 1.0)
         ax2.set_yscale('log', nonposy='clip')
-        ax1.set_title('%s: %s: %s' % (tests['study'], method, category))
-        ax2.set_title('%s: %s: %s' % (tests['study'], method, category))
-        #lines, labels = ax1.get_legend_handles_labels()
-        #lines2, labels2 = ax2.get_legend_handles_labels()
-        #ax2.legend(lines + lines2, labels + labels2)
-        ax1.set_xlabel('Number of samples')
-        ax2.set_xlabel('Number of samples')
-        ax1.set_ylabel('test statistic')
+        x_label = 'Number of samples'
+        ax1.set_xlabel(x_label)
+        ax2.set_xlabel(x_label)
+        ax1.set_ylabel('%s\n\ntest statistic' % method)
         ax2.set_ylabel('p-value')
-        ax1.legend(legend_lines, legend_labels, loc='best')
-        ax2.legend(legend_lines, legend_labels, loc='best')
 
-        fig1.savefig(join(in_dir, '%s_%s_%s_test_stats.pdf' % (
-                tests['study'], method, category)), format='pdf')
-        fig2.savefig(join(in_dir, '%s_%s_%s_p_vals.pdf' % (
-                tests['study'], method, category)), format='pdf')
+        if method_idx == 0:
+            ax3 = subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
+            ax3.get_xaxis().set_visible(False)
+            ax3.get_yaxis().set_visible(False)
+            ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend',
+                       loc='upper left', fancybox=True, shadow=True)
+
+    fig.tight_layout()
+    fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
+                format='pdf')
 
 def main():
     test = False
