@@ -19,10 +19,8 @@ from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
 from matplotlib.pyplot import (cm, figure, legend, figlegend, scatter, subplot,
                                title, xlim, xlabel, ylabel, xticks, yticks)
-from qiime.colors import data_colors, data_color_order
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
-from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          parse_coords, group_by_field)
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
@@ -34,8 +32,8 @@ from microbiogeo.parse import (parse_adonis_results,
                                parse_mantel_results,
                                parse_morans_i_results,
                                parse_mrpp_results)
-from microbiogeo.util import (get_num_samples, has_results, run_command,
-                              run_parallel_jobs)
+from microbiogeo.util import (get_color_pool, get_num_samples, has_results,
+                              run_command, run_parallel_jobs)
 
 class InvalidSubsetSize(Exception):
     pass
@@ -349,11 +347,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     study = tests['study']
     category = tests['category']
 
-    # We don't like yellow...
-    color_order = data_color_order[:]
-    color_order.remove('yellow1')
-    color_order.remove('yellow2')
-
     # +1 to account for PCoA plot.
     num_rows = len(tests['methods']) + 1
     # test stat, p-val, legend
@@ -396,8 +389,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         ax1 = subplot(num_rows, num_cols, plot_num)
         ax2 = subplot(num_rows, num_cols, plot_num + 1)
 
-        color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
-                      for color in color_order]
+        color_pool = get_color_pool()
 
         legend_labels = []
         legend_lines = []
@@ -459,6 +451,14 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                        loc='upper left', fancybox=True, shadow=True)
 
     # Plot PCoA as last row.
+    plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
+
+    fig.tight_layout()
+    fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
+                format='pdf')
+
+def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
+    plot_num = (num_rows - 1) * num_cols + 1
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
     metric = tests['metric']
@@ -467,10 +467,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
-    plot_num = (num_rows - 1) * num_cols + 1
-
-    color_pool = [matplotlib_rgb_color(data_colors[color].toRGB())
-                  for color in color_order]
+    color_pool = get_color_pool()
 
     for d_idx, d in enumerate(tests['pcoa_dissim']):
         dissim_dir = join(samp_size_dir, repr(d))
@@ -518,10 +515,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         ylabel('PC2 (%1.2f%%)' % pc_data[3][1])
         xticks([])
         yticks([])
-
-    fig.tight_layout()
-    fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
-                format='pdf')
 
 def main():
     test = False

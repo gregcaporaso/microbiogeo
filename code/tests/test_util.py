@@ -22,10 +22,10 @@ from qiime.parse import parse_distmat
 from qiime.util import get_qiime_temp_dir
 
 from microbiogeo.util import (choose_gradient_subsets,
-                              ExternalCommandFailedError, has_results,
-                              is_empty, run_command, run_parallel_jobs,
-                              shuffle_dm, StatsResults, subset_dm,
-                              subset_groups)
+                              ExternalCommandFailedError, get_color_pool,
+                              has_results, is_empty, run_command,
+                              run_parallel_jobs, shuffle_dm, StatsResults,
+                              subset_dm, subset_groups)
 
 class UtilTests(TestCase):
     """Tests for the util.py module functions."""
@@ -249,6 +249,15 @@ class UtilTests(TestCase):
         self.assertTrue(is_empty(self.cat_res3))
         self.assertTrue(is_empty({}))
         self.assertFalse(is_empty(self.cat_res4))
+
+    def test_get_color_pool(self):
+        """Test grabbing list of good colors to use."""
+        obs = get_color_pool()
+        self.assertEqual(len(obs), 27)
+
+        obs2 = get_color_pool()
+        self.assertFloatEqual(obs, obs2)
+        self.assertFalse(obs is obs2)
 
 
 class StatsResultsTests(TestCase):
