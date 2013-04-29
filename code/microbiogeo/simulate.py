@@ -453,7 +453,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     # Plot PCoA as last row.
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
 
-    fig.tight_layout()
+    fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
     fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
                 format='pdf')
 
