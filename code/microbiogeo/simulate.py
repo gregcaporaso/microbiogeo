@@ -145,13 +145,13 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
     sim_data_type should be either 'gradient' or 'cluster'.
     """
     create_dir(out_dir)
-    otu_table_fp = join(in_dir, tests['study'], 'otu_table.biom')
-    map_fp = join(in_dir, tests['study'], 'map.txt')
+    otu_table_fp = join(in_dir, tests['study'][0], 'otu_table.biom')
+    map_fp = join(in_dir, tests['study'][0], 'map.txt')
     map_f = open(map_fp, 'U')
     depth = tests['depth']
-    metric = tests['metric']
+    metric = tests['metric'][0]
     num_trials = tests['num_trials']
-    category = tests['category']
+    category = tests['category'][0]
 
     # Rarefy the table first since simsam.py's output tables will still have
     # even sampling depth and we don't want to lose simulated samples after the
@@ -299,8 +299,8 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
 
 def process_simulated_data(in_dir, tests):
     """Run statistical methods over simulated data."""
-    metric = tests['metric']
-    category = tests['category']
+    metric = tests['metric'][0]
+    category = tests['category'][0]
     num_perms = tests['num_perms']
     num_trials = tests['num_trials']
 
@@ -346,8 +346,8 @@ def process_simulated_data(in_dir, tests):
 
 def create_sample_size_plots(sim_data_type, in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
-    study = tests['study']
-    category = tests['category']
+    study = tests['study'][0]
+    category = tests['category'][0]
 
     num_rows = max(len(tests['methods']), len(tests['pcoa_dissim']) + 1)
     # test stat, p-val, legend/PCoA.
@@ -480,14 +480,14 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
 
     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
-    fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
+    fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'][0], category)),
                 format='pdf')
 
 def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
-    metric = tests['metric']
-    category = tests['category']
+    metric = tests['metric'][0]
+    category = tests['category'][0]
 
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
@@ -567,7 +567,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
     return results
 
 def main():
-    test = False
+    test = True
 
     if test:
         in_dir = 'test_datasets'
@@ -576,32 +576,32 @@ def main():
         out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
         gradient_tests = {
-            'study': 'overview',
+            'study': ('overview', 'Overview'),
             'depth': 146,
-            'metric': 'unweighted_unifrac',
+            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
-            'category': 'Gradient',
+            'category': ('Gradient', 'Gradient Category'),
             'methods': [Mantel(),
                         #MoransI()
             ]
         }
 
         cluster_tests = {
-            'study': 'overview',
+            'study': ('overview', 'Overview'),
             'depth': 146,
-            'metric': 'unweighted_unifrac',
+            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
             'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
-            'category': 'Treatment',
+            'category': ('Treatment', 'Treatment Category'),
             'methods': [Adonis(), Anosim()]
         }
     else:
@@ -611,9 +611,9 @@ def main():
         out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
         gradient_tests = {
-            'study': '88_soils',
+            'study': ('88_soils', '88 Soils'),
             'depth': 400,
-            'metric': 'unweighted_unifrac',
+            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
             'num_perms': 999,
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
@@ -623,16 +623,16 @@ def main():
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
             'num_trials': 10,
-            'category': 'PH',
+            'category': ('PH', 'pH'),
             'methods': [Mantel(),
                         #MoransI()
             ]
         }
 
         cluster_tests = {
-            'study': 'keyboard',
+            'study': ('keyboard', 'Keyboards'),
             'depth': 390,
-            'metric': 'unweighted_unifrac',
+            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
             'num_perms': 999,
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
@@ -642,16 +642,16 @@ def main():
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
             'num_trials': 10,
-            'category': 'HOST_SUBJECT_ID',
+            'category': ('HOST_SUBJECT_ID', 'Subject'),
             'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
         }
 
-    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
-    #                        gradient_tests, tree_fp)
-    #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-    #                        tree_fp)
-    #process_simulated_data(out_gradient_dir, gradient_tests)
-    #process_simulated_data(out_cluster_dir, cluster_tests)
+    generate_simulated_data('gradient', in_dir, out_gradient_dir,
+                            gradient_tests, tree_fp)
+    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+                            tree_fp)
+    process_simulated_data(out_gradient_dir, gradient_tests)
+    process_simulated_data(out_cluster_dir, cluster_tests)
     create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
     create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
 
