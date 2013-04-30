@@ -122,7 +122,8 @@ def create_method_comparison_heatmaps(results, methods, out_dir):
             ax = subplot(111)
             im = ax.matshow(heatmap_data, vmin=0, vmax=1)
 
-            method_labels = methods[method_type][1]
+            method_labels = [method.DisplayName
+                             for method in methods[method_type]]
 
             colorbar(im, use_gridspec=True)
             xticks(range(len(method_labels)), method_labels, rotation=90)
@@ -143,7 +144,13 @@ def format_method_comparison_heatmaps(results, methods):
                     shared_categories[method_type] = {}
 
                 for method, method_res in method_type_res.items():
-                    if method in methods[method_type][0]:
+                    matched_method = False
+                    for m in methods[method_type]:
+                        if method == m.Name:
+                            matched_method = True
+                            break
+
+                    if matched_method:
                         studies = sorted(method_res.keys())
 
                         if method_type not in shared_studies:
@@ -172,7 +179,13 @@ def format_method_comparison_heatmaps(results, methods):
         for metric, metric_res in depth_res.items():
             for method_type, method_type_res in metric_res.items():
                 for method, method_res in method_type_res.items():
-                    if method not in methods[method_type][0]:
+                    matched_method = False
+                    for m in methods[method_type]:
+                        if method == m.Name:
+                            matched_method = True
+                            break
+
+                    if not matched_method:
                         continue
 
                     for study, study_res in sorted(method_res.items()):
@@ -216,11 +229,11 @@ def format_method_comparison_heatmaps(results, methods):
 
             # I know this is inefficient, but it really doesn't matter for what
             # we're doing here.
-            for method1_idx, method1 in enumerate(methods[method_type][0]):
-                for method2_idx, method2 in enumerate(methods[method_type][0]):
+            for method1_idx, method1 in enumerate(methods[method_type]):
+                for method2_idx, method2 in enumerate(methods[method_type]):
                     corr_coeff = correlation_fn(
-                            method_data[method_type][method1],
-                            method_data[method_type][method2])
+                            method_data[method_type][method1.Name],
+                            method_data[method_type][method2.Name])
                     heatmap_data[method1_idx][method2_idx] = corr_coeff
 
             heatmaps[method_type][correlation_name] = heatmap_data
@@ -243,7 +256,7 @@ def create_sample_size_plots(in_dir, out_dir, sample_size_tests):
         create_dir(out_method_type_dir)
         create_dir(out_study_dir)
 
-        for method, parse_fn in methods.items():
+        for method in methods:
             # Twin y-axis code is based on
             # http://matplotlib.org/examples/api/two_scales.html
             fig = figure()
@@ -267,20 +280,20 @@ def create_sample_size_plots(in_dir, out_dir, sample_size_tests):
                                                              category,
                                                              subset_size,
                                                              subset_num,
-                                                             method))
+                                                             method.Name))
                         elif method_type == 'gradient':
                             results_dir = join(in_dir, method_type, study,
                                     '%s_dm_%s_n%d_%d_%s' % (metric,
                                                             category,
                                                             subset_size,
                                                             subset_num,
-                                                            method))
+                                                            method.Name))
                         else:
                             raise ValueError("Unknown method type '%s'." %
                                              method_type)
 
-                        test_stat, p_val = parse_fn(open(join(results_dir,
-                                '%s_results.txt' % method), 'U'))
+                        test_stat, p_val = method.parse(open(join(results_dir,
+                                '%s_results.txt' % method.Name), 'U'))
                         test_stats.append(test_stat)
                         p_vals.append(p_val)
 
@@ -301,7 +314,7 @@ def create_sample_size_plots(in_dir, out_dir, sample_size_tests):
 
             xlim(0, 85)
             #ax2.set_ylim(0.0, 1.0)
-            title('%s: %s' % (study, method))
+            title('%s: %s' % (study, method.DisplayName))
             #lines, labels = ax1.get_legend_handles_labels()
             #lines2, labels2 = ax2.get_legend_handles_labels()
             #ax2.legend(lines + lines2, labels + labels2)
@@ -318,4 +331,4 @@ def create_sample_size_plots(in_dir, out_dir, sample_size_tests):
             ax2.set_ylabel('Average p-value with standard deviation')
             legend()
             fig.savefig(join(out_study_dir, '%s_analysis_plot_%s_%s.pdf' % (
-                    method_type, study, method)), format='pdf')
+                    method_type, study, method.Name)), format='pdf')

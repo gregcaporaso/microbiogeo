@@ -231,6 +231,11 @@ class PartialMantel(AbstractStatMethod):
         return self.parse_float(es, -1, 1), self.parse_float(p_value, 0, 1)
 
 
+class MantelCorrelogram(AbstractStatMethod):
+    Name = 'mantel_corr'
+    DisplayName = 'Mantel Correlogram'
+
+
 class MoransI(AbstractStatMethod):
     Name = 'morans_i'
     DisplayName = 'Moran\'s I'
@@ -264,3 +269,8 @@ class MoransI(AbstractStatMethod):
             raise UnparsableFileError(self)
 
         return es, p_value
+
+
+class Best(AbstractStatMethod):
+    Name = 'best'
+    DisplayName = 'BEST'

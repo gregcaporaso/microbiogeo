@@ -26,12 +26,12 @@ from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
-from microbiogeo.parse import (parse_adonis_results,
-                               parse_anosim_permanova_results,
-                               parse_dbrda_results,
-                               parse_mantel_results,
-                               parse_morans_i_results,
-                               parse_mrpp_results)
+from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
+                                Dbrda, Mantel, MantelCorrelogram, MoransI,
+                                Mrpp, PartialMantel, Permanova, Permdisp,
+                                QiimeStatMethod, UnparsableFileError,
+                                UnparsableLineError)
+
 from microbiogeo.util import (get_color_pool, get_num_samples, has_results,
                               run_command, run_parallel_jobs)
 
@@ -319,26 +319,28 @@ def process_simulated_data(in_dir, tests):
                 grad_dm_fp = join(dissim_dir, '%s_dm.txt' % category)
 
                 for method in tests['methods']:
-                    method_dir = join(dissim_dir, method)
+                    method_dir = join(dissim_dir, method.Name)
                     create_dir(method_dir)
 
                     if not has_results(method_dir):
-                        if method == 'mantel' or method == 'mantel_corr':
+                        if type(method) is Mantel or \
+                           type(method) is MantelCorrelogram:
                             in_dm_fps = ','.join((dm_fp, grad_dm_fp))
 
                             cmds.append('compare_distance_matrices.py '
                                         '--method %s -n %d -i %s -o %s' % (
-                                            method, num_perms, in_dm_fps,
+                                            method.Name, num_perms, in_dm_fps,
                                             method_dir))
-                        elif method == 'partial_mantel' or method == 'best':
+                        elif type(method) is PartialMantel or \
+                             type(method) is Best:
                             raise NotImplementedError("%s method is not "
                                                       "currently supported." %
-                                                      method)
+                                                      method.DisplayName)
                         else:
                             cmds.append('compare_categories.py --method %s '
                                         '-i %s -m %s -c %s -o %s -n %d' % (
-                                            method, dm_fp, map_fp, category,
-                                            method_dir, num_perms))
+                                            method.Name, dm_fp, map_fp,
+                                            category, method_dir, num_perms))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -354,7 +356,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
     fig.suptitle('%s: %s' % (study, category))
 
-    for method_idx, (method, parse_fn) in enumerate(tests['methods'].items()):
+    for method_idx, method in enumerate(tests['methods']):
         # dissim -> {'sample_sizes': list,
         #            'effect_sizes': list of lists, one for each trial,
         #            'p_vals' -> list of lists, one for each trial}
@@ -367,10 +369,10 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
                 for d in tests['dissim']:
-                    method_dir = join(samp_size_dir, repr(d), method)
+                    method_dir = join(samp_size_dir, repr(d), method.Name)
 
-                    effect_size, p_val = parse_fn(open(join(method_dir,
-                            '%s_results.txt' % method), 'U'))
+                    effect_size, p_val = method.parse(open(join(method_dir,
+                            '%s_results.txt' % method.Name), 'U'))
 
                     if samp_size not in plots_data[d]['sample_sizes']:
                         plots_data[d]['sample_sizes'].append(samp_size)
@@ -458,7 +460,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         x_label = 'Number of samples'
         ax1.set_xlabel(x_label)
         ax2.set_xlabel(x_label)
-        ax1.set_ylabel('%s\n\ntest statistic' % method)
+        ax1.set_ylabel('%s\n\ntest statistic' % method.Name)
         ax2.set_ylabel('p-value')
 
         min_x = min(tests['sample_sizes'])
@@ -583,10 +585,9 @@ def main():
             'pcoa_sample_size': 13,
             'num_trials': 3,
             'category': 'Gradient',
-            'methods': {
-                'mantel': parse_mantel_results,
-                #'morans_i': parse_morans_i_results
-            }
+            'methods': [Mantel(),
+                        #MoransI()
+            ]
         }
 
         cluster_tests = {
@@ -600,10 +601,7 @@ def main():
             'pcoa_sample_size': 13,
             'num_trials': 3,
             'category': 'Treatment',
-            'methods': {
-                'adonis': parse_adonis_results,
-                'anosim': parse_anosim_permanova_results
-            }
+            'methods': [Adonis(), Anosim()]
         }
     else:
         in_dir = '../data'
@@ -625,10 +623,9 @@ def main():
             'pcoa_sample_size': 150,
             'num_trials': 10,
             'category': 'PH',
-            'methods': {
-                'mantel': parse_mantel_results,
-                #'morans_i': parse_morans_i_results
-            }
+            'methods': [Mantel(),
+                        #MoransI()
+            ]
         }
 
         cluster_tests = {
@@ -645,13 +642,7 @@ def main():
             'pcoa_sample_size': 150,
             'num_trials': 10,
             'category': 'HOST_SUBJECT_ID',
-            'methods': {
-                'adonis': parse_adonis_results,
-                'anosim': parse_anosim_permanova_results,
-                'mrpp': parse_mrpp_results,
-                'permanova': parse_anosim_permanova_results,
-                'dbrda': parse_dbrda_results
-            }
+            'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
         }
 
     #generate_simulated_data('gradient', in_dir, out_gradient_dir,

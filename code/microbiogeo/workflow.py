@@ -29,13 +29,11 @@ from microbiogeo.parallel import (build_best_method_commands,
         build_grouping_method_commands,
         build_grouping_method_sample_size_testing_commands,
         generate_per_study_depth_dms)
-from microbiogeo.parse import (parse_adonis_results,
-                               parse_anosim_permanova_results,
-                               parse_dbrda_results,
-                               parse_mantel_results,
-                               parse_morans_i_results,
-                               parse_mrpp_results,
-                               parse_partial_mantel_results)
+from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
+                                Dbrda, Mantel, MantelCorrelogram, MoransI,
+                                Mrpp, PartialMantel, Permanova, Permdisp,
+                                QiimeStatMethod, UnparsableFileError,
+                                UnparsableLineError)
 from microbiogeo.util import run_command, run_parallel_jobs, StatsResults
 
 def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
@@ -115,23 +113,23 @@ def run_methods(in_dir, studies, methods, permutations):
                             for category in \
                                     studies[study]['grouping_categories']:
                                 jobs.extend(build_grouping_method_commands(
-                                        depth_dir, dm_fp, map_fp, method,
+                                        depth_dir, dm_fp, map_fp, method.Name,
                                         category, permutations))
                         elif method_type == 'gradient':
                             for category in \
                                     studies[study]['gradient_categories']:
                                 jobs.extend(build_gradient_method_commands(
                                         study_dir, depth_dir, dm_fp, map_fp,
-                                        method, category, permutations))
+                                        method.Name, category, permutations))
 
                             # Handle special cases here.
                             if study == 'keyboard':
                                 jobs.extend(
                                     build_gradient_method_keyboard_commands(
                                             study_dir, depth_dir, dm_fp,
-                                            method, permutations))
+                                            method.Name, permutations))
 
-                            if method == 'best' and best_method_env_vars:
+                            if type(method) is Best and best_method_env_vars:
                                 jobs.extend(
                                     build_best_method_commands(depth_dir,
                                         dm_fp, map_fp, best_method_env_vars))
@@ -171,8 +169,8 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
             for method_type in methods:
                 method_type_res = {}
 
-                for method, res_parsing_fn in methods[method_type].items():
-                    if method in ('mantel_corr', 'best'):
+                for method in methods[method_type]:
+                    if type(method) in (MantelCorrelogram, Best):
                         # Completely ignore Mantel correlogram and BEST (for
                         # now at least). Mantel correlogram is hard to
                         # summarize because it produces a correlogram and many
@@ -218,20 +216,19 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                                           for i in range(len(subset_sizes))]
 
                             # Moran's I does not use permutations.
-                            if method == 'morans_i':
+                            if type(method) is MoransI:
                                 _collate_category_results(full_results,
                                         shuffled_results, ss_results, in_dir,
                                         study, depth, metric, method_type,
-                                        method, res_parsing_fn, category,
-                                        subset_sizes, num_shuffled,
-                                        num_subsets, permutation=None)
+                                        method, category, subset_sizes,
+                                        num_shuffled, num_subsets,
+                                        permutation=None)
                             else:
                                 for permutation in permutations:
                                     _collate_category_results(full_results,
                                             shuffled_results, ss_results,
                                             in_dir, study, depth, metric,
-                                            method_type, method,
-                                            res_parsing_fn, category,
+                                            method_type, method, category,
                                             subset_sizes, num_shuffled,
                                             num_subsets,
                                             permutation=permutation)
@@ -242,7 +239,7 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
 
                             study_res[category] = category_res
                         method_res[study] = study_res
-                    method_type_res[method] = method_res
+                    method_type_res[method.Name] = method_res
                 metric_res[method_type] = method_type_res
             depth_res[metric] = metric_res
         results[depth_desc] = depth_res
@@ -251,23 +248,23 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
 
 def _collate_category_results(full_results, shuffled_results, ss_results,
                               in_dir, study, depth, metric, method_type,
-                              method, results_parsing_fn, category,
-                              subset_sizes, num_shuffled, num_subsets,
-                              permutation=None):
+                              method, category, subset_sizes, num_shuffled,
+                              num_subsets, permutation=None):
     depth_dir = join(in_dir, study, 'bdiv_even%d' % depth)
 
     # Collect results for full distance matrices.
-    results_dir = join(depth_dir, '%s_dm_%s_%s' % (metric, method, category))
+    results_dir = join(depth_dir, '%s_dm_%s_%s' % (metric, method.Name,
+                                                   category))
     if permutation is not None:
         results_dir += '_%d' % permutation
 
-    results_fp = join(results_dir, '%s_results.txt' % method)
+    results_fp = join(results_dir, '%s_results.txt' % method.Name)
 
     # We will not always have results for every combination of parameters (e.g.
     # partial Mantel).
     if exists(results_fp):
         full_res_f = open(results_fp, 'U')
-        full_es, full_p_val = results_parsing_fn(full_res_f)
+        full_es, full_p_val = method.parse(full_res_f)
         full_res_f.close()
         full_results.addResult(full_es, full_p_val)
 
@@ -277,16 +274,16 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
     for shuff_num in range(1, num_shuffled + 1):
         results_dir = join(depth_dir, '%s_dm_shuffled%d_%s_%s' % (metric,
                                                                   shuff_num,
-                                                                  method,
+                                                                  method.Name,
                                                                   category))
         if permutation is not None:
             results_dir += '_%d' % permutation
 
-        results_fp = join(results_dir, '%s_results.txt' % method)
+        results_fp = join(results_dir, '%s_results.txt' % method.Name)
 
         if exists(results_fp):
             shuff_res_f = open(results_fp, 'U')
-            shuff_es, shuff_p_val = results_parsing_fn(shuff_res_f)
+            shuff_es, shuff_p_val = method.parse(shuff_res_f)
             shuff_res_f.close()
             shuff_ess.append(shuff_es)
             shuff_p_vals.append(shuff_p_val)
@@ -303,10 +300,11 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
             if method_type == 'grouping':
                 subset_path = '%s_dm_%s_gs%d_%d_%s_%s' % (metric, category,
                                                           subset_size, ss_num,
-                                                          method, category)
+                                                          method.Name, category)
             elif method_type == 'gradient':
                 subset_path = '%s_dm_n%d_%d_%s_%s' % (metric, subset_size,
-                                                      ss_num, method, category)
+                                                      ss_num, method.Name,
+                                                      category)
             else:
                 raise ValueError("Unknown method type '%s'." % method_type)
 
@@ -314,11 +312,11 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
             if permutation is not None:
                 results_dir += '_%d' % permutation
 
-            results_fp = join(results_dir, '%s_results.txt' % method)
+            results_fp = join(results_dir, '%s_results.txt' % method.Name)
 
             if exists(results_fp):
                 ss_res_f = open(results_fp, 'U')
-                ss_es, ss_p_val = results_parsing_fn(ss_res_f)
+                ss_es, ss_p_val = method.parse(ss_res_f)
                 ss_res_f.close()
                 ss_ess.append(ss_es)
                 ss_p_vals.append(ss_p_val)
@@ -415,23 +413,14 @@ def main():
                   }
         metrics = ['euclidean', 'bray_curtis']
         methods = {
-            'grouping': {
-                'adonis': parse_adonis_results,
-                'anosim': parse_anosim_permanova_results
-            },
-
-            'gradient': {
-                'best': None,
-                'mantel': parse_mantel_results,
-                'mantel_corr': None,
-                'morans_i': parse_morans_i_results,
-                'partial_mantel': parse_partial_mantel_results
-            }
+            'grouping': [Adonis(), Anosim()],
+            'gradient': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                         PartialMantel()]
         }
 
         heatmap_methods = {
-            'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM']),
-            'gradient': (['mantel', 'morans_i'], ['Mantel', 'Moran\'s I'])
+            'grouping': [Adonis(), Anosim()],
+            'gradient': [Mantel(), MoransI()]
         }
 
         permutations = [99, 999]
@@ -451,10 +440,7 @@ def main():
                     'Treatment': ['b', 'Treatment'],
                     'DOB': ['r', 'Date of birth']
                 },
-                'methods': {
-                    'adonis': parse_adonis_results,
-                    'anosim': parse_anosim_permanova_results
-                }
+                'methods': [Adonis(), Anosim()]
             },
 
             'gradient': {
@@ -467,10 +453,7 @@ def main():
                 'categories': {
                     'DOB': ['b', 'Date of birth']
                 },
-                'methods': {
-                    'mantel': parse_mantel_results,
-                    'morans_i': parse_morans_i_results
-                }
+                'methods': [Mantel(), MoransI()]
             }
         }
     else:
@@ -526,28 +509,15 @@ def main():
                    'unweighted_unifrac']
 
         methods = {
-            'grouping': {
-                'adonis': parse_adonis_results,
-                'anosim': parse_anosim_permanova_results,
-                'mrpp': parse_mrpp_results,
-                'permanova': parse_anosim_permanova_results,
-                'dbrda': parse_dbrda_results,
-                'permdisp': parse_permdisp_results
-            },
-
-            'gradient': {
-                'best': None,
-                'mantel': parse_mantel_results,
-                'mantel_corr': None,
-                'morans_i': parse_morans_i_results,
-                'partial_mantel': parse_partial_mantel_results
-            }
+            'grouping': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda(),
+                         Permdisp()],
+            'gradient': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                         PartialMantel()]
         }
 
         heatmap_methods = {
-            'grouping': (['adonis', 'anosim', 'mrpp', 'permanova', 'dbrda'],
-                         ['Adonis', 'ANOSIM', 'MRPP', 'PERMANOVA', 'db-RDA']),
-            'gradient': (['mantel', 'morans_i'], ['Mantel', 'Moran\'s I'])
+            'grouping': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()],
+            'gradient': [Mantel(), MoransI()]
         }
 
         permutations = [99, 999]
@@ -567,13 +537,7 @@ def main():
                     'BODY_SITE': ['b', 'Body site'],
                     'SEX': ['r', 'Sex']
                 },
-                'methods': {
-                    'adonis': parse_adonis_results,
-                    'anosim': parse_anosim_permanova_results,
-                    'mrpp': parse_mrpp_results,
-                    'permanova': parse_anosim_permanova_results,
-                    'dbrda': parse_dbrda_results
-                }
+                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
             },
 
             'gradient': {
@@ -587,10 +551,7 @@ def main():
                     'PH': ['b', 'pH'],
                     'LATITUDE': ['r', 'Latitude']
                 },
-                'methods': {
-                    'mantel': parse_mantel_results,
-                    'morans_i': parse_morans_i_results
-                }
+                'methods': [Mantel(), MoransI()]
             }
         }
 

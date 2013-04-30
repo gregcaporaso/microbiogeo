@@ -13,10 +13,11 @@ __email__ = "jai.rideout@gmail.com"
 
 from cogent.util.unit_test import TestCase, main
 
-from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Dbrda,
-                                Mantel, MoransI, Mrpp, PartialMantel,
-                                Permanova, Permdisp, QiimeStatMethod,
-                                UnparsableFileError, UnparsableLineError)
+from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
+                                Dbrda, Mantel, MantelCorrelogram, MoransI,
+                                Mrpp, PartialMantel, Permanova, Permdisp,
+                                QiimeStatMethod, UnparsableFileError,
+                                UnparsableLineError)
 
 class AbstractStatMethodTests(TestCase):
     """Tests for the AbstractStatMethod class."""
@@ -195,6 +196,18 @@ class PartialMantelTests(TestCase):
         self.assertFloatEqual(obs, (0.5, 0.01))
 
 
+class MantelCorrelogramTests(TestCase):
+    """Tests for the MantelCorrelogram class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = MantelCorrelogram()
+
+    def test_parse(self):
+        """Test raises error."""
+        self.assertRaises(NotImplementedError, self.inst.parse, 'foo')
+
+
 class MoransITests(TestCase):
     """Tests for the MoransI class."""
 
@@ -208,6 +221,18 @@ class MoransITests(TestCase):
         """Test parsing moran's i results file."""
         obs = self.inst.parse(self.morans_i_results_str1)
         self.assertFloatEqual(obs, (-0.06005486, 4.442088e-05))
+
+
+class BestTests(TestCase):
+    """Tests for the Best class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = Best()
+
+    def test_parse(self):
+        """Test raises error."""
+        self.assertRaises(NotImplementedError, self.inst.parse, 'foo')
 
 
 anosim_results_str1 = """Method name\tR statistic\tp-value\tNumber of permutations
