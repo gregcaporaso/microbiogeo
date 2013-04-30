@@ -346,15 +346,18 @@ def process_simulated_data(in_dir, tests):
 
 def create_sample_size_plots(sim_data_type, in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
-    study = tests['study'][0]
-    category = tests['category'][0]
+    study = tests['study']
+    category = tests['category']
+    depth = tests['depth']
+    metric = tests['metric']
 
     num_rows = max(len(tests['methods']), len(tests['pcoa_dissim']) + 1)
     # test stat, p-val, legend/PCoA.
     num_cols = 3
 
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
-    fig.suptitle('%s: %s' % (study, category))
+    fig.suptitle('Study: %s, Metric: %s, Depth: %d, Variable: %s' % (study[1],
+            metric[1], depth, category[1]))
 
     for method_idx, method in enumerate(tests['methods']):
         # dissim -> {'sample_sizes': list,
@@ -480,7 +483,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
 
     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
-    fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'][0], category)),
+    fig.savefig(join(in_dir, '%s_%s.pdf' % (study[0], category[0])),
                 format='pdf')
 
 def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
@@ -567,7 +570,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
     return results
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
@@ -646,12 +649,12 @@ def main():
             'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
         }
 
-    generate_simulated_data('gradient', in_dir, out_gradient_dir,
-                            gradient_tests, tree_fp)
-    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-                            tree_fp)
-    process_simulated_data(out_gradient_dir, gradient_tests)
-    process_simulated_data(out_cluster_dir, cluster_tests)
+    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
+    #                        gradient_tests, tree_fp)
+    #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+    #                        tree_fp)
+    #process_simulated_data(out_gradient_dir, gradient_tests)
+    #process_simulated_data(out_cluster_dir, cluster_tests)
     create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
     create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
 
