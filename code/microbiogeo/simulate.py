@@ -26,12 +26,12 @@ from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 from random import randint, sample
 
-from microbiogeo.parse import (parse_adonis_results,
-                               parse_anosim_permanova_results,
-                               parse_dbrda_results,
-                               parse_mantel_results,
-                               parse_morans_i_results,
-                               parse_mrpp_results)
+from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
+                                Dbrda, Mantel, MantelCorrelogram, MoransI,
+                                Mrpp, PartialMantel, Permanova, Permdisp,
+                                QiimeStatMethod, UnparsableFileError,
+                                UnparsableLineError)
+
 from microbiogeo.util import (get_color_pool, get_num_samples, has_results,
                               run_command, run_parallel_jobs)
 
@@ -319,26 +319,28 @@ def process_simulated_data(in_dir, tests):
                 grad_dm_fp = join(dissim_dir, '%s_dm.txt' % category)
 
                 for method in tests['methods']:
-                    method_dir = join(dissim_dir, method)
+                    method_dir = join(dissim_dir, method.Name)
                     create_dir(method_dir)
 
                     if not has_results(method_dir):
-                        if method == 'mantel' or method == 'mantel_corr':
+                        if type(method) is Mantel or \
+                           type(method) is MantelCorrelogram:
                             in_dm_fps = ','.join((dm_fp, grad_dm_fp))
 
                             cmds.append('compare_distance_matrices.py '
                                         '--method %s -n %d -i %s -o %s' % (
-                                            method, num_perms, in_dm_fps,
+                                            method.Name, num_perms, in_dm_fps,
                                             method_dir))
-                        elif method == 'partial_mantel' or method == 'best':
+                        elif type(method) is PartialMantel or \
+                             type(method) is Best:
                             raise NotImplementedError("%s method is not "
                                                       "currently supported." %
-                                                      method)
+                                                      method.DisplayName)
                         else:
                             cmds.append('compare_categories.py --method %s '
                                         '-i %s -m %s -c %s -o %s -n %d' % (
-                                            method, dm_fp, map_fp, category,
-                                            method_dir, num_perms))
+                                            method.Name, dm_fp, map_fp,
+                                            category, method_dir, num_perms))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -347,15 +349,14 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     study = tests['study']
     category = tests['category']
 
-    # +1 to account for PCoA plot.
-    num_rows = len(tests['methods']) + 1
-    # test stat, p-val, legend
+    num_rows = max(len(tests['methods']), len(tests['pcoa_dissim']) + 1)
+    # test stat, p-val, legend/PCoA.
     num_cols = 3
 
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
     fig.suptitle('%s: %s' % (study, category))
 
-    for method_idx, (method, parse_fn) in enumerate(tests['methods'].items()):
+    for method_idx, method in enumerate(tests['methods']):
         # dissim -> {'sample_sizes': list,
         #            'effect_sizes': list of lists, one for each trial,
         #            'p_vals' -> list of lists, one for each trial}
@@ -368,10 +369,10 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
                 for d in tests['dissim']:
-                    method_dir = join(samp_size_dir, repr(d), method)
+                    method_dir = join(samp_size_dir, repr(d), method.Name)
 
-                    effect_size, p_val = parse_fn(open(join(method_dir,
-                            '%s_results.txt' % method), 'U'))
+                    effect_size, p_val = method.parse(open(join(method_dir,
+                            '%s_results.txt' % method.Name), 'U'))
 
                     if samp_size not in plots_data[d]['sample_sizes']:
                         plots_data[d]['sample_sizes'].append(samp_size)
@@ -402,11 +403,23 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 std_effect_sizes.append(std(e))
 
             avg_p_vals = []
-            std_p_vals = []
+
+            # Need to compute asymmetric error bars for p-values to avoid
+            # negative error bars on log scale.
+            # TODO add unit tests!!!
+            std_p_vals = [[], []]
             for e in plot_data['p_vals']:
                 assert len(e) == tests['num_trials']
-                avg_p_vals.append(mean(e))
-                std_p_vals.append(std(e))
+                avg_p_val = mean(e)
+                avg_p_vals.append(avg_p_val)
+
+                std_p_val = std(e)
+                std_p_vals[1].append(std_p_val)
+
+                # Cut off lower bound at 1e-5.
+                if avg_p_val - std_p_val < 1e-5:
+                    std_p_val = avg_p_val - 1e-5
+                std_p_vals[0].append(std_p_val)
 
             assert len(plot_data['sample_sizes']) == \
                    len(avg_effect_sizes), "%d != %d" % (
@@ -419,6 +432,12 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                    len(avg_p_vals))
 
             color = color_pool.pop(0)
+
+            if d == 0.0:
+                line_width = 3
+            else:
+                line_width = 0.5
+
             label = 'd=%r' % d
             legend_labels.append(label)
             legend_lines.append(Line2D([0, 1], [0, 0], color=color,
@@ -427,12 +446,13 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
             # Plot test statistics.
             ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
                          yerr=std_effect_sizes, color=color,
-                         label=label, fmt='-')
+                         label=label, linewidth=line_width, fmt='-')
 
             # Plot p-values.
             _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'],
                                              avg_p_vals, yerr=std_p_vals,
                                              color=color, label=label,
+                                             linewidth=line_width,
                                              linestyle='--')
             barlinecols[0].set_linestyles('dashed')
 
@@ -440,17 +460,23 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         x_label = 'Number of samples'
         ax1.set_xlabel(x_label)
         ax2.set_xlabel(x_label)
-        ax1.set_ylabel('%s\n\ntest statistic' % method)
+        ax1.set_ylabel('%s (%s)' % (method.DisplayName,
+                                    method.StatDisplayName))
         ax2.set_ylabel('p-value')
+
+        min_x = min(tests['sample_sizes'])
+        max_x = max(tests['sample_sizes'])
+        ax1.set_xlim(min_x, max_x)
+        ax2.set_xlim(min_x, max_x)
 
         if method_idx == 0:
             ax3 = subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
             ax3.get_xaxis().set_visible(False)
             ax3.get_yaxis().set_visible(False)
             ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend',
-                       loc='upper left', fancybox=True, shadow=True)
+                       loc='center', fancybox=True, shadow=True)
 
-    # Plot PCoA as last row.
+    # Plot PCoA in last column.
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
 
     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
@@ -458,7 +484,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 format='pdf')
 
 def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
-    plot_num = (num_rows - 1) * num_cols + 1
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
     metric = tests['metric']
@@ -477,7 +502,9 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
         pc_data = parse_coords(pc_f)
         pc_f.seek(0)
 
-        ax = subplot(num_rows, num_cols, plot_num + d_idx)
+        # Skip the first row (the legend is already at that cell).
+        plot_num = (d_idx + 2) * num_cols
+        ax = subplot(num_rows, num_cols, plot_num)
 
         if sim_data_type == 'gradient':
             # Build list of (gradient value, sid) tuples.
@@ -554,15 +581,14 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
             'category': 'Gradient',
-            'methods': {
-                'mantel': parse_mantel_results,
-                #'morans_i': parse_morans_i_results
-            }
+            'methods': [Mantel(),
+                        #MoransI()
+            ]
         }
 
         cluster_tests = {
@@ -571,15 +597,12 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
             'category': 'Treatment',
-            'methods': {
-                'adonis': parse_adonis_results,
-                'anosim': parse_anosim_permanova_results
-            }
+            'methods': [Adonis(), Anosim()]
         }
     else:
         in_dir = '../data'
@@ -595,16 +618,15 @@ def main():
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
                        100.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
             'num_trials': 10,
             'category': 'PH',
-            'methods': {
-                'mantel': parse_mantel_results,
-                #'morans_i': parse_morans_i_results
-            }
+            'methods': [Mantel(),
+                        #MoransI()
+            ]
         }
 
         cluster_tests = {
@@ -615,19 +637,13 @@ def main():
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
                        100.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
             'num_trials': 10,
             'category': 'HOST_SUBJECT_ID',
-            'methods': {
-                'adonis': parse_adonis_results,
-                'anosim': parse_anosim_permanova_results,
-                'mrpp': parse_mrpp_results,
-                'permanova': parse_anosim_permanova_results,
-                'dbrda': parse_dbrda_results
-            }
+            'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
         }
 
     #generate_simulated_data('gradient', in_dir, out_gradient_dir,

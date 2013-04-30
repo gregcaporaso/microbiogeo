@@ -20,7 +20,7 @@ from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from qiime.util import create_dir, get_qiime_temp_dir
 
-from microbiogeo.parse import parse_adonis_results, parse_mantel_results
+from microbiogeo.method import Adonis, Mantel, MantelCorrelogram, Best
 from microbiogeo.util import StatsResults
 from microbiogeo.workflow import (_collate_category_results, _collate_results,
                                   run_methods)
@@ -43,17 +43,12 @@ class WorkflowTests(TestCase):
 
         # Invalid method type.
         self.methods1 = {
-            'foo': {
-                'adonis': parse_adonis_results,
-            }
+            'foo': [Adonis()]
         }
 
         # Methods that should be skipped during collation.
         self.methods2 = {
-            'gradient': {
-                'mantel_corr': None,
-                'best': None
-            }
+            'gradient': [MantelCorrelogram(), Best()]
         }
 
         # The prefix to use for temporary files/dirs. This prefix may be added
@@ -134,8 +129,8 @@ class WorkflowTests(TestCase):
         ss_results = [StatsResults()]
 
         _collate_category_results(full_results, shuffled_results, ss_results,
-                '/foobarbaz123', 'foo', 42, 'euclidean', 'gradient', 'mantel',
-                parse_mantel_results, 'DOB', [2], 3, 4, permutation=47)
+                '/foobarbaz123', 'foo', 42, 'euclidean', 'gradient', Mantel(),
+                'DOB', [2], 3, 4, permutation=47)
 
         self.assertTrue(full_results.isEmpty())
         self.assertTrue(shuffled_results.isEmpty())
@@ -147,8 +142,8 @@ class WorkflowTests(TestCase):
         # Invalid method type.
         self.assertRaises(ValueError, _collate_category_results,
                 StatsResults(), StatsResults(), [StatsResults()],
-                '/foobarbaz123', 'foo', 42, 'euclidean', 'foo', 'mantel',
-                parse_mantel_results, 'DOB', [2], 3, 4, permutation=47)
+                '/foobarbaz123', 'foo', 42, 'euclidean', 'foo', Mantel(),
+                'DOB', [2], 3, 4, permutation=47)
 
 
 exp_collate_results1 = {'5_percent': {'euclidean': {'gradient': {}}, 'bray_curtis': {'gradient': {}}}, '25_percent': {'euclidean': {'gradient': {}}, 'bray_curtis': {'gradient': {}}}}
