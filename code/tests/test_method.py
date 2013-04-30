@@ -9,131 +9,205 @@ __version__ = "0.0.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Test suite for the parse.py module."""
+"""Test suite for the method.py module."""
 
 from cogent.util.unit_test import TestCase, main
 
-from microbiogeo.parse import (parse_adonis_results,
-                               parse_anosim_permanova_results,
-                               parse_dbrda_results,
-                               _parse_float,
-                               parse_mantel_results,
-                               parse_morans_i_results,
-                               parse_mrpp_results,
-                               parse_partial_mantel_results,
-                               parse_permdisp_results,
-                               UnparsableFileError,
-                               UnparsableLineError)
+from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Dbrda,
+                                Mantel, MoransI, Mrpp, PartialMantel,
+                                Permanova, Permdisp, QiimeStatMethod,
+                                UnparsableFileError, UnparsableLineError)
 
-class ParseTests(TestCase):
-    """Tests for the parse.py module."""
+class AbstractStatMethodTests(TestCase):
+    """Tests for the AbstractStatMethod class."""
 
     def setUp(self):
         """Define some sample data that will be used by the tests."""
+        self.inst = AbstractStatMethod()
+
+    def test_parse(self):
+        """Test raises error."""
+        self.assertRaises(NotImplementedError, self.inst.parse, 'foo')
+
+    def test_parse_float(self):
+        """Test parsing float strings."""
+        obs = self.inst.parse_float('0.045')
+        self.assertFloatEqual(obs, 0.045)
+
+        obs = self.inst.parse_float('1.0')
+        self.assertFloatEqual(obs, 1.0)
+
+        obs = self.inst.parse_float('0')
+        self.assertFloatEqual(obs, 0.0)
+
+        obs = self.inst.parse_float('42')
+        self.assertFloatEqual(obs, 42.0)
+
+        obs = self.inst.parse_float('5', 0)
+        self.assertFloatEqual(obs, 5.0)
+
+        obs = self.inst.parse_float('-9', max_val=10)
+        self.assertFloatEqual(obs, -9.0)
+
+    def test_parse_float_invalid_input(self):
+        """Test parsing invalid float strings raises errors."""
+        self.assertRaises(ValueError, self.inst.parse_float, 'foo')
+        self.assertRaises(ValueError, self.inst.parse_float, '5.0', 0, 1)
+        self.assertRaises(ValueError, self.inst.parse_float, '-0.1', 0, 1)
+        self.assertRaises(ValueError, self.inst.parse_float, '-0.1', 0)
+        self.assertRaises(ValueError, self.inst.parse_float, '11.2',
+                          max_val=10)
+
+
+class QiimeStatMethodTests(TestCase):
+    """Tests for the QiimeStatMethod class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = QiimeStatMethod()
+
         self.anosim_results_str1 = anosim_results_str1.split('\n')
         self.anosim_results_str2 = anosim_results_str2.split('\n')
+
+    def test_parse(self):
+        """Test parsing QIIME stats results file."""
+        obs = self.inst.parse(self.anosim_results_str1)
+        self.assertFloatEqual(obs, (0.463253142506, 0.01))
+
+        self.assertRaises(UnparsableLineError, self.inst.parse,
+                          self.anosim_results_str2)
+
+
+class AnosimTests(TestCase):
+    """Nothing to test."""
+    pass
+
+
+class PermanovaTests(TestCase):
+    """Nothing to test."""
+    pass
+
+
+class AdonisTests(TestCase):
+    """Tests for the Adonis class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = Adonis()
 
         self.adonis_results_str1 = adonis_results_str1.split('\n')
         self.adonis_results_str2 = adonis_results_str2.split('\n')
         self.adonis_results_str3 = adonis_results_str3.split('\n')
 
+    def test_parse(self):
+        """Test parsing adonis results file."""
+        # Significant result.
+        obs = self.inst.parse(self.adonis_results_str1)
+        self.assertFloatEqual(obs, (0.20273, 0.01))
+
+        # Insignificant result.
+        obs = self.inst.parse(self.adonis_results_str2)
+        self.assertFloatEqual(obs, (0.24408, 0.5))
+
+        # Invalid format.
+        self.assertRaises(UnparsableFileError, self.inst.parse,
+                          self.adonis_results_str3)
+
+
+class MrppTests(TestCase):
+    """Tests for the Mrpp class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = Mrpp()
+
         self.mrpp_results_str1 = mrpp_results_str1.split('\n')
         self.mrpp_results_str2 = mrpp_results_str2.split('\n')
 
+    def test_parse(self):
+        """Test parsing mrpp results file."""
+        obs = self.inst.parse(self.mrpp_results_str1)
+        self.assertFloatEqual(obs, (0.07567, 0.01))
+
+        # Invalid format.
+        self.assertRaises(UnparsableFileError, self.inst.parse,
+                          self.mrpp_results_str2)
+
+
+class DbrdaTests(TestCase):
+    """Tests for the Dbrda class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = Dbrda()
+
         self.dbrda_results_str1 = dbrda_results_str1.split('\n')
+
+    def test_parse(self):
+        """Test parsing dbrda results file."""
+        obs = self.inst.parse(self.dbrda_results_str1)
+        self.assertFloatEqual(obs, (0.2786, 0.010101))
+
+
+class PermdispTests(TestCase):
+    """Tests for the Permdisp class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = Permdisp()
 
         self.permdisp_results_str1 = permdisp_results_str1.split('\n')
 
+    def test_parse(self):
+        """Test parsing permdisp results file."""
+        obs = self.inst.parse(self.permdisp_results_str1)
+        self.assertFloatEqual(obs, (2.0989, 0.131))
+
+
+class MantelTests(TestCase):
+    """Tests for the Mantel class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = Mantel()
+
         self.mantel_results_str1 = mantel_results_str1.split('\n')
+
+    def test_parse(self):
+        """Test parsing mantel results file."""
+        obs = self.inst.parse(self.mantel_results_str1)
+        self.assertFloatEqual(obs, (1.0, 0.01))
+
+
+class PartialMantelTests(TestCase):
+    """Tests for the PartialMantel class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = PartialMantel()
 
         self.partial_mantel_results_str1 = \
                 partial_mantel_results_str1.split('\n')
 
-        self.morans_i_results_str1 = morans_i_results_str1.split('\n')
-
-    def test_parse_anosim_permanova_results(self):
-        """Test parsing anosim/permanova results file."""
-        obs = parse_anosim_permanova_results(self.anosim_results_str1)
-        self.assertFloatEqual(obs, (0.463253142506, 0.01))
-
-        self.assertRaises(UnparsableLineError, parse_anosim_permanova_results,
-                          self.anosim_results_str2)
-
-    def test_parse_adonis_results(self):
-        """Test parsing adonis results file."""
-        # Significant result.
-        obs = parse_adonis_results(self.adonis_results_str1)
-        self.assertFloatEqual(obs, (0.20273, 0.01))
-
-        # Insignificant result.
-        obs = parse_adonis_results(self.adonis_results_str2)
-        self.assertFloatEqual(obs, (0.24408, 0.5))
-
-        # Invalid format.
-        self.assertRaises(UnparsableFileError, parse_adonis_results,
-                          self.adonis_results_str3)
-
-    def test_parse_mrpp_results(self):
-        """Test parsing mrpp results file."""
-        obs = parse_mrpp_results(self.mrpp_results_str1)
-        self.assertFloatEqual(obs, (0.07567, 0.01))
-
-        # Invalid format.
-        self.assertRaises(UnparsableFileError, parse_mrpp_results,
-                          self.mrpp_results_str2)
-
-    def test_parse_dbrda_results(self):
-        """Test parsing dbrda results file."""
-        obs = parse_dbrda_results(self.dbrda_results_str1)
-        self.assertFloatEqual(obs, (0.2786, 0.010101))
-
-    def test_parse_permdisp_results(self):
-        """Test parsing permdisp results file."""
-        obs = parse_permdisp_results(self.permdisp_results_str1)
-        self.assertFloatEqual(obs, (2.0989, 0.131))
-
-    def test_parse_mantel_results(self):
-        """Test parsing mantel results file."""
-        obs = parse_mantel_results(self.mantel_results_str1)
-        self.assertFloatEqual(obs, (1.0, 0.01))
-
-    def test_parse_partial_mantel_results(self):
+    def test_parse(self):
         """Test parsing partial mantel results file."""
-        obs = parse_partial_mantel_results(self.partial_mantel_results_str1)
+        obs = self.inst.parse(self.partial_mantel_results_str1)
         self.assertFloatEqual(obs, (0.5, 0.01))
 
-    def test_parse_morans_i_results(self):
+
+class MoransITests(TestCase):
+    """Tests for the MoransI class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = MoransI()
+
+        self.morans_i_results_str1 = morans_i_results_str1.split('\n')
+
+    def test_parse(self):
         """Test parsing moran's i results file."""
-        obs = parse_morans_i_results(self.morans_i_results_str1)
+        obs = self.inst.parse(self.morans_i_results_str1)
         self.assertFloatEqual(obs, (-0.06005486, 4.442088e-05))
-
-    def test_parse_float(self):
-        """Test parsing float strings."""
-        obs = _parse_float('0.045')
-        self.assertFloatEqual(obs, 0.045)
-
-        obs = _parse_float('1.0')
-        self.assertFloatEqual(obs, 1.0)
-
-        obs = _parse_float('0')
-        self.assertFloatEqual(obs, 0.0)
-
-        obs = _parse_float('42')
-        self.assertFloatEqual(obs, 42.0)
-
-        obs = _parse_float('5', 0)
-        self.assertFloatEqual(obs, 5.0)
-
-        obs = _parse_float('-9', max_val=10)
-        self.assertFloatEqual(obs, -9.0)
-
-    def test_parse_float_invalid_input(self):
-        """Test parsing invalid float strings raises errors."""
-        self.assertRaises(ValueError, _parse_float, 'foo')
-        self.assertRaises(ValueError, _parse_float, '5.0', 0, 1)
-        self.assertRaises(ValueError, _parse_float, '-0.1', 0, 1)
-        self.assertRaises(ValueError, _parse_float, '-0.1', 0)
-        self.assertRaises(ValueError, _parse_float, '11.2', max_val=10)
 
 
 anosim_results_str1 = """Method name\tR statistic\tp-value\tNumber of permutations
