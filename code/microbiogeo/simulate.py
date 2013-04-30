@@ -402,11 +402,23 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 std_effect_sizes.append(std(e))
 
             avg_p_vals = []
-            std_p_vals = []
+
+            # Need to compute asymmetric error bars for p-values to avoid
+            # negative error bars on log scale.
+            # TODO add unit tests!!!
+            std_p_vals = [[], []]
             for e in plot_data['p_vals']:
                 assert len(e) == tests['num_trials']
-                avg_p_vals.append(mean(e))
-                std_p_vals.append(std(e))
+                avg_p_val = mean(e)
+                avg_p_vals.append(avg_p_val)
+
+                std_p_val = std(e)
+                std_p_vals[1].append(std_p_val)
+
+                # Cut off lower bound at 1e-5.
+                if avg_p_val - std_p_val < 1e-5:
+                    std_p_val = avg_p_val - 1e-5
+                std_p_vals[0].append(std_p_val)
 
             assert len(plot_data['sample_sizes']) == \
                    len(avg_effect_sizes), "%d != %d" % (
@@ -419,6 +431,12 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                    len(avg_p_vals))
 
             color = color_pool.pop(0)
+
+            if d == 0.0:
+                line_width = 3
+            else:
+                line_width = 0.5
+
             label = 'd=%r' % d
             legend_labels.append(label)
             legend_lines.append(Line2D([0, 1], [0, 0], color=color,
@@ -427,12 +445,13 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
             # Plot test statistics.
             ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes,
                          yerr=std_effect_sizes, color=color,
-                         label=label, fmt='-')
+                         label=label, linewidth=line_width, fmt='-')
 
             # Plot p-values.
             _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'],
                                              avg_p_vals, yerr=std_p_vals,
                                              color=color, label=label,
+                                             linewidth=line_width,
                                              linestyle='--')
             barlinecols[0].set_linestyles('dashed')
 
@@ -442,6 +461,11 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         ax2.set_xlabel(x_label)
         ax1.set_ylabel('%s\n\ntest statistic' % method)
         ax2.set_ylabel('p-value')
+
+        min_x = min(tests['sample_sizes'])
+        max_x = max(tests['sample_sizes'])
+        ax1.set_xlim(min_x, max_x)
+        ax2.set_xlim(min_x, max_x)
 
         if method_idx == 0:
             ax3 = subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
