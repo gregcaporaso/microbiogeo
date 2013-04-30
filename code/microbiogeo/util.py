@@ -21,8 +21,10 @@ from IPython.parallel import Client
 
 from numpy import ceil
 
+from qiime.colors import data_colors, data_color_order
 from qiime.filter import filter_samples_from_distance_matrix
 from qiime.format import format_distance_matrix
+from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import parse_distmat, parse_mapping_file_to_dict
 from qiime.util import MetadataMap, qiime_system_call
 
@@ -155,6 +157,13 @@ def is_empty(category_results):
            category_results['shuffled'].isEmpty() or \
            [e for e in category_results['subsampled'] if e.isEmpty()]
 
+def get_color_pool():
+    # We don't like yellow...
+    color_order = data_color_order[:]
+    color_order.remove('yellow1')
+    color_order.remove('yellow2')
+    return [matplotlib_rgb_color(data_colors[color].toRGB())
+            for color in color_order]
 
 class StatsResults(object):
 
