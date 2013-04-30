@@ -347,9 +347,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     study = tests['study']
     category = tests['category']
 
-    # +1 to account for PCoA plot.
-    num_rows = len(tests['methods']) + 1
-    # test stat, p-val, legend
+    num_rows = max(len(tests['methods']), len(tests['pcoa_dissim']) + 1)
+    # test stat, p-val, legend/PCoA.
     num_cols = 3
 
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
@@ -472,9 +471,9 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
             ax3.get_xaxis().set_visible(False)
             ax3.get_yaxis().set_visible(False)
             ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend',
-                       loc='upper left', fancybox=True, shadow=True)
+                       loc='center', fancybox=True, shadow=True)
 
-    # Plot PCoA as last row.
+    # Plot PCoA in last column.
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
 
     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
@@ -482,7 +481,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 format='pdf')
 
 def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
-    plot_num = (num_rows - 1) * num_cols + 1
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
     metric = tests['metric']
@@ -501,7 +499,9 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
         pc_data = parse_coords(pc_f)
         pc_f.seek(0)
 
-        ax = subplot(num_rows, num_cols, plot_num + d_idx)
+        # Skip the first row (the legend is already at that cell).
+        plot_num = (d_idx + 2) * num_cols
+        ax = subplot(num_rows, num_cols, plot_num)
 
         if sim_data_type == 'gradient':
             # Build list of (gradient value, sid) tuples.
@@ -578,7 +578,7 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
@@ -595,7 +595,7 @@ def main():
             'metric': 'unweighted_unifrac',
             'num_perms': 999,
             'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
             'sample_sizes': [3, 5, 13],
             'pcoa_sample_size': 13,
             'num_trials': 3,
@@ -619,7 +619,7 @@ def main():
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
                        100.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
@@ -639,7 +639,7 @@ def main():
             # dissim must all be floats!
             'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
                        100.0],
-            'pcoa_dissim': [0.001, 0.1, 1.0],
+            'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
             # sample_sizes must all be ints!
             'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
             'pcoa_sample_size': 150,
