@@ -460,7 +460,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         x_label = 'Number of samples'
         ax1.set_xlabel(x_label)
         ax2.set_xlabel(x_label)
-        ax1.set_ylabel('%s\n\ntest statistic' % method.Name)
+        ax1.set_ylabel('%s (%s)' % (method.DisplayName,
+                                    method.StatDisplayName))
         ax2.set_ylabel('p-value')
 
         min_x = min(tests['sample_sizes'])

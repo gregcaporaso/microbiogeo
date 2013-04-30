@@ -71,19 +71,19 @@ class QiimeStatMethod(AbstractStatMethod):
 class Anosim(QiimeStatMethod):
     Name = 'anosim'
     DisplayName = 'ANOSIM'
-    StatDisplayName = 'R statistic'
+    StatDisplayName = r'$R$'
 
 
 class Permanova(QiimeStatMethod):
     Name = 'permanova'
     DisplayName = 'PERMANOVA'
-    StatDisplayName = 'F statistic'
+    StatDisplayName = r'$F$'
 
 
 class Adonis(AbstractStatMethod):
     Name = 'adonis'
     DisplayName = 'Adonis'
-    StatDisplayName = 'R2'
+    StatDisplayName = r'$R^2$'
 
     def parse(self, results_f):
         for line in results_f:
@@ -108,7 +108,7 @@ class Adonis(AbstractStatMethod):
 class Mrpp(AbstractStatMethod):
     Name = 'mrpp'
     DisplayName = 'MRPP'
-    StatDisplayName = 'A statistic'
+    StatDisplayName = r'$A$'
 
     def parse(self, results_f):
         a_value = None
@@ -139,7 +139,7 @@ class Mrpp(AbstractStatMethod):
 class Dbrda(AbstractStatMethod):
     Name = 'dbrda'
     DisplayName = 'db-RDA'
-    StatDisplayName = 'R2'
+    StatDisplayName = r'$R^2$'
 
     def parse(self, results_f):
         r2_value = None
@@ -170,7 +170,7 @@ class Dbrda(AbstractStatMethod):
 class Permdisp(AbstractStatMethod):
     Name = 'permdisp'
     DisplayName = 'PERMDISP'
-    StatDisplayName = 'F statistic'
+    StatDisplayName = r'$F$'
 
     def parse(self, results_f):
         f_value = None
@@ -198,7 +198,7 @@ class Permdisp(AbstractStatMethod):
 class Mantel(AbstractStatMethod):
     Name = 'mantel'
     DisplayName = 'Mantel'
-    StatDisplayName = 'r statistic'
+    StatDisplayName = r'$r$'
 
     def parse(self, results_f):
         for line in results_f:
@@ -216,7 +216,7 @@ class Mantel(AbstractStatMethod):
 class PartialMantel(AbstractStatMethod):
     Name = 'partial_mantel'
     DisplayName = 'Partial Mantel'
-    StatDisplayName = 'r statistic'
+    StatDisplayName = r'$r$'
 
     def parse(self, results_f):
         for line in results_f:
@@ -239,7 +239,7 @@ class MantelCorrelogram(AbstractStatMethod):
 class MoransI(AbstractStatMethod):
     Name = 'morans_i'
     DisplayName = 'Moran\'s I'
-    StatDisplayName = 'I statistic'
+    StatDisplayName = r'$I$'
 
     def parse(self, results_f):
         es = None
