@@ -18,6 +18,7 @@ from qiime.filter import filter_samples_from_distance_matrix
 from qiime.parse import parse_distmat
 from qiime.util import create_dir
 
+from microbiogeo.method import Mantel, MoransI
 from microbiogeo.util import (choose_gradient_subsets, has_results,
                               run_command, shuffle_dm, subset_dm,
                               subset_groups)
@@ -224,11 +225,11 @@ def build_grouping_method_sample_size_testing_commands(study_dir, dm_fp,
 
             for method in methods:
                 results_dir = join(study_dir, '%s_dm_%s_gs%d_%d_%s' % (metric,
-                        category, subset_size, subset_num, method))
+                        category, subset_size, subset_num, method.Name))
 
                 if not has_results(results_dir):
                     cmd = ('compare_categories.py --method %s -n %d -i %s '
-                           '-m %s -c %s -o %s' % (method, permutation,
+                           '-m %s -c %s -o %s' % (method.Name, permutation,
                                                   subset_dm_fp, map_fp,
                                                   category, results_dir))
                     cmds.append(cmd)
@@ -267,21 +268,21 @@ def build_gradient_method_sample_size_testing_commands(study_dir, dm_fp,
 
             for method in methods:
                 results_dir = join(study_dir, '%s_dm_%s_n%d_%d_%s' % (metric,
-                        category, subset_size, subset_num, method))
+                        category, subset_size, subset_num, method.Name))
                     
-                if method == 'mantel':
+                if type(method) is Mantel:
                     in_dm_fps = '%s,%s' % (subset_dm_fp, env_dm_fp)
 
                     if not has_results(results_dir):
                         cmd = ('compare_distance_matrices.py --method %s '
-                               '-n %d -i %s -o %s' % (method, permutation,
+                               '-n %d -i %s -o %s' % (method.Name, permutation,
                                                       in_dm_fps, results_dir))
                         cmds.append(cmd)
-                elif method == 'morans_i':
+                elif type(method) is MoransI:
                     if not has_results(results_dir):
                         cmd = ('compare_categories.py --method %s -i %s -m %s '
-                               '-c %s -o %s' % (method, subset_dm_fp, map_fp,
-                                                category, results_dir))
+                               '-c %s -o %s' % (method.Name, subset_dm_fp,
+                                                map_fp, category, results_dir))
                         cmds.append(cmd)
 
             results_idx += 1

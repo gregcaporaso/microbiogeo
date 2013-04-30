@@ -17,6 +17,7 @@ from cogent.util.unit_test import TestCase, main
 
 from microbiogeo.format import (format_method_comparison_heatmaps,
                                 format_method_comparison_table)
+from microbiogeo.method import Adonis, Anosim
 from microbiogeo.util import StatsResults
 
 class FormatTests(TestCase):
@@ -231,16 +232,16 @@ class FormatTests(TestCase):
 
     def test_format_method_comparison_heatmaps(self):
         obs = format_method_comparison_heatmaps(self.full_results1,
-                {'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM'])})
+                {'grouping': [Adonis(), Anosim()]})
         self.assertEqual(obs, exp_method_comparison_heatmaps1)
 
         self.assertRaises(ValueError, format_method_comparison_heatmaps,
                 self.full_results2,
-                {'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM'])})
+                {'grouping': [Adonis(), Anosim()]})
 
         self.assertRaises(ValueError, format_method_comparison_heatmaps,
                 self.full_results3,
-                {'grouping': (['adonis', 'anosim'], ['Adonis', 'ANOSIM'])})
+                {'grouping': [Adonis(), Anosim()]})
 
 
 exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',

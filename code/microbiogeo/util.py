@@ -165,6 +165,7 @@ def get_color_pool():
     return [matplotlib_rgb_color(data_colors[color].toRGB())
             for color in color_order]
 
+
 class StatsResults(object):
 
     def __init__(self):
