@@ -32,8 +32,8 @@ from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 QiimeStatMethod, UnparsableFileError,
                                 UnparsableLineError)
 
-from microbiogeo.util import (get_color_pool, get_num_samples, has_results,
-                              run_command, run_parallel_jobs)
+from microbiogeo.util import (get_color_pool, get_num_samples, get_panel_label,
+                              has_results, run_command, run_parallel_jobs)
 
 class InvalidSubsetSize(Exception):
     pass
@@ -351,7 +351,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     depth = tests['depth']
     metric = tests['metric']
 
-    num_rows = max(len(tests['methods']), len(tests['pcoa_dissim']) + 1)
+    num_methods = len(tests['methods'])
+    num_rows = max(num_methods, len(tests['pcoa_dissim']) + 1)
     # test stat, p-val, legend/PCoA.
     num_cols = 3
 
@@ -472,6 +473,21 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         ax1.set_xlim(min_x, max_x)
         ax2.set_xlim(min_x, max_x)
 
+        for ax_idx, ax in enumerate((ax1, ax2)):
+            panel_idx = method_idx * 2 + ax_idx
+            panel_label = get_panel_label(panel_idx)
+            xmin = ax.get_xlim()[0]
+            ymin, ymax = ax.get_ylim()
+            yrange = ymax - ymin
+
+            # Not sure why the math isn't working out for the p-value plots...
+            if ax is ax1:
+                factor = 0.05
+            else:
+                factor = 0.60
+
+            ax.text(xmin, ymax + (factor * yrange), '(%s)' % panel_label)
+
         if method_idx == 0:
             ax3 = subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
             ax3.get_xaxis().set_visible(False)
@@ -480,13 +496,13 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                        loc='center', fancybox=True, shadow=True)
 
     # Plot PCoA in last column.
-    plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols)
+    plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods)
 
     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
     fig.savefig(join(in_dir, '%s_%s.pdf' % (study[0], category[0])),
                 format='pdf')
 
-def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
+def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
     metric = tests['metric'][0]
@@ -527,6 +543,13 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
         ylabel('PC2 (%1.2f%%)' % pc_data[3][1])
         xticks([])
         yticks([])
+
+        panel_idx = num_methods * 2 + d_idx
+        panel_label = get_panel_label(panel_idx)
+        xmin = ax.get_xlim()[0]
+        ymin, ymax = ax.get_ylim()
+        yrange = ymax - ymin
+        ax.text(xmin, ymax + (0.04 * yrange), '(%s)' % panel_label)
 
 def _collate_gradient_pcoa_plot_data(coords_f, map_f, category):
     pc_data = parse_coords(coords_f)
