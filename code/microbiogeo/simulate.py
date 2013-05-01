@@ -455,7 +455,12 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
             ax3 = subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
             ax3.get_xaxis().set_visible(False)
             ax3.get_yaxis().set_visible(False)
-            ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend',
+
+            start_panel_label = get_panel_label(0)
+            end_panel_label = get_panel_label(num_methods * 2 - 1)
+            ax3.legend(legend_lines, legend_labels, ncol=2,
+                       title='Legend (Panels %s-%s)' % (start_panel_label,
+                                                        end_panel_label),
                        loc='center', fancybox=True, shadow=True)
 
     # Plot PCoA in last column.
