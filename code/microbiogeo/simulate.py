@@ -461,7 +461,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
             ax3.legend(legend_lines, legend_labels, ncol=2,
                        title='Legend (Panels %s-%s)' % (start_panel_label,
                                                         end_panel_label),
-                       loc='center', fancybox=True, shadow=True)
+                       loc='center left', fancybox=True, shadow=True)
 
     # Plot PCoA in last column.
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods)
@@ -518,6 +518,8 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
+    legend_symbols = []
+    legend_labels = []
     for d_idx, d in enumerate(tests['pcoa_dissim']):
         dissim_dir = join(samp_size_dir, repr(d))
         pc_fp = join(dissim_dir, '%s_pc.txt' % metric)
@@ -537,10 +539,19 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
             xs, ys, gradient = _collate_gradient_pcoa_plot_data(pc_f, map_f,
                                                                 category)
             scatter(xs, ys, s=80, c=gradient, cmap='RdYlBu')
+
         elif sim_data_type == 'cluster':
             plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f, category)
-            for xs, ys, color in plot_data:
-                scatter(xs, ys, color=color)
+            for xs, ys, color, state in plot_data:
+                scatter(xs, ys, color=color, label=state)
+
+                if d_idx == 0:
+                    legend_symbols.append(Line2D(range(1), range(1),
+                                          color='white', marker='o',
+                                          markeredgecolor=color,
+                                          markerfacecolor=color))
+                    legend_labels.append(
+                            tests['category_name_lookup'].get(state, state))
         else:
             raise ValueError("Unrecognized simulated data type '%s'." %
                              sim_data_type)
@@ -557,6 +568,21 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
         ymin, ymax = ax.get_ylim()
         yrange = ymax - ymin
         ax.text(xmin, ymax + (0.04 * yrange), '(%s)' % panel_label)
+
+    # Plot our new legend and add the existing one back.
+    legend_ax = subplot(num_rows, num_cols, 3, frame_on=False)
+    existing_legend = legend_ax.get_legend()
+    existing_legend.set_bbox_to_anchor((-0.05, 0.5))
+
+    start_panel_label = get_panel_label(num_methods * 2)
+    end_panel_label = get_panel_label(num_methods * 2 +
+                                      len(tests['pcoa_dissim']) - 1)
+    legend_ax.legend(legend_symbols, legend_labels, ncol=1,
+               title='Legend (Panels %s-%s)' % (start_panel_label,
+                                                end_panel_label),
+               loc='center right', fancybox=True, shadow=True, numpoints=1,
+               bbox_to_anchor=(1.05, 0.5))
+    legend_ax.add_artist(existing_legend)
 
 def _collate_gradient_pcoa_plot_data(coords_f, map_f, category):
     pc_data = parse_coords(coords_f)
@@ -595,7 +621,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
         sids = sid_map[state]
         xs = [coords_d[sid][0] for sid in sids]
         ys = [coords_d[sid][1] for sid in sids]
-        results.append((xs, ys, color))
+        results.append((xs, ys, color, state))
 
     return results
 
@@ -676,6 +702,8 @@ def main():
             'pcoa_sample_size': 150,
             'num_trials': 10,
             'category': ('HOST_SUBJECT_ID', 'Subject'),
+            'category_name_lookup': {'M2': 'Subject 1', 'M3': 'Subject 2',
+                                     'M9': 'Subject 3'},
             'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
         }
 

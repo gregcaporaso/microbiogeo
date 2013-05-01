@@ -222,8 +222,9 @@ class SimulateTests(TestCase):
         """Test collating PCoA plot data for cluster datasets."""
         obs = _collate_cluster_pcoa_plot_data(self.pc_f1, self.map_f1,
                                               'Treatment')
-        self.assertFloatEqual(obs, [([0.1, 0.3], [2.5, 3.0], (1.0, 0.0, 0.0)),
-                                    ([0.5], [3.0], (0.0, 0.0, 1.0))])
+        self.assertFloatEqual(obs, [([0.1, 0.3], [2.5, 3.0], (1.0, 0.0, 0.0),
+                                     'Control'),
+                                    ([0.5], [3.0], (0.0, 0.0, 1.0), 'Fast')])
 
 
 tutorial_mapping_f = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	Gradient	DOB	Description
