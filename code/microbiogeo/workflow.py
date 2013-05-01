@@ -474,19 +474,7 @@ def main():
                                     'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP',
                                     'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE',
                                     'LONGITUDE', 'LATITUDE']
-                               }, 
-                   'glen_canyon': {
-                                   'depths': [15000, 29000, 53000],
-                                   'grouping_categories': ['CurrentlyWet'],
-                                   'gradient_categories': ['estimated_years_since_submerged_for_plotting'],
-                                   'group_sizes': [5, 10, 20, 40],
-                                   'subset_sizes': [10, 20, 30],
-                                   'best_method_env_vars': ['sample_pH',
-                                       'estimated_years_since_submerged_for_plotting',
-                                       'Month', 'Day', 'Year',
-                                       'days_since_epoch', 'Hour', 'Replicate',
-                                       'DNA.I.D.No.']
-                                  },
+                               },
                    'keyboard': {
                                 'depths': [390, 780, 1015],
                                 'grouping_categories': ['HOST_SUBJECT_ID'],

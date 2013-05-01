@@ -395,42 +395,9 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         legend_labels = []
         legend_lines = []
         for d, plot_data in sorted(plots_data.items()):
-            avg_effect_sizes = []
-            std_effect_sizes = []
-            for e in plot_data['effect_sizes']:
-                assert len(e) == tests['num_trials']
-                avg_effect_sizes.append(mean(e))
-                std_effect_sizes.append(std(e))
-
-            avg_p_vals = []
-
-            # Need to compute asymmetric error bars for p-values to avoid
-            # negative error bars on log scale.
-            # TODO add unit tests!!!
-            std_p_vals = [[], []]
-            for e in plot_data['p_vals']:
-                assert len(e) == tests['num_trials']
-                avg_p_val = mean(e)
-                avg_p_vals.append(avg_p_val)
-
-                std_p_val = std(e)
-                std_p_vals[1].append(std_p_val)
-
-                # Cut off lower bound at 1e-5.
-                if avg_p_val - std_p_val < 1e-5:
-                    std_p_val = avg_p_val - 1e-5
-                std_p_vals[0].append(std_p_val)
-
-            assert len(plot_data['sample_sizes']) == \
-                   len(avg_effect_sizes), "%d != %d" % (
-                   len(plot_data['sample_sizes']),
-                   len(avg_effect_sizes))
-
-            assert len(plot_data['sample_sizes']) == \
-                   len(avg_p_vals), "%d != %d" % (
-                   len(plot_data['sample_sizes']),
-                   len(avg_p_vals))
-
+            avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals = \
+                    compute_plot_data_statistics(plot_data,
+                                                 tests['num_trials'])
             color = color_pool.pop(0)
 
             if d == 0.0:
@@ -482,6 +449,43 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
     fig.savefig(join(in_dir, '%s_%s.pdf' % (tests['study'], category)),
                 format='pdf')
+
+def compute_plot_data_statistics(plot_data, num_trials):
+    avg_effect_sizes = []
+    std_effect_sizes = []
+    for e in plot_data['effect_sizes']:
+        assert len(e) == num_trials
+        avg_effect_sizes.append(mean(e))
+        std_effect_sizes.append(std(e))
+
+    # Need to compute asymmetric error bars for p-values to avoid
+    # negative error bars on log scale.
+    avg_p_vals = []
+    std_p_vals = [[], []]
+    for e in plot_data['p_vals']:
+        assert len(e) == num_trials
+        avg_p_val = mean(e)
+        avg_p_vals.append(avg_p_val)
+
+        std_p_val = std(e)
+        std_p_vals[1].append(std_p_val)
+
+        # Cut off lower bound at 1e-5.
+        if avg_p_val - std_p_val < 1e-5:
+            std_p_val = avg_p_val - 1e-5
+        std_p_vals[0].append(std_p_val)
+
+    assert len(plot_data['sample_sizes']) == \
+           len(avg_effect_sizes), "%d != %d" % (
+           len(plot_data['sample_sizes']),
+           len(avg_effect_sizes))
+
+    assert len(plot_data['sample_sizes']) == \
+           len(avg_p_vals), "%d != %d" % (
+           len(plot_data['sample_sizes']),
+           len(avg_p_vals))
+
+    return avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals
 
 def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols):
     trial_num = 0
