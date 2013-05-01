@@ -21,6 +21,7 @@ from microbiogeo.simulate import (choose_cluster_subsets,
                                   _choose_items_from_clusters,
                                   _collate_cluster_pcoa_plot_data,
                                   _collate_gradient_pcoa_plot_data,
+                                  _compute_plot_data_statistics,
                                   InvalidSubsetSize)
 
 class SimulateTests(TestCase):
@@ -33,6 +34,18 @@ class SimulateTests(TestCase):
 
         self.pc_f1 = pc_f1.split('\n')
         self.map_f1 = map_f1.split('\n')
+
+        self.plot_data1 = {
+            'sample_sizes': [5, 10, 20],
+            'effect_sizes': [[0.5, 0.4], [0.3, 0.3], [0.7, 0.95]],
+            'p_vals': [[0.001, 0.04], [0.02, 0.0001], [0.09, 0.085]]
+        }
+
+        self.plot_data2 = {
+            'sample_sizes': [5, 20],
+            'effect_sizes': [[0.5, 0.4, 0.5], [0.3, 0.3, 0.3]],
+            'p_vals': [[0.00001, 0.00002, 0.00001], [0.2, 0.01, 0.1]]
+        }
 
     def test_choose_cluster_subsets(self):
         """Test picking subsets of sample groups."""
@@ -162,6 +175,41 @@ class SimulateTests(TestCase):
         # Choose all items.
         obs = _choose_items_from_bins(sequence, 4)
         self.assertEqual(obs, sequence)
+
+    def test_compute_plot_data_statistics(self):
+        """Test computing avg and std for dissim plot data."""
+        # Two trials, 3 sample sizes.
+        exp = ([0.45, 0.3, 0.825],
+               [0.05, 0.0, 0.125],
+               [0.0205, 0.01005, 0.0875],
+               [[0.0195, 0.00995, 0.0025],
+                [0.0195, 0.00995, 0.0025]])
+        obs = _compute_plot_data_statistics(self.plot_data1, 2)
+        self.assertFloatEqual(obs, exp)
+
+        # Three trials, 2 sample sizes (with std p-val cutoff).
+        exp = ([0.466667, 0.3],
+               [0.04714045, 0.0],
+               [1.33333333e-05, 0.1033333],
+               [[3.33333e-06, 0.077603],
+                [4.71404e-06, 0.077603]])
+        obs = _compute_plot_data_statistics(self.plot_data2, 3)
+        self.assertFloatEqual(obs, exp)
+
+    def test_compute_plot_data_statistics_invalid_input(self):
+        """Test raises error on invalid input."""
+        # Wrong number of trials.
+        self.assertRaises(ValueError, _compute_plot_data_statistics,
+                          self.plot_data1, 3)
+
+        # Wrong number of sample sizes.
+        plot_data = {
+            'sample_sizes': [5, 10, 20, 42],
+            'effect_sizes': [[0.5, 0.4], [0.3, 0.3], [0.7, 0.95]],
+            'p_vals': [[0.001, 0.04], [0.02, 0.0001], [0.09, 0.085]]
+        }
+        self.assertRaises(ValueError, _compute_plot_data_statistics,
+                          plot_data, 2)
 
     def test_collate_gradient_pcoa_plot_data(self):
         """Test collating PCoA plot data for gradient datasets."""

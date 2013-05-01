@@ -362,8 +362,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
 
     for method_idx, method in enumerate(tests['methods']):
         # dissim -> {'sample_sizes': list,
-        #            'effect_sizes': list of lists, one for each trial,
-        #            'p_vals' -> list of lists, one for each trial}
+        #            'effect_sizes': list of lists, one for each sample size,
+        #            'p_vals' -> list of lists, one for each sample size}
         plots_data = defaultdict(lambda: defaultdict(list))
 
         for trial_num in range(tests['num_trials']):
@@ -400,8 +400,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         legend_lines = []
         for d, plot_data in sorted(plots_data.items()):
             avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals = \
-                    compute_plot_data_statistics(plot_data,
-                                                 tests['num_trials'])
+                    _compute_plot_data_statistics(plot_data,
+                                                  tests['num_trials'])
             color = color_pool.pop(0)
 
             if d == 0.0:
@@ -469,11 +469,13 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     fig.savefig(join(in_dir, '%s_%s.pdf' % (study[0], category[0])),
                 format='pdf')
 
-def compute_plot_data_statistics(plot_data, num_trials):
+def _compute_plot_data_statistics(plot_data, num_trials):
     avg_effect_sizes = []
     std_effect_sizes = []
     for e in plot_data['effect_sizes']:
-        assert len(e) == num_trials
+        if len(e) != num_trials:
+            raise ValueError("Data length doesn't match the number of trials.")
+
         avg_effect_sizes.append(mean(e))
         std_effect_sizes.append(std(e))
 
@@ -482,7 +484,9 @@ def compute_plot_data_statistics(plot_data, num_trials):
     avg_p_vals = []
     std_p_vals = [[], []]
     for e in plot_data['p_vals']:
-        assert len(e) == num_trials
+        if len(e) != num_trials:
+            raise ValueError("Data length doesn't match the number of trials.")
+
         avg_p_val = mean(e)
         avg_p_vals.append(avg_p_val)
 
@@ -494,15 +498,13 @@ def compute_plot_data_statistics(plot_data, num_trials):
             std_p_val = avg_p_val - 1e-5
         std_p_vals[0].append(std_p_val)
 
-    assert len(plot_data['sample_sizes']) == \
-           len(avg_effect_sizes), "%d != %d" % (
-           len(plot_data['sample_sizes']),
-           len(avg_effect_sizes))
+    if len(plot_data['sample_sizes']) != len(avg_effect_sizes):
+        raise ValueError("%d != %d" % (len(plot_data['sample_sizes']),
+                                       len(avg_effect_sizes)))
 
-    assert len(plot_data['sample_sizes']) == \
-           len(avg_p_vals), "%d != %d" % (
-           len(plot_data['sample_sizes']),
-           len(avg_p_vals))
+    if len(plot_data['sample_sizes']) != len(avg_p_vals):
+        raise ValueError("%d != %d" % (len(plot_data['sample_sizes']),
+                                       len(avg_p_vals)))
 
     return avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals
 
