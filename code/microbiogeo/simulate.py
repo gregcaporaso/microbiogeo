@@ -348,8 +348,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
     study = tests['study']
     category = tests['category']
-    depth = tests['depth']
-    metric = tests['metric']
 
     num_methods = len(tests['methods'])
     num_rows = max(num_methods, len(tests['pcoa_dissim']) + 1)
@@ -357,8 +355,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     num_cols = 3
 
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
-    fig.suptitle('Study: %s, Metric: %s, Depth: %d, Variable: %s' % (study[1],
-            metric[1], depth, category[1]))
 
     for method_idx, method in enumerate(tests['methods']):
         # dissim -> {'sample_sizes': list,
