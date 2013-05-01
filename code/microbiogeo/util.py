@@ -165,6 +165,9 @@ def get_color_pool():
     return [matplotlib_rgb_color(data_colors[color].toRGB())
             for color in color_order]
 
+def get_panel_label(idx):
+    return 'abcdefghijklmnopqrstuvwxyz'[idx]
+
 
 class StatsResults(object):
 
