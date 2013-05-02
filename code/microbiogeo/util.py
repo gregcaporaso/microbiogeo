@@ -25,7 +25,8 @@ from qiime.colors import data_colors, data_color_order
 from qiime.filter import filter_samples_from_distance_matrix
 from qiime.format import format_distance_matrix
 from qiime.make_distance_histograms import matplotlib_rgb_color
-from qiime.parse import parse_distmat, parse_mapping_file_to_dict
+from qiime.parse import (parse_distmat, parse_mapping_file,
+                         parse_mapping_file_to_dict)
 from qiime.util import MetadataMap, qiime_system_call
 
 class ExternalCommandFailedError(Exception):
@@ -65,11 +66,27 @@ def has_results(results_dir, required_files=None):
 
     return has_results
 
-def get_num_samples(table_fp):
+def get_num_samples_in_table(table_fp):
     """Returns the number of samples in the table."""
     with open(table_fp, 'U') as table_f:
         table = parse_biom_table(table_f)
         return len(table.SampleIds)
+
+def get_num_samples_in_distance_matrix(dm_fp):
+    """Returns the number of samples in the distance matrix."""
+    with open(dm_fp, 'U') as dm_f:
+        return len(parse_distmat(dm_f)[0])
+
+def get_num_samples_in_map(map_fp):
+    """Returns the number of samples in the mapping file."""
+    with open(map_fp, 'U') as map_f:
+        return len(parse_mapping_file(map_f)[0])
+
+def get_simsam_rep_num(target_num_samps, curr_num_samps):
+    if curr_num_samps >= target_num_samps:
+        raise ValueError("Current number of samples is greater than or equal "
+                         "to the target number of samples.")
+    return int(ceil(target_num_samps / curr_num_samps))
 
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)

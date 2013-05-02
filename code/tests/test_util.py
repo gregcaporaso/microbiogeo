@@ -23,9 +23,9 @@ from qiime.util import get_qiime_temp_dir
 
 from microbiogeo.util import (choose_gradient_subsets,
                               ExternalCommandFailedError, get_color_pool,
-                              has_results, is_empty, run_command,
-                              run_parallel_jobs, shuffle_dm, StatsResults,
-                              subset_dm, subset_groups)
+                              get_simsam_rep_num, has_results, is_empty,
+                              run_command, run_parallel_jobs, shuffle_dm,
+                              StatsResults, subset_dm, subset_groups)
 
 class UtilTests(TestCase):
     """Tests for the util.py module functions."""
@@ -147,6 +147,16 @@ class UtilTests(TestCase):
         obs = has_results(self.input_dir,
                           required_files=['foo.txt', 'bar.txt', 'baz.txt'])
         self.assertFalse(obs)
+
+    def test_get_simsam_rep_num(self):
+        """Test getting number of necessary simsam reps."""
+        obs = get_simsam_rep_num(42, 13)
+        self.assertEqual(obs, 4)
+
+        obs = get_simsam_rep_num(50, 10)
+        self.assertEqual(obs, 5)
+
+        self.assertRaises(ValueError, get_simsam_rep_num, 42, 42)
 
     def test_shuffle_dm(self):
         """Test shuffling labels of distance matrix."""
