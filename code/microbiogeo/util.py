@@ -82,6 +82,12 @@ def get_num_samples_in_map(map_fp):
     with open(map_fp, 'U') as map_f:
         return len(parse_mapping_file(map_f)[0])
 
+def get_simsam_rep_num(target_num_samps, curr_num_samps):
+    if curr_num_samps >= target_num_samps:
+        raise ValueError("Current number of samples is greater than or equal "
+                         "to the target number of samples.")
+    return int(ceil(target_num_samps / curr_num_samps))
+
 def shuffle_dm(dm_f):
     labels, dm_data = parse_distmat(dm_f)
     shuffle(labels)

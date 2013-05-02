@@ -38,8 +38,8 @@ from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
 from microbiogeo.util import (get_color_pool,
                               get_num_samples_in_distance_matrix,
                               get_num_samples_in_map, get_num_samples_in_table,
-                              get_panel_label, has_results, run_command,
-                              run_parallel_jobs)
+                              get_panel_label, get_simsam_rep_num, has_results,
+                              run_command, run_parallel_jobs)
 
 class InvalidSubsetSize(Exception):
     pass
@@ -244,7 +244,7 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
                                         cmds.append(cmd)
                         else:
                             # We need to simulate more samples than we originally have.
-                            simsam_rep_num = int(ceil(samp_size / num_samps))
+                            simsam_rep_num = get_simsam_rep_num(samp_size, num_samps)
 
                             for d in tests[study]['dissim']:
                                 dissim_dir = join(samp_size_dir, repr(d))
