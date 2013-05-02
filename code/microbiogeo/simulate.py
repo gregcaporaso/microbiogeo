@@ -737,6 +737,25 @@ def main():
                 'num_trials': 10,
                 'methods': [Mantel(), #MoransI()
                 ]
+            },
+
+            'gn': {
+                'categories': [('LAYER', 'Layer')],
+                'depths': [1276, 1495, 1779],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+                'pcoa_sample_size': 150,
+                'num_trials': 10,
+                'methods': [Mantel(), #MoransI()
+                ]
             }
         }
 
