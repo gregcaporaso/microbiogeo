@@ -17,6 +17,7 @@ from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
 from matplotlib.pyplot import (cm, figure, legend, figlegend, scatter, subplot,
                                title, xlim, xlabel, ylabel, xticks, yticks)
 from qiime.filter import (filter_mapping_file_from_mapping_f,
@@ -583,6 +584,15 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
                loc='center right', fancybox=True, shadow=True, numpoints=1,
                bbox_to_anchor=(1.05, 0.5))
     legend_ax.add_artist(existing_legend)
+
+    # Draw box around PCoA plots. Do the math in figure coordinates.
+    top_ax = subplot(num_rows, num_cols, 6)
+    rec = Rectangle((1 - (1 / num_cols) + 0.005, 0),
+                    (1 / num_cols) - 0.005,
+                    1 - (1 / num_rows) - 0.005,
+                    fill=False, lw=2, clip_on=False,
+                    transform=top_ax.figure.transFigure)
+    rec = top_ax.add_patch(rec)
 
 def _collate_gradient_pcoa_plot_data(coords_f, map_f, category):
     pc_data = parse_coords(coords_f)
