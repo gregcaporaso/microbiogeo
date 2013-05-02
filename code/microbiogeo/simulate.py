@@ -145,157 +145,131 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
     """Simulate gradient or cluster data with simsam.py.
 
     sim_data_type should be either 'gradient' or 'cluster'.
+
+    Will create the following (heavily nested) output directory structure:
+
+    out_dir/
+        study/
+            depth/
+                even depth otu table (.biom)
+                category/
+                    trial_num/
+                        samp_size/
+                            (optional) subset files dependent on samp_size
+                            dissim/
+                                subset files/dirs dependent on samp_size
+                                metric/
+                                    map.txt
+                                    dm.txt
+                                    pc.txt
+                                    <category>_dm.txt (if gradient)
     """
     create_dir(out_dir)
-    otu_table_fp = join(in_dir, tests['study'][0], 'otu_table.biom')
-    map_fp = join(in_dir, tests['study'][0], 'map.txt')
-    map_f = open(map_fp, 'U')
-    depth = tests['depth']
-    metric = tests['metric'][0]
-    num_trials = tests['num_trials']
-    category = tests['category'][0]
-
-    # Rarefy the table first since simsam.py's output tables will still have
-    # even sampling depth and we don't want to lose simulated samples after the
-    # fact.
-    even_otu_table_fp = join(out_dir,
-            add_filename_suffix(otu_table_fp, '_even%d' % depth))
-
-    if not exists(even_otu_table_fp):
-        run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp,
-                even_otu_table_fp, depth))
-
-    num_samps = get_num_samples(even_otu_table_fp)
 
     cmds = []
-    for trial_num in range(num_trials):
-        trial_num_dir = join(out_dir, '%d' % trial_num)
-        create_dir(trial_num_dir)
+    for study in tests:
+        study_dir = join(out_dir, study)
+        create_dir(study_dir)
 
-        for samp_size in tests['sample_sizes']:
-            samp_size_dir = join(trial_num_dir, '%d' % samp_size)
-            create_dir(samp_size_dir)
+        otu_table_fp = join(in_dir, study, 'otu_table.biom')
+        map_fp = join(in_dir, study, 'map.txt')
+        map_f = open(map_fp, 'U')
 
-            # Lots of duplicate code between these two blocks... need to
-            # refactor and test.
-            if samp_size <= num_samps:
-                simsam_rep_num = 1
+        for depth in tests[study]['depths']:
+            depth_dir = join(study_dir, '%d' % depth)
+            create_dir(depth_dir)
 
-                subset_otu_table_fp = join(samp_size_dir,
-                                           basename(even_otu_table_fp))
-                subset_map_fp = join(samp_size_dir, basename(map_fp))
+            # Rarefy the table first since simsam.py's output tables will still
+            # have even sampling depth and we don't want to lose simulated samples
+            # after the fact.
+            even_otu_table_fp = join(depth_dir, basename(otu_table_fp))
 
-                if not has_results(samp_size_dir,
-                        required_files=[basename(subset_otu_table_fp),
-                                        basename(subset_map_fp)]):
-                    run_command('choose_data_subset.py -t %s -i %s -m %s '
-                                '-c %s -n %d -o %s' % (sim_data_type,
-                                                       even_otu_table_fp,
-                                                       map_fp, category,
-                                                       samp_size,
-                                                       samp_size_dir))
+            if not exists(even_otu_table_fp):
+                run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp,
+                        even_otu_table_fp, depth))
 
-                for d in tests['dissim']:
-                    dissim_dir = join(samp_size_dir, repr(d))
+            num_samps = get_num_samples(even_otu_table_fp)
 
-                    required_files = ['%s_dm.txt' % metric,
-                                      '%s_pc.txt' % metric,
-                                      'map.txt']
-                    if sim_data_type == 'gradient':
-                        required_files.append('%s_dm.txt' % category)
+            for category in tests[study]['categories']:
+                category_dir = join(depth_dir, category[0])
+                create_dir(category_dir)
 
-                    if not has_results(dissim_dir,
-                                       required_files=required_files):
-                        simsam_map_fp = join(dissim_dir,
-                                add_filename_suffix(subset_map_fp,
-                                '_n%d_d%r' % (simsam_rep_num, d)))
-                        simsam_otu_table_fp = join(dissim_dir,
-                                add_filename_suffix(subset_otu_table_fp,
-                                '_n%d_d%r' % (simsam_rep_num, d)))
+                for trial_num in range(tests[study]['num_trials']):
+                    trial_num_dir = join(category_dir, '%d' % trial_num)
+                    create_dir(trial_num_dir)
 
-                        cmd = ('simsam.py -i %s -t %s -o %s -d %r -n %d '
-                               '-m %s;' % (subset_otu_table_fp, tree_fp,
-                                           dissim_dir, d, simsam_rep_num,
-                                           subset_map_fp))
+                    for samp_size in tests[study]['sample_sizes']:
+                        samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+                        create_dir(samp_size_dir)
 
-                        if sim_data_type == 'gradient':
-                            cmd += ('distance_matrix_from_mapping.py -i %s '
-                                    '-c %s -o %s;' % (simsam_map_fp, category,
-                                    join(dissim_dir, '%s_dm.txt' % category)))
+                        # Lots of duplicate code between these two blocks... need to
+                        # refactor and test.
+                        if samp_size <= num_samps:
+                            simsam_rep_num = 1
 
-                        cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
-                                simsam_otu_table_fp, dissim_dir, metric,
-                                tree_fp)
-                        cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
-                                metric,
-                                splitext(basename(simsam_otu_table_fp))[0])),
-                                '%s_dm.txt' % join(dissim_dir, metric))
-                        cmd += 'cp %s %s;' % (simsam_map_fp,
-                                             join(dissim_dir, 'map.txt'))
-                        cmd += 'principal_coordinates.py -i %s -o %s' % (
-                                join(dissim_dir, '%s_dm.txt' % metric),
-                                join(dissim_dir, '%s_pc.txt' % metric))
+                            subset_otu_table_fp = join(samp_size_dir, basename(even_otu_table_fp))
+                            subset_map_fp = join(samp_size_dir, basename(map_fp))
 
-                        cmds.append(cmd)
-            else:
-                # We need to simulate more samples than we originally have.
-                simsam_rep_num = int(ceil(samp_size / num_samps))
+                            if not has_results(samp_size_dir, required_files=[basename(subset_otu_table_fp), basename(subset_map_fp)]):
+                                run_command('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s' % (sim_data_type, even_otu_table_fp, map_fp, category[0], samp_size, samp_size_dir))
 
-                for d in tests['dissim']:
-                    dissim_dir = join(samp_size_dir, repr(d))
+                            for d in tests[study]['dissim']:
+                                dissim_dir = join(samp_size_dir, repr(d))
+                                create_dir(dissim_dir)
 
-                    required_files = ['%s_dm.txt' % metric,
-                                      '%s_pc.txt' % metric,
-                                      'map.txt']
-                    if sim_data_type == 'gradient':
-                        required_files.append('%s_dm.txt' % category)
+                                simsam_map_fp = join(dissim_dir, add_filename_suffix(subset_map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+                                simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(subset_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
 
-                    if not has_results(dissim_dir,
-                                       required_files=required_files):
-                        simsam_map_fp = join(dissim_dir,
-                                add_filename_suffix(map_fp,
-                                '_n%d_d%r' % (simsam_rep_num, d)))
-                        simsam_otu_table_fp = join(dissim_dir,
-                                add_filename_suffix(even_otu_table_fp,
-                                '_n%d_d%r' % (simsam_rep_num, d)))
+                                required_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
 
-                        cmd = ('simsam.py -i %s -t %s -o %s -d %r -n %d '
-                               '-m %s;' % (even_otu_table_fp, tree_fp,
-                                           dissim_dir, d, simsam_rep_num,
-                                           map_fp))
+                                if not has_results(dissim_dir, required_files=required_files):
+                                    cmd = ('simsam.py -i %s -t %s -o %s -d %r -n %d -m %s;' % (subset_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, subset_map_fp))
 
-                        subset_dir = join(dissim_dir, 'subset')
-                        cmd += ('choose_data_subset.py -t %s -i %s -m %s '
-                                '-c %s -n %d -o %s;' % (sim_data_type,
-                                                        simsam_otu_table_fp,
-                                                        simsam_map_fp,
-                                                        category, samp_size,
-                                                        subset_dir))
-                        subset_otu_table_fp = join(subset_dir,
-                                basename(simsam_otu_table_fp))
-                        subset_map_fp = join(subset_dir,
-                                basename(simsam_map_fp))
+                                    for metric in tests[study]['metrics']:
+                                        metric_dir = join(dissim_dir, metric[0])
+                                        create_dir(metric_dir)
 
-                        if sim_data_type == 'gradient':
-                            cmd += ('distance_matrix_from_mapping.py -i %s '
-                                    '-c %s -o %s;' % (subset_map_fp, category,
-                                                      join(dissim_dir,
-                                                      '%s_dm.txt' % category)))
+                                        if sim_data_type == 'gradient':
+                                            cmd += ('distance_matrix_from_mapping.py -i %s -c %s -o %s;' % (simsam_map_fp, category[0], join(metric_dir, '%s_dm.txt' % category[0])))
 
-                        cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (
-                                subset_otu_table_fp, dissim_dir, metric,
-                                tree_fp)
-                        cmd += 'mv %s %s;' % (join(dissim_dir, '%s_%s.txt' % (
-                                metric,
-                                splitext(basename(subset_otu_table_fp))[0])),
-                                '%s_dm.txt' % join(dissim_dir, metric))
-                        cmd += 'cp %s %s;' % (subset_map_fp,
-                                             join(dissim_dir, 'map.txt'))
-                        cmd += 'principal_coordinates.py -i %s -o %s' % (
-                                join(dissim_dir, '%s_dm.txt' % metric),
-                                join(dissim_dir, '%s_pc.txt' % metric))
+                                        cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (simsam_otu_table_fp, metric_dir, metric[0], tree_fp)
+                                        cmd += 'mv %s %s;' % (join(metric_dir, '%s_%s.txt' % (metric[0], splitext(basename(simsam_otu_table_fp))[0])), join(metric_dir, 'dm.txt'))
+                                        cmd += 'cp %s %s;' % (simsam_map_fp, join(metric_dir, 'map.txt'))
+                                        cmd += 'principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt')) 
+                                        cmds.append(cmd)
+                        else:
+                            # We need to simulate more samples than we originally have.
+                            simsam_rep_num = int(ceil(samp_size / num_samps))
 
-                        cmds.append(cmd)
+                            for d in tests[study]['dissim']:
+                                dissim_dir = join(samp_size_dir, repr(d))
+                                create_dir(dissim_dir)
+
+                                simsam_map_fp = join(dissim_dir, add_filename_suffix(map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+                                simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(even_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+
+                                required_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+
+                                if not has_results(dissim_dir, required_files=required_files):
+                                    cmd = ('simsam.py -i %s -t %s -o %s -d %r -n %d -m %s;' % (even_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, map_fp))
+
+                                    subset_dir = join(dissim_dir, 'subset')
+                                    cmd += ('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s;' % (sim_data_type, simsam_otu_table_fp, simsam_map_fp, category[0], samp_size, subset_dir))
+                                    subset_otu_table_fp = join(subset_dir, basename(simsam_otu_table_fp))
+                                    subset_map_fp = join(subset_dir, basename(simsam_map_fp))
+
+                                    for metric in tests[study]['metrics']:
+                                        metric_dir = join(dissim_dir, metric[0])
+                                        create_dir(metric_dir)
+
+                                        if sim_data_type == 'gradient':
+                                            cmd += ('distance_matrix_from_mapping.py -i %s -c %s -o %s;' % (subset_map_fp, category[0], join(metric_dir, '%s_dm.txt' % category[0])))
+
+                                        cmd += 'beta_diversity.py -i %s -o %s -m %s -t %s;' % (subset_otu_table_fp, metric_dir, metric[0], tree_fp)
+                                        cmd += 'mv %s %s;' % (join(metric_dir, '%s_%s.txt' % (metric[0], splitext(basename(subset_otu_table_fp))[0])), join(metric_dir, 'dm.txt'))
+                                        cmd += 'cp %s %s;' % (subset_map_fp, join(metric_dir, 'map.txt'))
+                                        cmd += 'principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt'))
+                                        cmds.append(cmd)
 
     run_parallel_jobs(cmds, run_command)
 
@@ -675,7 +649,8 @@ def main():
 
         cluster_tests = {
             'overview': {
-                'categories': [('Treatment', 'Treatment Category')],
+                'categories': [('Treatment', 'Treatment Category',
+                                {'Control': 'Control', 'Fast': 'Fast'})],
                 'depths': [146],
                 'metrics': [('unweighted_unifrac', 'Unweighted UniFrac')],
                 'num_perms': 999,
@@ -684,8 +659,7 @@ def main():
                 'sample_sizes': [3, 5, 13],
                 'pcoa_sample_size': 13,
                 'num_trials': 3,
-                'methods': [Adonis(), Anosim()],
-                'category_name_lookup': {'Control': 'Control', 'Fast': 'Fast'}
+                'methods': [Adonis(), Anosim()]
             }
         }
     else:
@@ -719,7 +693,10 @@ def main():
 
         cluster_tests = {
             'keyboard': {
-                'categories': [('HOST_SUBJECT_ID', 'Subject')],
+                'categories': [('HOST_SUBJECT_ID', 'Subject',
+                                {'M2': 'Subject 1',
+                                 'M3': 'Subject 2',
+                                 'M9': 'Subject 3'})],
                 'depths': [390, 780, 1015],
                 'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
                             ('weighted_unifrac', 'Weighted UniFrac'),
@@ -733,10 +710,7 @@ def main():
                 'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
                 'pcoa_sample_size': 150,
                 'num_trials': 10,
-                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()],
-                'category_name_lookup': {'M2': 'Subject 1', 'M3': 'Subject 2',
-                                         'M9': 'Subject 3'
-                }
+                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
             }
         }
 
@@ -744,10 +718,10 @@ def main():
                             gradient_tests, tree_fp)
     generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
                             tree_fp)
-    process_simulated_data(out_gradient_dir, gradient_tests)
-    process_simulated_data(out_cluster_dir, cluster_tests)
-    create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
-    create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
+    #process_simulated_data(out_gradient_dir, gradient_tests)
+    #process_simulated_data(out_cluster_dir, cluster_tests)
+    #create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
+    #create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
 
 
 if __name__ == "__main__":
