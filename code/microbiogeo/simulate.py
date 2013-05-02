@@ -18,8 +18,9 @@ from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
-from matplotlib.pyplot import (cm, figure, legend, figlegend, scatter, subplot,
-                               title, xlim, xlabel, ylabel, xticks, yticks)
+from matplotlib.pyplot import (colorbar, cm, figure, legend, figlegend,
+                               scatter, subplot, title, xlim, xlabel, ylabel,
+                               xticks, yticks)
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
@@ -459,10 +460,15 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
 
             start_panel_label = get_panel_label(0)
             end_panel_label = get_panel_label(num_methods * 2 - 1)
+
+            if sim_data_type == 'gradient':
+                loc='center'
+            elif sim_data_type == 'cluster':
+                loc='center left'
             ax3.legend(legend_lines, legend_labels, ncol=2,
                        title='Legend (Panels %s-%s)' % (start_panel_label,
                                                         end_panel_label),
-                       loc='center left', fancybox=True, shadow=True)
+                       loc=loc, fancybox=True, shadow=True)
 
     # Plot PCoA in last column.
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods)
@@ -514,7 +520,7 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
     metric = tests['metric'][0]
-    category = tests['category'][0]
+    category = tests['category']
 
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
@@ -538,11 +544,15 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
         if sim_data_type == 'gradient':
             # Build list of (gradient value, sid) tuples.
             xs, ys, gradient = _collate_gradient_pcoa_plot_data(pc_f, map_f,
-                                                                category)
-            scatter(xs, ys, s=80, c=gradient, cmap='RdYlBu')
-
+                                                                category[0])
+            scatter_colorbar_data = scatter(xs, ys, s=80, c=gradient,
+                                            cmap='RdYlBu')
+            # We have to use gridspec to get this to work with tight_layout.
+            cb = colorbar(scatter_colorbar_data, use_gridspec=True)
+            cb.set_label(category[1])
         elif sim_data_type == 'cluster':
-            plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f, category)
+            plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f,
+                                                        category[0])
             for xs, ys, color, state in plot_data:
                 scatter(xs, ys, color=color, label=state)
 
@@ -570,20 +580,22 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
         yrange = ymax - ymin
         ax.text(xmin, ymax + (0.04 * yrange), '(%s)' % panel_label)
 
-    # Plot our new legend and add the existing one back.
-    legend_ax = subplot(num_rows, num_cols, 3, frame_on=False)
-    existing_legend = legend_ax.get_legend()
-    existing_legend.set_bbox_to_anchor((-0.05, 0.5))
+    if sim_data_type == 'cluster':
+        # Plot our new legend and add the existing one back.
+        legend_ax = subplot(num_rows, num_cols, 3, frame_on=False)
+        existing_legend = legend_ax.get_legend()
+        existing_legend.set_bbox_to_anchor((-0.05, 0.5))
 
-    start_panel_label = get_panel_label(num_methods * 2)
-    end_panel_label = get_panel_label(num_methods * 2 +
-                                      len(tests['pcoa_dissim']) - 1)
-    legend_ax.legend(legend_symbols, legend_labels, ncol=1,
-               title='Legend (Panels %s-%s)' % (start_panel_label,
-                                                end_panel_label),
-               loc='center right', fancybox=True, shadow=True, numpoints=1,
-               bbox_to_anchor=(1.05, 0.5))
-    legend_ax.add_artist(existing_legend)
+        start_panel_label = get_panel_label(num_methods * 2)
+        end_panel_label = get_panel_label(num_methods * 2 +
+                                          len(tests['pcoa_dissim']) - 1)
+        legend_ax.legend(legend_symbols, legend_labels, ncol=1,
+                   title='Legend (Panels %s-%s)' % (start_panel_label,
+                                                    end_panel_label),
+                   loc='center right', fancybox=True, shadow=True, numpoints=1,
+                   bbox_to_anchor=(1.05, 0.5))
+
+        legend_ax.add_artist(existing_legend)
 
     # Draw box around PCoA plots. Do the math in figure coordinates.
     top_ax = subplot(num_rows, num_cols, 6)
