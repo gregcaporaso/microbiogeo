@@ -11,29 +11,30 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module with functionality for simulating gradient and cluster data."""
 
-from biom.parse import parse_biom_table
 from collections import defaultdict
-from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
+from random import randint, sample
+
+from biom.parse import parse_biom_table
+
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
-from matplotlib.pyplot import (colorbar, cm, figure, legend, figlegend,
-                               scatter, subplot, title, xlim, xlabel, ylabel,
-                               xticks, yticks)
+from matplotlib.pyplot import figure
+
+from numpy import ceil, inf, mean, std
+
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          parse_coords, group_by_field)
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
-from random import randint, sample
 
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
                                 Mrpp, PartialMantel, Permanova, Permdisp,
                                 QiimeStatMethod, UnparsableFileError,
                                 UnparsableLineError)
-
 from microbiogeo.util import (get_color_pool, get_num_samples, get_panel_label,
                               has_results, run_command, run_parallel_jobs)
 
@@ -185,8 +186,7 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
             even_otu_table_fp = join(depth_dir, basename(otu_table_fp))
 
             if not exists(even_otu_table_fp):
-                run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp,
-                        even_otu_table_fp, depth))
+                run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp, even_otu_table_fp, depth))
 
             num_samps = get_num_samples(even_otu_table_fp)
 
@@ -310,15 +310,18 @@ def process_simulated_data(in_dir, tests):
 
                                 dm_fp = join(metric_dir, 'dm.txt')
                                 map_fp = join(metric_dir, 'map.txt')
-                                grad_dm_fp = join(metric_dir, '%s_dm.txt' % category[0])
+                                grad_dm_fp = join(metric_dir,
+                                                  '%s_dm.txt' % category[0])
 
                                 for method in tests[study]['methods']:
                                     method_dir = join(metric_dir, method.Name)
                                     create_dir(method_dir)
 
                                     if not has_results(method_dir):
-                                        if type(method) is Mantel or type(method) is MantelCorrelogram:
-                                            in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+                                        if (type(method) is Mantel or
+                                            type(method) is MantelCorrelogram):
+                                            in_dm_fps = ','.join((dm_fp,
+                                                                  grad_dm_fp))
 
                                             cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_perms, in_dm_fps, method_dir))
                                         elif type(method) is PartialMantel or type(method) is Best:
@@ -354,19 +357,25 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                 # metric -> Figure
                 figs = {}
                 for metric in tests[study]['metrics']:
-                    figs[metric[0]] = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
+                    figs[metric[0]] = figure(num=None, figsize=(20, 20),
+                                             facecolor='w', edgecolor='k')
 
                 for method_idx, method in enumerate(tests[study]['methods']):
-                    # metric -> dissim -> {'sample_sizes': list,
-                    #                      'effect_sizes': list of lists, one for each sample size,
-                    #                      'p_vals' -> list of lists, one for each sample size}
-                    plots_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+                    # metric ->
+                    #     dissim -> {
+                    #         'sample_sizes': list,
+                    #         'effect_sizes': list of lists, one for each size,
+                    #         'p_vals' -> list of lists, one for each size
+                    #     }
+                    plots_data = defaultdict(lambda: defaultdict(
+                                             lambda: defaultdict(list)))
 
                     for trial_num in range(num_trials):
                         trial_num_dir = join(category_dir, '%d' % trial_num)
 
                         for samp_size in tests[study]['sample_sizes']:
-                            samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+                            samp_size_dir = join(trial_num_dir,
+                                                 '%d' % samp_size)
 
                             for d in tests[study]['dissim']:
                                 dissim_dir = join(samp_size_dir, repr(d))
@@ -375,7 +384,10 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                                     metric_dir = join(dissim_dir, metric[0])
                                     method_dir = join(metric_dir, method.Name)
 
-                                    effect_size, p_val = method.parse(open(join(method_dir, '%s_results.txt' % method.Name), 'U'))
+                                    results_fp = join(method_dir,
+                                            '%s_results.txt' % method.Name)
+                                    effect_size, p_val = method.parse(
+                                            open(results_fp, 'U'))
 
                                     if samp_size not in plots_data[metric[0]][d]['sample_sizes']:
                                         plots_data[metric[0]][d]['sample_sizes'].append(samp_size)
@@ -400,12 +412,14 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                         legend_labels = []
                         legend_lines = []
                         for d, plot_data in sorted(metric_plots_data.items()):
-                            avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals = _compute_plot_data_statistics(plot_data, num_trials)
+                            avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals = \
+                                    _compute_plot_data_statistics(plot_data, num_trials)
                             color = color_pool.pop(0)
 
                             label = 'd=%r' % d
                             legend_labels.append(label)
-                            legend_lines.append(Line2D([0, 1], [0, 0], color=color, linewidth=2))
+                            legend_lines.append(Line2D([0, 1], [0, 0],
+                                                color=color, linewidth=2))
 
                             # Make the original data plot a bit thicker than
                             # the rest.
@@ -415,10 +429,16 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                                 line_width = 0.5
 
                             # Plot test statistics.
-                            ax1.errorbar(plot_data['sample_sizes'], avg_effect_sizes, yerr=std_effect_sizes, color=color, label=label, linewidth=line_width, fmt='-')
+                            ax1.errorbar(plot_data['sample_sizes'],
+                                    avg_effect_sizes, yerr=std_effect_sizes,
+                                    color=color, label=label,
+                                    linewidth=line_width, fmt='-')
 
                             # Plot p-values.
-                            _, _, barlinecols = ax2.errorbar(plot_data['sample_sizes'], avg_p_vals, yerr=std_p_vals, color=color, label=label, linewidth=line_width, linestyle='--')
+                            _, _, barlinecols = ax2.errorbar(
+                                    plot_data['sample_sizes'], avg_p_vals,
+                                    yerr=std_p_vals, color=color, label=label,
+                                    linewidth=line_width, linestyle='--')
                             barlinecols[0].set_linestyles('dashed')
 
                         ax2.set_yscale('log', nonposy='clip')
@@ -441,36 +461,45 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                             ymin, ymax = ax.get_ylim()
                             yrange = ymax - ymin
 
-                            # Not sure why the math isn't working out for the p-value plots...
+                            # Not sure why the math isn't working out for the
+                            # p-value plots...
                             if ax is ax1:
                                 factor = 0.05
                             else:
                                 factor = 0.60
 
-                            ax.text(xmin, ymax + (factor * yrange), '(%s)' % panel_label)
+                            ax.text(xmin, ymax + (factor * yrange),
+                                    '(%s)' % panel_label)
 
                         if method_idx == 0:
-                            ax3 = fig.add_subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
+                            ax3 = fig.add_subplot(num_rows, num_cols,
+                                                  plot_num + 2, frame_on=False)
                             ax3.get_xaxis().set_visible(False)
                             ax3.get_yaxis().set_visible(False)
 
                             start_panel_label = get_panel_label(0)
-                            end_panel_label = get_panel_label(num_methods * 2 - 1)
+                            end_panel_label = \
+                                    get_panel_label(num_methods * 2 - 1)
 
                             if sim_data_type == 'gradient':
                                 loc='center'
                             elif sim_data_type == 'cluster':
                                 loc='center left'
-                            ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend (Panels %s-%s)' % (start_panel_label, end_panel_label), loc=loc, fancybox=True, shadow=True)
+                            ax3.legend(legend_lines, legend_labels, ncol=2,
+                                    title='Legend (Panels %s-%s)' % (
+                                        start_panel_label, end_panel_label),
+                                    loc=loc, fancybox=True, shadow=True)
 
                 for metric in tests[study]['metrics']:
                     fig = figs[metric[0]]
 
                     # Plot PCoA in last column of figure.
-                    plot_pcoa(sim_data_type, fig, category_dir, tests[study], category, metric, num_rows, num_cols, num_methods)
+                    plot_pcoa(sim_data_type, fig, category_dir, tests[study],
+                            category, metric, num_rows, num_cols, num_methods)
 
                     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
-                    fig.savefig(join(in_dir, '%s_%s_%d_%s.pdf' % (study, category[0], depth, metric[0])), format='pdf')
+                    fig.savefig(join(in_dir, '%s_%s_%d_%s.pdf' % (study,
+                            category[0], depth, metric[0])), format='pdf')
 
 def _compute_plot_data_statistics(plot_data, num_trials):
     avg_effect_sizes = []
@@ -511,7 +540,8 @@ def _compute_plot_data_statistics(plot_data, num_trials):
 
     return avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals
 
-def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows, num_cols, num_methods):
+def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
+              num_cols, num_methods):
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
 
@@ -661,8 +691,7 @@ def main():
                 'sample_sizes': [3, 5, 13],
                 'pcoa_sample_size': 13,
                 'num_trials': 3,
-                'methods': [Mantel(),
-                            #MoransI()
+                'methods': [Mantel(), #MoransI()
                 ]
             }
         }
