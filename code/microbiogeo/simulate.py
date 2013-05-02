@@ -760,6 +760,44 @@ def main():
                 'pcoa_sample_size': 150,
                 'num_trials': 10,
                 'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
+            },
+
+            'whole_body': {
+                'categories': [('BODY_SITE', 'Body Site',
+                                {'UBERON:ear canal': 'Ear canal',
+                                 'UBERON:feces': 'Feces',
+                                 'UBERON:glans penis': 'Glans penis',
+                                 'UBERON:hair': 'Hair',
+                                 'UBERON:labia minora': 'Labia minora',
+                                 'UBERON:mouth': 'Mouth',
+                                 'UBERON:nose': 'Nose',
+                                 'UBERON:nostril': 'Nostril',
+                                 'UBERON:nostrils': 'Nostrils',
+                                 'UBERON:skin of arm': 'Skin of arm',
+                                 'UBERON:skin of finger': 'Skin of finger',
+                                 'UBERON:skin of forearm': 'Skin of forearm',
+                                 'UBERON:tongue': 'Tongue',
+                                 'UBERON:urine': 'Urine',
+                                 'UBERON:zone of skin of abdomen': 'Skin of abdomen',
+                                 'UBERON:zone of skin of foot': 'Skin of foot',
+                                 'UBERON:zone of skin of hand': 'Skin of hand',
+                                 'UBERON:zone of skin of head': 'Skin of head',
+                                 'UBERON:zone of skin of knee': 'Skin of knee',
+                                 'UBERON:zone of skin of outer ear': 'Skin of outer ear'})],
+                'depths': [575, 877, 1110],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                'sample_sizes': [5, 20, 40, 80, 150, 250, 350, 450, 550, 600],
+                'pcoa_sample_size': 150,
+                'num_trials': 10,
+                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
             }
         }
 
