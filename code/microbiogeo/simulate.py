@@ -35,8 +35,11 @@ from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Mrpp, PartialMantel, Permanova, Permdisp,
                                 QiimeStatMethod, UnparsableFileError,
                                 UnparsableLineError)
-from microbiogeo.util import (get_color_pool, get_num_samples, get_panel_label,
-                              has_results, run_command, run_parallel_jobs)
+from microbiogeo.util import (get_color_pool,
+                              get_num_samples_in_distance_matrix,
+                              get_num_samples_in_map, get_num_samples_in_table,
+                              get_panel_label, has_results, run_command,
+                              run_parallel_jobs)
 
 class InvalidSubsetSize(Exception):
     pass
@@ -188,7 +191,7 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
             if not exists(even_otu_table_fp):
                 run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp, even_otu_table_fp, depth))
 
-            num_samps = get_num_samples(even_otu_table_fp)
+            num_samps = get_num_samples_in_table(even_otu_table_fp)
 
             for category in tests[study]['categories']:
                 category_dir = join(depth_dir, category[0])
@@ -202,8 +205,8 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
                         samp_size_dir = join(trial_num_dir, '%d' % samp_size)
                         create_dir(samp_size_dir)
 
-                        # Lots of duplicate code between these two blocks... need to
-                        # refactor and test.
+                        # Lots of duplicate code between these two blocks...
+                        # need to refactor and test.
                         if samp_size <= num_samps:
                             simsam_rep_num = 1
 
@@ -212,6 +215,8 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
 
                             if not has_results(samp_size_dir, required_files=[basename(subset_otu_table_fp), basename(subset_map_fp)]):
                                 run_command('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s' % (sim_data_type, even_otu_table_fp, map_fp, category[0], samp_size, samp_size_dir))
+                            assert get_num_samples_in_table(subset_otu_table_fp) == samp_size
+                            assert get_num_samples_in_map(subset_map_fp) == samp_size
 
                             for d in tests[study]['dissim']:
                                 dissim_dir = join(samp_size_dir, repr(d))
@@ -312,6 +317,8 @@ def process_simulated_data(in_dir, tests):
                                 map_fp = join(metric_dir, 'map.txt')
                                 grad_dm_fp = join(metric_dir,
                                                   '%s_dm.txt' % category[0])
+                                assert get_num_samples_in_distance_matrix(dm_fp) == samp_size
+                                assert get_num_samples_in_map(map_fp) == samp_size
 
                                 for method in tests[study]['methods']:
                                     method_dir = join(metric_dir, method.Name)
@@ -320,6 +327,7 @@ def process_simulated_data(in_dir, tests):
                                     if not has_results(method_dir):
                                         if (type(method) is Mantel or
                                             type(method) is MantelCorrelogram):
+                                            assert get_num_samples_in_distance_matrix(grad_dm_fp) == samp_size
                                             in_dm_fps = ','.join((dm_fp,
                                                                   grad_dm_fp))
 
@@ -367,8 +375,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                     #         'effect_sizes': list of lists, one for each size,
                     #         'p_vals' -> list of lists, one for each size
                     #     }
-                    plots_data = defaultdict(lambda: defaultdict(
-                                             lambda: defaultdict(list)))
+                    plots_data = defaultdict(lambda:
+                            defaultdict(lambda: defaultdict(list)))
 
                     for trial_num in range(num_trials):
                         trial_num_dir = join(category_dir, '%d' % trial_num)
@@ -485,6 +493,9 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                                 loc='center'
                             elif sim_data_type == 'cluster':
                                 loc='center left'
+
+                            assert len(legend_lines) == len(tests[study]['dissim'])
+                            assert len(legend_labels) == len(tests[study]['dissim'])
                             ax3.legend(legend_lines, legend_labels, ncol=2,
                                     title='Legend (Panels %s-%s)' % (
                                         start_panel_label, end_panel_label),
@@ -561,6 +572,7 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
         map_f = open(map_fp, 'U')
         pc_data = parse_coords(pc_f)
         pc_f.seek(0)
+        assert len(pc_data[0]) == samp_size
 
         # Skip the first row (the legend is already at that cell).
         plot_num = (d_idx + 2) * num_cols
@@ -613,6 +625,8 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
         start_panel_label = get_panel_label(num_methods * 2)
         end_panel_label = get_panel_label(num_methods * 2 +
                                           len(tests['pcoa_dissim']) - 1)
+
+        assert len(legend_symbols) == len(legend_labels)
         legend_ax.legend(legend_symbols, legend_labels, ncol=1,
                    title='Legend (Panels %s-%s)' % (start_panel_label,
                                                     end_panel_label),
