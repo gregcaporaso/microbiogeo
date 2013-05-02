@@ -648,7 +648,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
     return results
 
 def main():
-    test = False
+    test = True
 
     if test:
         in_dir = 'test_datasets'
@@ -657,33 +657,36 @@ def main():
         out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
         gradient_tests = {
-            'study': ('overview', 'Overview'),
-            'depth': 146,
-            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
-            'num_perms': 999,
-            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-            'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-            'sample_sizes': [3, 5, 13],
-            'pcoa_sample_size': 13,
-            'num_trials': 3,
-            'category': ('Gradient', 'Gradient Category'),
-            'methods': [Mantel(),
-                        #MoransI()
-            ]
+            'overview': {
+                'categories': [('Gradient', 'Gradient Category')],
+                'depths': [146],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac')],
+                'num_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
+                'sample_sizes': [3, 5, 13],
+                'pcoa_sample_size': 13,
+                'num_trials': 3,
+                'methods': [Mantel(),
+                            #MoransI()
+                ]
+            }
         }
 
         cluster_tests = {
-            'study': ('overview', 'Overview'),
-            'depth': 146,
-            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
-            'num_perms': 999,
-            'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-            'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-            'sample_sizes': [3, 5, 13],
-            'pcoa_sample_size': 13,
-            'num_trials': 3,
-            'category': ('Treatment', 'Treatment Category'),
-            'methods': [Adonis(), Anosim()]
+            'overview': {
+                'categories': [('Treatment', 'Treatment Category')],
+                'depths': [146],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac')],
+                'num_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
+                'sample_sizes': [3, 5, 13],
+                'pcoa_sample_size': 13,
+                'num_trials': 3,
+                'methods': [Adonis(), Anosim()],
+                'category_name_lookup': {'Control': 'Control', 'Fast': 'Fast'}
+            }
         }
     else:
         in_dir = '../data'
@@ -692,49 +695,57 @@ def main():
         out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
         gradient_tests = {
-            'study': ('88_soils', '88 Soils'),
-            'depth': 400,
-            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
-            'num_perms': 999,
-            # dissim must all be floats!
-            'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
-                       100.0],
-            'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-            # sample_sizes must all be ints!
-            'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-            'pcoa_sample_size': 150,
-            'num_trials': 10,
-            'category': ('PH', 'pH'),
-            'methods': [Mantel(),
-                        #MoransI()
-            ]
+            '88_soils': {
+                'categories': [('PH', 'pH')],
+                'depths': [400, 580, 660],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_perms': 999,
+                # dissim must all be floats!
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                # sample_sizes must all be ints!
+                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+                'pcoa_sample_size': 150,
+                'num_trials': 10,
+                'methods': [Mantel(), #MoransI()
+                ]
+            }
         }
 
         cluster_tests = {
-            'study': ('keyboard', 'Keyboards'),
-            'depth': 390,
-            'metric': ('unweighted_unifrac', 'Unweighted UniFrac'),
-            'num_perms': 999,
-            # dissim must all be floats!
-            'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0, 70.0,
-                       100.0],
-            'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-            # sample_sizes must all be ints!
-            'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-            'pcoa_sample_size': 150,
-            'num_trials': 10,
-            'category': ('HOST_SUBJECT_ID', 'Subject'),
-            'category_name_lookup': {'M2': 'Subject 1', 'M3': 'Subject 2',
-                                     'M9': 'Subject 3'},
-            'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
+            'keyboard': {
+                'categories': [('HOST_SUBJECT_ID', 'Subject')],
+                'depths': [390, 780, 1015],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+                'pcoa_sample_size': 150,
+                'num_trials': 10,
+                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()],
+                'category_name_lookup': {'M2': 'Subject 1', 'M3': 'Subject 2',
+                                         'M9': 'Subject 3'
+                }
+            }
         }
 
-    #generate_simulated_data('gradient', in_dir, out_gradient_dir,
-    #                        gradient_tests, tree_fp)
-    #generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-    #                        tree_fp)
-    #process_simulated_data(out_gradient_dir, gradient_tests)
-    #process_simulated_data(out_cluster_dir, cluster_tests)
+    generate_simulated_data('gradient', in_dir, out_gradient_dir,
+                            gradient_tests, tree_fp)
+    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
+                            tree_fp)
+    process_simulated_data(out_gradient_dir, gradient_tests)
+    process_simulated_data(out_cluster_dir, cluster_tests)
     create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
     create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
 
