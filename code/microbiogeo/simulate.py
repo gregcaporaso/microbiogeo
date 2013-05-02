@@ -274,49 +274,57 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
     run_parallel_jobs(cmds, run_command)
 
 def process_simulated_data(in_dir, tests):
-    """Run statistical methods over simulated data."""
-    metric = tests['metric'][0]
-    category = tests['category'][0]
-    num_perms = tests['num_perms']
-    num_trials = tests['num_trials']
+    """Run statistical methods over simulated data.
+    
+    Creates method dirs under metric dirs in in_dir, e.g.:
 
+    in_dir/
+        ...
+            metric/
+                method/
+                    <method>_results.txt
+    """
     cmds = []
-    for trial_num in range(num_trials):
-        trial_num_dir = join(in_dir, '%d' % trial_num)
+    for study in tests:
+        study_dir = join(in_dir, study)
+        num_trials = tests[study]['num_trials']
+        num_perms = tests[study]['num_perms']
 
-        for samp_size in tests['sample_sizes']:
-            samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+        for depth in tests[study]['depths']:
+            depth_dir = join(study_dir, '%d' % depth)
 
-            for d in tests['dissim']:
-                dissim_dir = join(samp_size_dir, repr(d))
+            for category in tests[study]['categories']:
+                category_dir = join(depth_dir, category[0])
 
-                dm_fp = join(dissim_dir, '%s_dm.txt' % metric)
-                map_fp = join(dissim_dir, 'map.txt')
-                grad_dm_fp = join(dissim_dir, '%s_dm.txt' % category)
+                for trial_num in range(num_trials):
+                    trial_num_dir = join(category_dir, '%d' % trial_num)
 
-                for method in tests['methods']:
-                    method_dir = join(dissim_dir, method.Name)
-                    create_dir(method_dir)
+                    for samp_size in tests[study]['sample_sizes']:
+                        samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
-                    if not has_results(method_dir):
-                        if type(method) is Mantel or \
-                           type(method) is MantelCorrelogram:
-                            in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+                        for d in tests[study]['dissim']:
+                            dissim_dir = join(samp_size_dir, repr(d))
 
-                            cmds.append('compare_distance_matrices.py '
-                                        '--method %s -n %d -i %s -o %s' % (
-                                            method.Name, num_perms, in_dm_fps,
-                                            method_dir))
-                        elif type(method) is PartialMantel or \
-                             type(method) is Best:
-                            raise NotImplementedError("%s method is not "
-                                                      "currently supported." %
-                                                      method.DisplayName)
-                        else:
-                            cmds.append('compare_categories.py --method %s '
-                                        '-i %s -m %s -c %s -o %s -n %d' % (
-                                            method.Name, dm_fp, map_fp,
-                                            category, method_dir, num_perms))
+                            for metric in tests[study]['metrics']:
+                                metric_dir = join(dissim_dir, metric[0])
+
+                                dm_fp = join(metric_dir, 'dm.txt')
+                                map_fp = join(metric_dir, 'map.txt')
+                                grad_dm_fp = join(metric_dir, '%s_dm.txt' % category[0])
+
+                                for method in tests[study]['methods']:
+                                    method_dir = join(metric_dir, method.Name)
+                                    create_dir(method_dir)
+
+                                    if not has_results(method_dir):
+                                        if type(method) is Mantel or type(method) is MantelCorrelogram:
+                                            in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+
+                                            cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_perms, in_dm_fps, method_dir))
+                                        elif type(method) is PartialMantel or type(method) is Best:
+                                            raise NotImplementedError("%s method is not currently supported." % method.DisplayName)
+                                        else:
+                                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_perms))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -718,8 +726,8 @@ def main():
                             gradient_tests, tree_fp)
     generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
                             tree_fp)
-    #process_simulated_data(out_gradient_dir, gradient_tests)
-    #process_simulated_data(out_cluster_dir, cluster_tests)
+    process_simulated_data(out_gradient_dir, gradient_tests)
+    process_simulated_data(out_cluster_dir, cluster_tests)
     #create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
     #create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
 
