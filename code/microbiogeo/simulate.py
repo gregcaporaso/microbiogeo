@@ -17,8 +17,10 @@ from numpy import ceil, inf, mean, std
 from os import listdir
 from os.path import basename, exists, join, splitext
 from matplotlib.lines import Line2D
-from matplotlib.pyplot import (cm, figure, legend, figlegend, scatter, subplot,
-                               title, xlim, xlabel, ylabel, xticks, yticks)
+from matplotlib.patches import Rectangle
+from matplotlib.pyplot import (colorbar, cm, figure, legend, figlegend,
+                               scatter, subplot, title, xlim, xlabel, ylabel,
+                               xticks, yticks)
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
@@ -348,8 +350,6 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     """Create plots of sample size vs effect size/p-val for each dissim."""
     study = tests['study']
     category = tests['category']
-    depth = tests['depth']
-    metric = tests['metric']
 
     num_methods = len(tests['methods'])
     num_rows = max(num_methods, len(tests['pcoa_dissim']) + 1)
@@ -357,13 +357,11 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     num_cols = 3
 
     fig = figure(num=None, figsize=(20, 20), facecolor='w', edgecolor='k')
-    fig.suptitle('Study: %s, Metric: %s, Depth: %d, Variable: %s' % (study[1],
-            metric[1], depth, category[1]))
 
     for method_idx, method in enumerate(tests['methods']):
         # dissim -> {'sample_sizes': list,
-        #            'effect_sizes': list of lists, one for each trial,
-        #            'p_vals' -> list of lists, one for each trial}
+        #            'effect_sizes': list of lists, one for each sample size,
+        #            'p_vals' -> list of lists, one for each sample size}
         plots_data = defaultdict(lambda: defaultdict(list))
 
         for trial_num in range(tests['num_trials']):
@@ -399,42 +397,9 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
         legend_labels = []
         legend_lines = []
         for d, plot_data in sorted(plots_data.items()):
-            avg_effect_sizes = []
-            std_effect_sizes = []
-            for e in plot_data['effect_sizes']:
-                assert len(e) == tests['num_trials']
-                avg_effect_sizes.append(mean(e))
-                std_effect_sizes.append(std(e))
-
-            avg_p_vals = []
-
-            # Need to compute asymmetric error bars for p-values to avoid
-            # negative error bars on log scale.
-            # TODO add unit tests!!!
-            std_p_vals = [[], []]
-            for e in plot_data['p_vals']:
-                assert len(e) == tests['num_trials']
-                avg_p_val = mean(e)
-                avg_p_vals.append(avg_p_val)
-
-                std_p_val = std(e)
-                std_p_vals[1].append(std_p_val)
-
-                # Cut off lower bound at 1e-5.
-                if avg_p_val - std_p_val < 1e-5:
-                    std_p_val = avg_p_val - 1e-5
-                std_p_vals[0].append(std_p_val)
-
-            assert len(plot_data['sample_sizes']) == \
-                   len(avg_effect_sizes), "%d != %d" % (
-                   len(plot_data['sample_sizes']),
-                   len(avg_effect_sizes))
-
-            assert len(plot_data['sample_sizes']) == \
-                   len(avg_p_vals), "%d != %d" % (
-                   len(plot_data['sample_sizes']),
-                   len(avg_p_vals))
-
+            avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals = \
+                    _compute_plot_data_statistics(plot_data,
+                                                  tests['num_trials'])
             color = color_pool.pop(0)
 
             if d == 0.0:
@@ -492,8 +457,18 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
             ax3 = subplot(num_rows, num_cols, plot_num + 2, frame_on=False)
             ax3.get_xaxis().set_visible(False)
             ax3.get_yaxis().set_visible(False)
-            ax3.legend(legend_lines, legend_labels, ncol=2, title='Legend',
-                       loc='center', fancybox=True, shadow=True)
+
+            start_panel_label = get_panel_label(0)
+            end_panel_label = get_panel_label(num_methods * 2 - 1)
+
+            if sim_data_type == 'gradient':
+                loc='center'
+            elif sim_data_type == 'cluster':
+                loc='center left'
+            ax3.legend(legend_lines, legend_labels, ncol=2,
+                       title='Legend (Panels %s-%s)' % (start_panel_label,
+                                                        end_panel_label),
+                       loc=loc, fancybox=True, shadow=True)
 
     # Plot PCoA in last column.
     plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods)
@@ -502,15 +477,56 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
     fig.savefig(join(in_dir, '%s_%s.pdf' % (study[0], category[0])),
                 format='pdf')
 
+def _compute_plot_data_statistics(plot_data, num_trials):
+    avg_effect_sizes = []
+    std_effect_sizes = []
+    for e in plot_data['effect_sizes']:
+        if len(e) != num_trials:
+            raise ValueError("Data length doesn't match the number of trials.")
+
+        avg_effect_sizes.append(mean(e))
+        std_effect_sizes.append(std(e))
+
+    # Need to compute asymmetric error bars for p-values to avoid
+    # negative error bars on log scale.
+    avg_p_vals = []
+    std_p_vals = [[], []]
+    for e in plot_data['p_vals']:
+        if len(e) != num_trials:
+            raise ValueError("Data length doesn't match the number of trials.")
+
+        avg_p_val = mean(e)
+        avg_p_vals.append(avg_p_val)
+
+        std_p_val = std(e)
+        std_p_vals[1].append(std_p_val)
+
+        # Cut off lower bound at 1e-5.
+        if avg_p_val - std_p_val < 1e-5:
+            std_p_val = avg_p_val - 1e-5
+        std_p_vals[0].append(std_p_val)
+
+    if len(plot_data['sample_sizes']) != len(avg_effect_sizes):
+        raise ValueError("%d != %d" % (len(plot_data['sample_sizes']),
+                                       len(avg_effect_sizes)))
+
+    if len(plot_data['sample_sizes']) != len(avg_p_vals):
+        raise ValueError("%d != %d" % (len(plot_data['sample_sizes']),
+                                       len(avg_p_vals)))
+
+    return avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals
+
 def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
     trial_num = 0
     samp_size = tests['pcoa_sample_size']
     metric = tests['metric'][0]
-    category = tests['category'][0]
+    category = tests['category']
 
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
+    legend_symbols = []
+    legend_labels = []
     for d_idx, d in enumerate(tests['pcoa_dissim']):
         dissim_dir = join(samp_size_dir, repr(d))
         pc_fp = join(dissim_dir, '%s_pc.txt' % metric)
@@ -528,12 +544,25 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
         if sim_data_type == 'gradient':
             # Build list of (gradient value, sid) tuples.
             xs, ys, gradient = _collate_gradient_pcoa_plot_data(pc_f, map_f,
-                                                                category)
-            scatter(xs, ys, s=80, c=gradient, cmap='RdYlBu')
+                                                                category[0])
+            scatter_colorbar_data = scatter(xs, ys, s=80, c=gradient,
+                                            cmap='RdYlBu')
+            # We have to use gridspec to get this to work with tight_layout.
+            cb = colorbar(scatter_colorbar_data, use_gridspec=True)
+            cb.set_label(category[1])
         elif sim_data_type == 'cluster':
-            plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f, category)
-            for xs, ys, color in plot_data:
-                scatter(xs, ys, color=color)
+            plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f,
+                                                        category[0])
+            for xs, ys, color, state in plot_data:
+                scatter(xs, ys, color=color, label=state)
+
+                if d_idx == 0:
+                    legend_symbols.append(Line2D(range(1), range(1),
+                                          color='white', marker='o',
+                                          markeredgecolor=color,
+                                          markerfacecolor=color))
+                    legend_labels.append(
+                            tests['category_name_lookup'].get(state, state))
         else:
             raise ValueError("Unrecognized simulated data type '%s'." %
                              sim_data_type)
@@ -550,6 +579,32 @@ def plot_pcoa(sim_data_type, in_dir, tests, num_rows, num_cols, num_methods):
         ymin, ymax = ax.get_ylim()
         yrange = ymax - ymin
         ax.text(xmin, ymax + (0.04 * yrange), '(%s)' % panel_label)
+
+    if sim_data_type == 'cluster':
+        # Plot our new legend and add the existing one back.
+        legend_ax = subplot(num_rows, num_cols, 3, frame_on=False)
+        existing_legend = legend_ax.get_legend()
+        existing_legend.set_bbox_to_anchor((-0.05, 0.5))
+
+        start_panel_label = get_panel_label(num_methods * 2)
+        end_panel_label = get_panel_label(num_methods * 2 +
+                                          len(tests['pcoa_dissim']) - 1)
+        legend_ax.legend(legend_symbols, legend_labels, ncol=1,
+                   title='Legend (Panels %s-%s)' % (start_panel_label,
+                                                    end_panel_label),
+                   loc='center right', fancybox=True, shadow=True, numpoints=1,
+                   bbox_to_anchor=(1.05, 0.5))
+
+        legend_ax.add_artist(existing_legend)
+
+    # Draw box around PCoA plots. Do the math in figure coordinates.
+    top_ax = subplot(num_rows, num_cols, 6)
+    rec = Rectangle((1 - (1 / num_cols) + 0.005, 0),
+                    (1 / num_cols) - 0.005,
+                    1 - (1 / num_rows) - 0.005,
+                    fill=False, lw=2, clip_on=False,
+                    transform=top_ax.figure.transFigure)
+    rec = top_ax.add_patch(rec)
 
 def _collate_gradient_pcoa_plot_data(coords_f, map_f, category):
     pc_data = parse_coords(coords_f)
@@ -588,7 +643,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
         sids = sid_map[state]
         xs = [coords_d[sid][0] for sid in sids]
         ys = [coords_d[sid][1] for sid in sids]
-        results.append((xs, ys, color))
+        results.append((xs, ys, color, state))
 
     return results
 
@@ -669,6 +724,8 @@ def main():
             'pcoa_sample_size': 150,
             'num_trials': 10,
             'category': ('HOST_SUBJECT_ID', 'Subject'),
+            'category_name_lookup': {'M2': 'Subject 1', 'M3': 'Subject 2',
+                                     'M9': 'Subject 3'},
             'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
         }
 
