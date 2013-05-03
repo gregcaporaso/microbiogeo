@@ -225,9 +225,23 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
                                 simsam_map_fp = join(dissim_dir, add_filename_suffix(subset_map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
                                 simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(subset_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
 
-                                required_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                                # Check for simulated table/map and various
+                                # distance matrices / coordinates files.
+                                required_simsam_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                                has_simsam_files = has_results(dissim_dir, required_files=required_simsam_files)
 
-                                if not has_results(dissim_dir, required_files=required_files):
+                                has_metric_files = True
+                                for metric in tests[study]['metrics']:
+                                    required_metric_files = ['dm.txt', 'map.txt', 'pc.txt']
+                                    if sim_data_type == 'gradient':
+                                        required_metric_files.append('%s_dm.txt' % category[0])
+
+                                    metric_dir = join(dissim_dir, metric[0])
+                                    has_metric_files = has_results(metric_dir, required_metric_files)
+                                    if not has_metric_files:
+                                        break
+
+                                if not (has_simsam_files and has_metric_files):
                                     cmd = ['simsam.py -i %s -t %s -o %s -d %r -n %d -m %s' % (subset_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, subset_map_fp)]
 
                                     for metric in tests[study]['metrics']:
@@ -253,9 +267,24 @@ def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
                                 simsam_map_fp = join(dissim_dir, add_filename_suffix(map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
                                 simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(even_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
 
-                                required_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                                required_simsam_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                                has_simsam_files = has_results(dissim_dir, required_files=required_simsam_files)
 
-                                if not has_results(dissim_dir, required_files=required_files):
+                                required_subset_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                                has_subset_files = has_results(join(dissim_dir, 'subset'), required_files=required_subset_files)
+
+                                has_metric_files = True
+                                for metric in tests[study]['metrics']:
+                                    required_metric_files = ['dm.txt', 'map.txt', 'pc.txt']
+                                    if sim_data_type == 'gradient':
+                                        required_metric_files.append('%s_dm.txt' % category[0])
+
+                                    metric_dir = join(dissim_dir, metric[0])
+                                    has_metric_files = has_results(metric_dir, required_metric_files)
+                                    if not has_metric_files:
+                                        break
+
+                                if not (has_simsam_files and has_subset_files and has_metric_files):
                                     cmd = ['simsam.py -i %s -t %s -o %s -d %r -n %d -m %s' % (even_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, map_fp)]
 
                                     subset_dir = join(dissim_dir, 'subset')
@@ -686,7 +715,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
     return results
 
 def main():
-    test = False
+    test = True
 
     if test:
         in_dir = 'test_datasets'
