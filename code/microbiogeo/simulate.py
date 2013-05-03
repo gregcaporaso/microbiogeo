@@ -686,7 +686,7 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
     return results
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
@@ -706,8 +706,7 @@ def main():
                 'sample_sizes': [3, 5, 13],
                 'pcoa_sample_size': 13,
                 'num_trials': 3,
-                'methods': [Mantel(), #MoransI()
-                ]
+                'methods': [Mantel(), MoransI()]
             }
         }
 
@@ -751,8 +750,7 @@ def main():
                 'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
                 'pcoa_sample_size': 150,
                 'num_trials': 10,
-                'methods': [Mantel(), #MoransI()
-                ]
+                'methods': [Mantel(), MoransI()]
             },
 
             'gn': {
@@ -770,8 +768,7 @@ def main():
                 'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
                 'pcoa_sample_size': 150,
                 'num_trials': 10,
-                'methods': [Mantel(), #MoransI()
-                ]
+                'methods': [Mantel(), MoransI()]
             }
         }
 
