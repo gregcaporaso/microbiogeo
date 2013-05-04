@@ -168,14 +168,12 @@ def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
                             map.txt
                             dm.txt
                             pc.txt
-                            category/
-                                <category>_dm.txt (if gradient)
+                            <category>_dm.txt (if gradient)
                         shuff_num
                             map.txt
                             dm.txt
                             pc.txt
-                            category/
-                                <category>_dm.txt (if gradient)
+                            <category>_dm.txt (if gradient)
                 simulated/
                     category/
                         trial_num/
@@ -329,6 +327,54 @@ def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
                                         cmd.append('cp %s %s' % (subset_map_fp, join(metric_dir, 'map.txt')))
                                         cmd.append('principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt')))
                                     cmds.append(' && '.join(cmd))
+
+            data_type = 'real'
+            data_type_dir = join(depth_dir, data_type)
+            create_dir(data_type_dir)
+
+            for metric in workflow[study]['metrics']:
+                metric_dir = join(data_type_dir, metric[0])
+                create_dir(metric_dir)
+
+                orig_dir = join(metric_dir, 'original')
+                create_dir(orig_dir)
+
+                required_files = ['dm.txt', 'map.txt', 'pc.txt']
+                if analysis_type == 'gradient':
+                    for category in workflow[study]['categories']:
+                        required_files.append('%s_dm.txt' % category[0])
+
+                has_orig_files = has_results(orig_dir, required_files=required_files)
+
+                has_shuff_files = True
+                for shuff_num in range(workflow[study]['num_shuffled_trials']):
+                    shuff_num_dir = join(metric_dir, '%d' % shuff_num)
+                    has_shuff_files = has_results(shuff_num_dir, required_files)
+                    if not has_shuff_files:
+                        break
+
+                if not (has_orig_files and has_shuff_files):
+                    cmd = ['beta_diversity.py -i %s -o %s -m %s -t %s' % (even_otu_table_fp, orig_dir, metric[0], tree_fp)]
+                    cmd.append('mv %s %s' % (join(orig_dir, '%s_%s.txt' % (metric[0], splitext(basename(even_otu_table_fp))[0])), join(orig_dir, 'dm.txt')))
+                    cmd.append('cp %s %s' % (map_fp, join(orig_dir, 'map.txt')))
+                    cmd.append('principal_coordinates.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(orig_dir, 'pc.txt')))
+
+                    if analysis_type == 'gradient':
+                        for category in workflow[study]['categories']:
+                            cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(orig_dir, 'map.txt'), category[0], join(orig_dir, '%s_dm.txt' % category[0])))
+
+                    for shuff_num in range(workflow[study]['num_shuffled_trials']):
+                        shuff_num_dir = join(metric_dir, '%d' % shuff_num)
+                        create_dir(shuff_num_dir)
+
+                        cmd.append('shuffle_distance_matrix.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(shuff_num_dir, 'dm.txt')))
+                        cmd.append('cp %s %s' % (join(orig_dir, 'map.txt'), join(shuff_num_dir, 'map.txt')))
+                        cmd.append('principal_coordinates.py -i %s -o %s' % (join(shuff_num_dir, 'dm.txt'), join(shuff_num_dir, 'pc.txt')))
+
+                        if analysis_type == 'gradient':
+                            for category in workflow[study]['categories']:
+                                cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(shuff_num_dir, 'map.txt'), category[0], join(shuff_num_dir, '%s_dm.txt' % category[0])))
+                    cmds.append(' && '.join(cmd))
 
     run_parallel_jobs(cmds, run_command)
 
@@ -958,17 +1004,17 @@ def main():
                   tree_fp)
     generate_data('cluster', in_dir, out_cluster_dir, cluster_workflow, tree_fp)
 
-    process_data(out_gradient_dir, gradient_workflow)
-    process_data(out_cluster_dir, cluster_workflow)
+    #process_data(out_gradient_dir, gradient_workflow)
+    #process_data(out_cluster_dir, cluster_workflow)
 
     #create_real_data_summary_tables('gradient', out_gradient_dir,
     #                                gradient_workflow)
     #create_real_data_summary_tables('cluster', out_cluster_dir,
     #                                cluster_workflow)
 
-    create_simulated_data_plots('gradient', out_gradient_dir,
-                                gradient_workflow)
-    create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
+    #create_simulated_data_plots('gradient', out_gradient_dir,
+    #                            gradient_workflow)
+    #create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
 
     #create_method_heatmaps()
 
