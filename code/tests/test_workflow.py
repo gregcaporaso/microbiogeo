@@ -22,8 +22,8 @@ from qiime.util import create_dir, get_qiime_temp_dir
 
 from microbiogeo.method import Adonis, Mantel, MantelCorrelogram, Best
 from microbiogeo.util import StatsResults
-from microbiogeo.workflow import (_collate_category_results, _collate_results,
-                                  run_methods)
+from microbiogeo.workflow import (_build_per_metric_real_data_commands,
+                                  _collate_category_results, _collate_results)
 
 class WorkflowTests(TestCase):
     """Tests for the workflow.py module functions."""
@@ -100,11 +100,18 @@ class WorkflowTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_run_methods_invalid_input(self):
-        """Test running methods with invalid input raises an error."""
-        # Invalid method type.
-        self.assertRaises(ValueError, run_methods, self.input_dir,
-                          self.studies1, self.methods1, [42, 43])
+    def test_build_per_metric_real_data_commands(self):
+        exp = 'beta_diversity.py -i /bar/baz.biom -o /foo/original -m unweighted_unifrac -t /bar/tree.tre && mv /foo/original/unweighted_unifrac_baz.txt /foo/original/dm.txt && cp /map.txt /foo/original/map.txt && principal_coordinates.py -i /foo/original/dm.txt -o /foo/original/pc.txt && mkdir -p /foo/0 && shuffle_distance_matrix.py -i /foo/original/dm.txt -o /foo/0/dm.txt && cp /foo/original/map.txt /foo/0/map.txt && principal_coordinates.py -i /foo/0/dm.txt -o /foo/0/pc.txt && mkdir -p /foo/1 && shuffle_distance_matrix.py -i /foo/original/dm.txt -o /foo/1/dm.txt && cp /foo/original/map.txt /foo/1/map.txt && principal_coordinates.py -i /foo/1/dm.txt -o /foo/1/pc.txt'
+        obs = _build_per_metric_real_data_commands('cluster', '/foo',
+                '/bar/baz.biom', '/map.txt', '/bar/tree.tre',
+                ('unweighted_unifrac', 'Unweighted UniFrac'), ['A', 'B'], 2)
+        self.assertEqual(obs, exp)
+
+        exp = 'beta_diversity.py -i /bar/baz.biom -o /foo/original -m unweighted_unifrac -t /bar/tree.tre && mv /foo/original/unweighted_unifrac_baz.txt /foo/original/dm.txt && cp /map.txt /foo/original/map.txt && principal_coordinates.py -i /foo/original/dm.txt -o /foo/original/pc.txt && distance_matrix_from_mapping.py -i /foo/original/map.txt -c A -o /foo/original/A_dm.txt && distance_matrix_from_mapping.py -i /foo/original/map.txt -c B -o /foo/original/B_dm.txt && mkdir -p /foo/0 && shuffle_distance_matrix.py -i /foo/original/dm.txt -o /foo/0/dm.txt && cp /foo/original/map.txt /foo/0/map.txt && principal_coordinates.py -i /foo/0/dm.txt -o /foo/0/pc.txt && distance_matrix_from_mapping.py -i /foo/0/map.txt -c A -o /foo/0/A_dm.txt && distance_matrix_from_mapping.py -i /foo/0/map.txt -c B -o /foo/0/B_dm.txt && mkdir -p /foo/1 && shuffle_distance_matrix.py -i /foo/original/dm.txt -o /foo/1/dm.txt && cp /foo/original/map.txt /foo/1/map.txt && principal_coordinates.py -i /foo/1/dm.txt -o /foo/1/pc.txt && distance_matrix_from_mapping.py -i /foo/1/map.txt -c A -o /foo/1/A_dm.txt && distance_matrix_from_mapping.py -i /foo/1/map.txt -c B -o /foo/1/B_dm.txt'
+        obs = _build_per_metric_real_data_commands('gradient', '/foo',
+                '/bar/baz.biom', '/map.txt', '/bar/tree.tre',
+                ('unweighted_unifrac', 'Unweighted UniFrac'), ['A', 'B'], 2)
+        self.assertEqual(obs, exp)
 
     def test_collate_results(self):
         """Test collating method results."""

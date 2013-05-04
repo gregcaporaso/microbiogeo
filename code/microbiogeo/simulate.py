@@ -145,230 +145,7 @@ def _choose_items_from_bins(sequence, num_items):
 
     return items
 
-def generate_simulated_data(sim_data_type, in_dir, out_dir, tests, tree_fp):
-    """Simulate gradient or cluster data with simsam.py.
-
-    sim_data_type should be either 'gradient' or 'cluster'.
-
-    Will create the following (heavily nested) output directory structure:
-
-    out_dir/
-        study/
-            depth/
-                even depth otu table (.biom)
-                category/
-                    trial_num/
-                        samp_size/
-                            (optional) subset files dependent on samp_size
-                            dissim/
-                                subset files/dirs dependent on samp_size
-                                metric/
-                                    map.txt
-                                    dm.txt
-                                    pc.txt
-                                    <category>_dm.txt (if gradient)
-    """
-    create_dir(out_dir)
-
-    cmds = []
-    for study in tests:
-        study_dir = join(out_dir, study)
-        create_dir(study_dir)
-
-        otu_table_fp = join(in_dir, study, 'otu_table.biom')
-        map_fp = join(in_dir, study, 'map.txt')
-        map_f = open(map_fp, 'U')
-
-        for depth in tests[study]['depths']:
-            depth_dir = join(study_dir, '%d' % depth)
-            create_dir(depth_dir)
-
-            # Rarefy the table first since simsam.py's output tables will still
-            # have even sampling depth and we don't want to lose simulated samples
-            # after the fact.
-            even_otu_table_fp = join(depth_dir, basename(otu_table_fp))
-
-            if not exists(even_otu_table_fp):
-                run_command('single_rarefaction.py -i %s -o %s -d %d;' % (otu_table_fp, even_otu_table_fp, depth))
-
-            num_samps = get_num_samples_in_table(even_otu_table_fp)
-
-            for category in tests[study]['categories']:
-                category_dir = join(depth_dir, category[0])
-                create_dir(category_dir)
-
-                for trial_num in range(tests[study]['num_trials']):
-                    trial_num_dir = join(category_dir, '%d' % trial_num)
-                    create_dir(trial_num_dir)
-
-                    for samp_size in tests[study]['sample_sizes']:
-                        samp_size_dir = join(trial_num_dir, '%d' % samp_size)
-                        create_dir(samp_size_dir)
-
-                        # Lots of duplicate code between these two blocks...
-                        # need to refactor and test.
-                        if samp_size <= num_samps:
-                            simsam_rep_num = 1
-
-                            subset_otu_table_fp = join(samp_size_dir, basename(even_otu_table_fp))
-                            subset_map_fp = join(samp_size_dir, basename(map_fp))
-
-                            if not has_results(samp_size_dir, required_files=[basename(subset_otu_table_fp), basename(subset_map_fp)]):
-                                run_command('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s' % (sim_data_type, even_otu_table_fp, map_fp, category[0], samp_size, samp_size_dir))
-                            assert get_num_samples_in_table(subset_otu_table_fp) == samp_size
-                            assert get_num_samples_in_map(subset_map_fp) == samp_size
-
-                            for d in tests[study]['dissim']:
-                                dissim_dir = join(samp_size_dir, repr(d))
-                                create_dir(dissim_dir)
-
-                                simsam_map_fp = join(dissim_dir, add_filename_suffix(subset_map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
-                                simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(subset_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
-
-                                # Check for simulated table/map and various
-                                # distance matrices / coordinates files.
-                                required_simsam_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
-                                has_simsam_files = has_results(dissim_dir, required_files=required_simsam_files)
-
-                                has_metric_files = True
-                                for metric in tests[study]['metrics']:
-                                    required_metric_files = ['dm.txt', 'map.txt', 'pc.txt']
-                                    if sim_data_type == 'gradient':
-                                        required_metric_files.append('%s_dm.txt' % category[0])
-
-                                    metric_dir = join(dissim_dir, metric[0])
-                                    has_metric_files = has_results(metric_dir, required_metric_files)
-                                    if not has_metric_files:
-                                        break
-
-                                if not (has_simsam_files and has_metric_files):
-                                    cmd = ['simsam.py -i %s -t %s -o %s -d %r -n %d -m %s' % (subset_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, subset_map_fp)]
-
-                                    for metric in tests[study]['metrics']:
-                                        metric_dir = join(dissim_dir, metric[0])
-                                        create_dir(metric_dir)
-
-                                        if sim_data_type == 'gradient':
-                                            cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (simsam_map_fp, category[0], join(metric_dir, '%s_dm.txt' % category[0])))
-
-                                        cmd.append('beta_diversity.py -i %s -o %s -m %s -t %s' % (simsam_otu_table_fp, metric_dir, metric[0], tree_fp))
-                                        cmd.append('mv %s %s' % (join(metric_dir, '%s_%s.txt' % (metric[0], splitext(basename(simsam_otu_table_fp))[0])), join(metric_dir, 'dm.txt')))
-                                        cmd.append('cp %s %s' % (simsam_map_fp, join(metric_dir, 'map.txt')))
-                                        cmd.append('principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt')))
-                                    cmds.append(' && '.join(cmd))
-                        else:
-                            # We need to simulate more samples than we originally have.
-                            simsam_rep_num = get_simsam_rep_num(samp_size, num_samps)
-
-                            for d in tests[study]['dissim']:
-                                dissim_dir = join(samp_size_dir, repr(d))
-                                create_dir(dissim_dir)
-
-                                simsam_map_fp = join(dissim_dir, add_filename_suffix(map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
-                                simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(even_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
-
-                                required_simsam_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
-                                has_simsam_files = has_results(dissim_dir, required_files=required_simsam_files)
-
-                                required_subset_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
-                                has_subset_files = has_results(join(dissim_dir, 'subset'), required_files=required_subset_files)
-
-                                has_metric_files = True
-                                for metric in tests[study]['metrics']:
-                                    required_metric_files = ['dm.txt', 'map.txt', 'pc.txt']
-                                    if sim_data_type == 'gradient':
-                                        required_metric_files.append('%s_dm.txt' % category[0])
-
-                                    metric_dir = join(dissim_dir, metric[0])
-                                    has_metric_files = has_results(metric_dir, required_metric_files)
-                                    if not has_metric_files:
-                                        break
-
-                                if not (has_simsam_files and has_subset_files and has_metric_files):
-                                    cmd = ['simsam.py -i %s -t %s -o %s -d %r -n %d -m %s' % (even_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, map_fp)]
-
-                                    subset_dir = join(dissim_dir, 'subset')
-                                    cmd.append('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s' % (sim_data_type, simsam_otu_table_fp, simsam_map_fp, category[0], samp_size, subset_dir))
-                                    subset_otu_table_fp = join(subset_dir, basename(simsam_otu_table_fp))
-                                    subset_map_fp = join(subset_dir, basename(simsam_map_fp))
-
-                                    for metric in tests[study]['metrics']:
-                                        metric_dir = join(dissim_dir, metric[0])
-                                        create_dir(metric_dir)
-
-                                        if sim_data_type == 'gradient':
-                                            cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (subset_map_fp, category[0], join(metric_dir, '%s_dm.txt' % category[0])))
-
-                                        cmd.append('beta_diversity.py -i %s -o %s -m %s -t %s' % (subset_otu_table_fp, metric_dir, metric[0], tree_fp))
-                                        cmd.append('mv %s %s' % (join(metric_dir, '%s_%s.txt' % (metric[0], splitext(basename(subset_otu_table_fp))[0])), join(metric_dir, 'dm.txt')))
-                                        cmd.append('cp %s %s' % (subset_map_fp, join(metric_dir, 'map.txt')))
-                                        cmd.append('principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt')))
-                                    cmds.append(' && '.join(cmd))
-
-    run_parallel_jobs(cmds, run_command)
-
-def process_simulated_data(in_dir, tests):
-    """Run statistical methods over simulated data.
-    
-    Creates method dirs under metric dirs in in_dir, e.g.:
-
-    in_dir/
-        ...
-            metric/
-                method/
-                    <method>_results.txt
-    """
-    cmds = []
-    for study in tests:
-        study_dir = join(in_dir, study)
-        num_trials = tests[study]['num_trials']
-        num_perms = tests[study]['num_perms']
-
-        for depth in tests[study]['depths']:
-            depth_dir = join(study_dir, '%d' % depth)
-
-            for category in tests[study]['categories']:
-                category_dir = join(depth_dir, category[0])
-
-                for trial_num in range(num_trials):
-                    trial_num_dir = join(category_dir, '%d' % trial_num)
-
-                    for samp_size in tests[study]['sample_sizes']:
-                        samp_size_dir = join(trial_num_dir, '%d' % samp_size)
-
-                        for d in tests[study]['dissim']:
-                            dissim_dir = join(samp_size_dir, repr(d))
-
-                            for metric in tests[study]['metrics']:
-                                metric_dir = join(dissim_dir, metric[0])
-
-                                dm_fp = join(metric_dir, 'dm.txt')
-                                map_fp = join(metric_dir, 'map.txt')
-                                grad_dm_fp = join(metric_dir,
-                                                  '%s_dm.txt' % category[0])
-                                assert get_num_samples_in_distance_matrix(dm_fp) == samp_size
-                                assert get_num_samples_in_map(map_fp) == samp_size
-
-                                for method in tests[study]['methods']:
-                                    method_dir = join(metric_dir, method.Name)
-                                    create_dir(method_dir)
-
-                                    if not has_results(method_dir):
-                                        if (type(method) is Mantel or
-                                            type(method) is MantelCorrelogram):
-                                            assert get_num_samples_in_distance_matrix(grad_dm_fp) == samp_size
-                                            in_dm_fps = ','.join((dm_fp,
-                                                                  grad_dm_fp))
-
-                                            cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_perms, in_dm_fps, method_dir))
-                                        elif type(method) is PartialMantel or type(method) is Best:
-                                            raise NotImplementedError("%s method is not currently supported." % method.DisplayName)
-                                        else:
-                                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_perms))
-
-    run_parallel_jobs(cmds, run_command)
-
-def create_sample_size_plots(sim_data_type, in_dir, tests):
+def create_simulated_data_plots(analysis_type, in_dir, workflow):
     """Create plots of sample size vs effect size/p-val for each dissim.
     
     Plots will be placed directly under in_dir and will be named according to
@@ -376,28 +153,35 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
 
     <study>_<category>_<depth>_<metric>.pdf
     """
-    for study in tests:
+    for study in workflow:
         study_dir = join(in_dir, study)
 
-        num_trials = tests[study]['num_trials']
-        num_methods = len(tests[study]['methods'])
-        num_rows = max(num_methods, len(tests[study]['pcoa_dissim']) + 1)
+        num_trials = workflow[study]['num_sim_data_trials']
+        methods = workflow[study]['methods']
+        if Best() in methods:
+            methods.remove(Best())
+        if MantelCorrelogram() in methods:
+            methods.remove(MantelCorrelogram())
+
+        num_methods = len(methods)
+        num_rows = max(num_methods, len(workflow[study]['pcoa_dissim']) + 1)
         # test stat, p-val, legend/PCoA.
         num_cols = 3
 
-        for depth in tests[study]['depths']:
-            depth_dir = join(study_dir, '%d' % depth)
+        for depth in workflow[study]['depths']:
+            depth_dir = join(study_dir, '%d' % depth[0])
+            data_type_dir = join(depth_dir, 'simulated')
 
-            for category in tests[study]['categories']:
-                category_dir = join(depth_dir, category[0])
+            for category in workflow[study]['categories']:
+                category_dir = join(data_type_dir, category[0])
 
                 # metric -> Figure
                 figs = {}
-                for metric in tests[study]['metrics']:
+                for metric in workflow[study]['metrics']:
                     figs[metric[0]] = figure(num=None, figsize=(20, 20),
                                              facecolor='w', edgecolor='k')
 
-                for method_idx, method in enumerate(tests[study]['methods']):
+                for method_idx, method in enumerate(methods):
                     # metric ->
                     #     dissim -> {
                     #         'sample_sizes': list,
@@ -410,14 +194,14 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                     for trial_num in range(num_trials):
                         trial_num_dir = join(category_dir, '%d' % trial_num)
 
-                        for samp_size in tests[study]['sample_sizes']:
+                        for samp_size in workflow[study]['sample_sizes']:
                             samp_size_dir = join(trial_num_dir,
                                                  '%d' % samp_size)
 
-                            for d in tests[study]['dissim']:
+                            for d in workflow[study]['dissim']:
                                 dissim_dir = join(samp_size_dir, repr(d))
 
-                                for metric in tests[study]['metrics']:
+                                for metric in workflow[study]['metrics']:
                                     metric_dir = join(dissim_dir, metric[0])
                                     method_dir = join(metric_dir, method.Name)
 
@@ -435,7 +219,7 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                                     plots_data[metric[0]][d]['effect_sizes'][samp_size_idx].append(effect_size)
                                     plots_data[metric[0]][d]['p_vals'][samp_size_idx].append(p_val)
 
-                    for metric in tests[study]['metrics']:
+                    for metric in workflow[study]['metrics']:
                         fig = figs[metric[0]]
                         metric_plots_data = plots_data[metric[0]]
 
@@ -486,8 +270,8 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                                                     method.StatDisplayName))
                         ax2.set_ylabel('p-value')
 
-                        min_x = min(tests[study]['sample_sizes'])
-                        max_x = max(tests[study]['sample_sizes'])
+                        min_x = min(workflow[study]['sample_sizes'])
+                        max_x = max(workflow[study]['sample_sizes'])
                         ax1.set_xlim(min_x, max_x)
                         ax2.set_xlim(min_x, max_x)
 
@@ -518,28 +302,28 @@ def create_sample_size_plots(sim_data_type, in_dir, tests):
                             end_panel_label = \
                                     get_panel_label(num_methods * 2 - 1)
 
-                            if sim_data_type == 'gradient':
+                            if analysis_type == 'gradient':
                                 loc='center'
-                            elif sim_data_type == 'cluster':
+                            elif analysis_type == 'cluster':
                                 loc='center left'
 
-                            assert len(legend_lines) == len(tests[study]['dissim'])
-                            assert len(legend_labels) == len(tests[study]['dissim'])
+                            assert len(legend_lines) == len(workflow[study]['dissim'])
+                            assert len(legend_labels) == len(workflow[study]['dissim'])
                             ax3.legend(legend_lines, legend_labels, ncol=2,
                                     title='Legend (Panels %s-%s)' % (
                                         start_panel_label, end_panel_label),
                                     loc=loc, fancybox=True, shadow=True)
 
-                for metric in tests[study]['metrics']:
+                for metric in workflow[study]['metrics']:
                     fig = figs[metric[0]]
 
                     # Plot PCoA in last column of figure.
-                    plot_pcoa(sim_data_type, fig, category_dir, tests[study],
+                    plot_pcoa(analysis_type, fig, category_dir, workflow[study],
                             category, metric, num_rows, num_cols, num_methods)
 
                     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
                     fig.savefig(join(in_dir, '%s_%s_%d_%s.pdf' % (study,
-                            category[0], depth, metric[0])), format='pdf')
+                            category[0], depth[0], metric[0])), format='pdf')
 
 def _compute_plot_data_statistics(plot_data, num_trials):
     avg_effect_sizes = []
@@ -580,17 +364,17 @@ def _compute_plot_data_statistics(plot_data, num_trials):
 
     return avg_effect_sizes, std_effect_sizes, avg_p_vals, std_p_vals
 
-def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
+def plot_pcoa(analysis_type, fig, in_dir, workflow, category, metric, num_rows,
               num_cols, num_methods):
     trial_num = 0
-    samp_size = tests['pcoa_sample_size']
+    samp_size = workflow['pcoa_sample_size']
 
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
     legend_symbols = []
     legend_labels = []
-    for d_idx, d in enumerate(tests['pcoa_dissim']):
+    for d_idx, d in enumerate(workflow['pcoa_dissim']):
         dissim_dir = join(samp_size_dir, repr(d))
         metric_dir = join(dissim_dir, metric[0])
 
@@ -607,7 +391,7 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
         plot_num = (d_idx + 2) * num_cols
         ax = fig.add_subplot(num_rows, num_cols, plot_num)
 
-        if sim_data_type == 'gradient':
+        if analysis_type == 'gradient':
             # Build list of (gradient value, sid) tuples.
             xs, ys, gradient = _collate_gradient_pcoa_plot_data(pc_f, map_f,
                                                                 category[0])
@@ -616,7 +400,7 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
             # We have to use gridspec to get this to work with tight_layout.
             cb = fig.colorbar(scatter_colorbar_data, use_gridspec=True)
             cb.set_label(category[1])
-        elif sim_data_type == 'cluster':
+        elif analysis_type == 'cluster':
             plot_data = _collate_cluster_pcoa_plot_data(pc_f, map_f,
                                                         category[0])
             for xs, ys, color, state in plot_data:
@@ -630,7 +414,7 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
                     legend_labels.append(category[2].get(state, state))
         else:
             raise ValueError("Unrecognized simulated data type '%s'." %
-                             sim_data_type)
+                             analysis_type)
 
         ax.set_title('d=%r' % d)
         ax.set_xlabel('PC1 (%1.2f%%)' % pc_data[3][0])
@@ -645,7 +429,7 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
         yrange = ymax - ymin
         ax.text(xmin, ymax + (0.04 * yrange), '(%s)' % panel_label)
 
-    if sim_data_type == 'cluster':
+    if analysis_type == 'cluster':
         # Plot our new legend and add the existing one back.
         legend_ax = fig.add_subplot(num_rows, num_cols, 3, frame_on=False)
         existing_legend = legend_ax.get_legend()
@@ -653,7 +437,7 @@ def plot_pcoa(sim_data_type, fig, in_dir, tests, category, metric, num_rows,
 
         start_panel_label = get_panel_label(num_methods * 2)
         end_panel_label = get_panel_label(num_methods * 2 +
-                                          len(tests['pcoa_dissim']) - 1)
+                                          len(workflow['pcoa_dissim']) - 1)
 
         assert len(legend_symbols) == len(legend_labels)
         legend_ax.legend(legend_symbols, legend_labels, ncol=1,
@@ -713,164 +497,3 @@ def _collate_cluster_pcoa_plot_data(coords_f, map_f, category):
         results.append((xs, ys, color, state))
 
     return results
-
-def main():
-    test = True
-
-    if test:
-        in_dir = 'test_datasets'
-        out_dir = 'test_simulated_output'
-        out_gradient_dir = join(out_dir, 'gradient')
-        out_cluster_dir = join(out_dir, 'cluster')
-        tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
-        gradient_tests = {
-            'overview': {
-                'categories': [('Gradient', 'Gradient Category')],
-                'depths': [146, 148],
-                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
-                            ('weighted_unifrac', 'Weighted UniFrac')],
-                'num_perms': 999,
-                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-                'sample_sizes': [3, 5, 13],
-                'pcoa_sample_size': 13,
-                'num_trials': 3,
-                'methods': [Mantel(), MoransI()]
-            }
-        }
-
-        cluster_tests = {
-            'overview': {
-                'categories': [('Treatment', 'Treatment Category',
-                                {'Control': 'Control', 'Fast': 'Fast'})],
-                'depths': [146, 148],
-                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
-                            ('weighted_unifrac', 'Weighted UniFrac')],
-                'num_perms': 999,
-                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-                'sample_sizes': [3, 5, 13],
-                'pcoa_sample_size': 13,
-                'num_trials': 3,
-                'methods': [Adonis(), Anosim()]
-            }
-        }
-    else:
-        in_dir = '../data'
-        out_dir = 'sim_data_output'
-        out_gradient_dir = join(out_dir, 'gradient')
-        out_cluster_dir = join(out_dir, 'cluster')
-        tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
-        gradient_tests = {
-            '88_soils': {
-                'categories': [('PH', 'pH')],
-                'depths': [400, 580, 660],
-                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
-                            ('weighted_unifrac', 'Weighted UniFrac'),
-                            ('bray_curtis', 'Bray-Curtis'),
-                            ('euclidean', 'Euclidean')
-                ],
-                'num_perms': 999,
-                # dissim must all be floats!
-                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
-                           70.0, 100.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-                # sample_sizes must all be ints!
-                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-                'pcoa_sample_size': 150,
-                'num_trials': 10,
-                'methods': [Mantel(), MoransI()]
-            },
-
-            'gn': {
-                'categories': [('LAYER', 'Layer')],
-                'depths': [1276, 1495, 1779],
-                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
-                            ('weighted_unifrac', 'Weighted UniFrac'),
-                            ('bray_curtis', 'Bray-Curtis'),
-                            ('euclidean', 'Euclidean')
-                ],
-                'num_perms': 999,
-                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
-                           70.0, 100.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-                'pcoa_sample_size': 150,
-                'num_trials': 10,
-                'methods': [Mantel(), MoransI()]
-            }
-        }
-
-        cluster_tests = {
-            'keyboard': {
-                'categories': [('HOST_SUBJECT_ID', 'Subject',
-                                {'M2': 'Subject 1',
-                                 'M3': 'Subject 2',
-                                 'M9': 'Subject 3'})],
-                'depths': [390, 780, 1015],
-                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
-                            ('weighted_unifrac', 'Weighted UniFrac'),
-                            ('bray_curtis', 'Bray-Curtis'),
-                            ('euclidean', 'Euclidean')
-                ],
-                'num_perms': 999,
-                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
-                           70.0, 100.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
-                'pcoa_sample_size': 150,
-                'num_trials': 10,
-                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
-            },
-
-            'whole_body': {
-                'categories': [('BODY_SITE', 'Body Site',
-                                {'UBERON:ear canal': 'Ear canal',
-                                 'UBERON:feces': 'Feces',
-                                 'UBERON:glans penis': 'Glans penis',
-                                 'UBERON:hair': 'Hair',
-                                 'UBERON:labia minora': 'Labia minora',
-                                 'UBERON:mouth': 'Mouth',
-                                 'UBERON:nose': 'Nose',
-                                 'UBERON:nostril': 'Nostril',
-                                 'UBERON:nostrils': 'Nostrils',
-                                 'UBERON:skin of arm': 'Skin of arm',
-                                 'UBERON:skin of finger': 'Skin of finger',
-                                 'UBERON:skin of forearm': 'Skin of forearm',
-                                 'UBERON:tongue': 'Tongue',
-                                 'UBERON:urine': 'Urine',
-                                 'UBERON:zone of skin of abdomen': 'Skin of abdomen',
-                                 'UBERON:zone of skin of foot': 'Skin of foot',
-                                 'UBERON:zone of skin of hand': 'Skin of hand',
-                                 'UBERON:zone of skin of head': 'Skin of head',
-                                 'UBERON:zone of skin of knee': 'Skin of knee',
-                                 'UBERON:zone of skin of outer ear': 'Skin of outer ear'})],
-                'depths': [575, 877, 1110],
-                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
-                            ('weighted_unifrac', 'Weighted UniFrac'),
-                            ('bray_curtis', 'Bray-Curtis'),
-                            ('euclidean', 'Euclidean')
-                ],
-                'num_perms': 999,
-                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
-                           70.0, 100.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-                'sample_sizes': [5, 20, 40, 80, 150, 250, 350, 450, 550, 600],
-                'pcoa_sample_size': 150,
-                'num_trials': 10,
-                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
-            }
-        }
-
-    generate_simulated_data('gradient', in_dir, out_gradient_dir,
-                            gradient_tests, tree_fp)
-    generate_simulated_data('cluster', in_dir, out_cluster_dir, cluster_tests,
-                            tree_fp)
-    process_simulated_data(out_gradient_dir, gradient_tests)
-    process_simulated_data(out_cluster_dir, cluster_tests)
-    create_sample_size_plots('gradient', out_gradient_dir, gradient_tests)
-    create_sample_size_plots('cluster', out_cluster_dir, cluster_tests)
-
-
-if __name__ == "__main__":
-    main()

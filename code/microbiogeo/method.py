@@ -46,6 +46,9 @@ class AbstractStatMethod(object):
 
         return result
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__)
+
 
 class QiimeStatMethod(AbstractStatMethod):
     def parse(self, results_f):

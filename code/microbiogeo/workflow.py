@@ -11,133 +11,428 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module for executing various workflows/analyses."""
 
-from glob import glob
-from os.path import exists, join
-from shutil import copy
+from collections import defaultdict
+from os import listdir
+from os.path import basename, exists, join, splitext
+from random import randint, sample
 
-from numpy import median
+from biom.parse import parse_biom_table
 
-from qiime.util import create_dir
+from numpy import ceil, inf, mean, std
 
-from microbiogeo.format import (create_method_comparison_heatmaps,
-                                create_results_summary_tables,
-                                create_sample_size_plots)
-from microbiogeo.parallel import (build_best_method_commands,
-        build_gradient_method_commands,
-        build_gradient_method_keyboard_commands,
-        build_gradient_method_sample_size_testing_commands,
-        build_grouping_method_commands,
-        build_grouping_method_sample_size_testing_commands,
-        generate_per_study_depth_dms)
+from qiime.filter import (filter_mapping_file_from_mapping_f,
+                          filter_samples_from_otu_table)
+from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
+                         parse_coords, group_by_field)
+from qiime.util import add_filename_suffix, create_dir, MetadataMap
+
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
                                 Mrpp, PartialMantel, Permanova, Permdisp,
                                 QiimeStatMethod, UnparsableFileError,
                                 UnparsableLineError)
-from microbiogeo.util import run_command, run_parallel_jobs, StatsResults
+from microbiogeo.simulate import create_simulated_data_plots
+from microbiogeo.util import (get_color_pool,
+                              get_num_samples_in_distance_matrix,
+                              get_num_samples_in_map, get_num_samples_in_table,
+                              get_panel_label, get_simsam_rep_num, has_results,
+                              run_command, run_parallel_jobs)
 
-def generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
-                               num_subsets, tree_fp):
-    """Generates distance matrices for each study.
+def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
+    """Generates real and simulated data for each study.
 
     Distance matrices will be created at each even sampling depth and metric
     using the provided tree if necessary. Shuffled versions of each distance
     matrix will also be created, which can be used as negative controls.
+    Additionally, simulated gradient or cluster data will be created at varying
+    sample sizes and dissimilarity levels (using simsam.py).
 
-    In addition, subsets of each distance matrix will be generated (based on a
-    category's sample groupings or the entire distance matrix). These can be
-    used to test how the methods perform on different study sizes.
+    data_type should be either 'gradient' or 'cluster'.
+
+    Will create the following (heavily nested) output directory structure:
+
+    out_dir/
+        study/
+            depth/
+                even depth otu table (.biom)
+                real/
+                    metric/
+                        original/
+                            map.txt
+                            dm.txt
+                            pc.txt
+                            <category>_dm.txt (if gradient)
+                        shuff_num
+                            map.txt
+                            dm.txt
+                            pc.txt
+                            <category>_dm.txt (if gradient)
+                simulated/
+                    category/
+                        trial_num/
+                            samp_size/
+                                (optional) subset files dependent on samp_size
+                                dissim/
+                                    subset files/dirs dependent on samp_size
+                                    metric/
+                                        map.txt
+                                        dm.txt
+                                        pc.txt
+                                        <category>_dm.txt (if gradient)
     """
     create_dir(out_dir)
 
-    # Process each depth in each study in parallel.
-    per_study_depths = []
-    for study in studies:
-        # Prep per-study output directories before running each depth in
-        # parallel.
-        in_study_dir = join(in_dir, study)
-        out_study_dir = join(out_dir, study)
-        create_dir(out_study_dir)
-        copy(join(in_study_dir, 'map.txt'), out_study_dir)
-        map_fp = join(out_study_dir, 'map.txt')
+    cmds = []
+    for study in workflow:
+        study_dir = join(out_dir, study)
+        create_dir(study_dir)
 
-        # Create distance matrices from environmental variables in mapping
-        # file. These are independent of sampling depth and metric, so we only
-        # need to create them once for each study. Again, keyboard is unique in
-        # that we cannot easily create a key distance matrix from the mapping
-        # file. We'll use one that has been precalculated.
-        for category in studies[study]['gradient_categories']:
-            env_dm_fp = join(out_study_dir, '%s_dm.txt' % category)
+        otu_table_fp = join(in_dir, study, 'otu_table.biom')
+        map_fp = join(in_dir, study, 'map.txt')
+        map_f = open(map_fp, 'U')
 
-            cmd = ('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (
-                   map_fp, category, env_dm_fp))
-            run_command(cmd)
+        for depth in workflow[study]['depths']:
+            depth_dir = join(study_dir, '%d' % depth[0])
+            create_dir(depth_dir)
 
-        if study == 'keyboard':
-            key_dm_fp = join(in_study_dir, 'euclidean_key_distances_dm.txt')
-            copy(key_dm_fp, out_study_dir)
+            # Rarefy the table first since simsam.py's output tables will still
+            # have even sampling depth and we don't want to lose simulated
+            # samples after the fact.
+            even_otu_table_fp = join(depth_dir, basename(otu_table_fp))
 
-            indiv_dm_fp = join(in_study_dir,
-                               'median_unifrac_individual_distances_dm.txt')
-            copy(indiv_dm_fp, out_study_dir)
+            if not exists(even_otu_table_fp):
+                run_command('single_rarefaction.py -i %s -o %s -d %d;' % (
+                        otu_table_fp, even_otu_table_fp, depth[0]))
 
-        for depth in studies[study]['depths']:
-            per_study_depths.append((in_dir, out_dir, study, depth, metrics,
-                                     studies[study]['grouping_categories'],
-                                     studies[study]['gradient_categories'],
-                                     studies[study]['group_sizes'],
-                                     studies[study]['subset_sizes'],
-                                     num_shuffled, num_subsets, tree_fp))
+            cmds.extend(_build_real_data_commands(analysis_type, depth_dir,
+                    even_otu_table_fp, map_fp, tree_fp, workflow[study]))
+            cmds.extend(_build_simulated_data_commands(analysis_type,
+                    depth_dir, even_otu_table_fp, map_fp, tree_fp,
+                    workflow[study]))
 
-    run_parallel_jobs(per_study_depths, generate_per_study_depth_dms)
+    run_parallel_jobs(cmds, run_command)
 
-def run_methods(in_dir, studies, methods, permutations):
-    """Runs each statistical method on each distance matrix."""
+def _build_real_data_commands(analysis_type, out_dir, even_otu_table_fp,
+                              map_fp, tree_fp, workflow):
+    cmds = []
+
+    data_type_dir = join(out_dir, 'real')
+    create_dir(data_type_dir)
+
+    for metric in workflow['metrics']:
+        metric_dir = join(data_type_dir, metric[0])
+        create_dir(metric_dir)
+
+        orig_dir = join(metric_dir, 'original')
+        create_dir(orig_dir)
+
+        required_files = ['dm.txt', 'map.txt', 'pc.txt']
+        if analysis_type == 'gradient':
+            for category in workflow['categories']:
+                required_files.append('%s_dm.txt' % category[0])
+
+        has_orig_files = has_results(orig_dir, required_files=required_files)
+
+        has_shuff_files = True
+        for shuff_num in range(workflow['num_shuffled_trials']):
+            shuff_num_dir = join(metric_dir, '%d' % shuff_num)
+            has_shuff_files = has_results(shuff_num_dir, required_files)
+            if not has_shuff_files:
+                break
+
+        if not (has_orig_files and has_shuff_files):
+            cmds.append(_build_per_metric_real_data_commands(analysis_type,
+                    metric_dir, even_otu_table_fp, map_fp, tree_fp, metric,
+                    workflow['categories'], workflow['num_shuffled_trials']))
+    return cmds
+
+def _build_per_metric_real_data_commands(analysis_type, out_dir,
+                                         even_otu_table_fp, map_fp, tree_fp,
+                                         metric, categories,
+                                         num_shuffled_trials):
+    orig_dir = join(out_dir, 'original')
+
+    cmd = ['beta_diversity.py -i %s -o %s -m %s -t %s' % (even_otu_table_fp, orig_dir, metric[0], tree_fp)]
+    cmd.append('mv %s %s' % (join(orig_dir, '%s_%s.txt' % (metric[0], splitext(basename(even_otu_table_fp))[0])), join(orig_dir, 'dm.txt')))
+    cmd.append('cp %s %s' % (map_fp, join(orig_dir, 'map.txt')))
+    cmd.append('principal_coordinates.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(orig_dir, 'pc.txt')))
+
+    if analysis_type == 'gradient':
+        for category in categories:
+            cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(orig_dir, 'map.txt'), category[0], join(orig_dir, '%s_dm.txt' % category[0])))
+
+    for shuff_num in range(num_shuffled_trials):
+        shuff_num_dir = join(out_dir, '%d' % shuff_num)
+
+        cmd.append('mkdir -p %s' % shuff_num_dir)
+        cmd.append('shuffle_distance_matrix.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(shuff_num_dir, 'dm.txt')))
+        cmd.append('cp %s %s' % (join(orig_dir, 'map.txt'), join(shuff_num_dir, 'map.txt')))
+        cmd.append('principal_coordinates.py -i %s -o %s' % (join(shuff_num_dir, 'dm.txt'), join(shuff_num_dir, 'pc.txt')))
+
+        if analysis_type == 'gradient':
+            for category in categories:
+                cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(shuff_num_dir, 'map.txt'), category[0], join(shuff_num_dir, '%s_dm.txt' % category[0])))
+    return ' && '.join(cmd)
+
+def _build_simulated_data_commands(analysis_type, out_dir, even_otu_table_fp,
+                                   map_fp, tree_fp, workflow):
+    cmds = []
+
+    data_type_dir = join(out_dir, 'simulated')
+    create_dir(data_type_dir)
+
+    num_samps = get_num_samples_in_table(even_otu_table_fp)
+
+    for category in workflow['categories']:
+        category_dir = join(data_type_dir, category[0])
+        create_dir(category_dir)
+
+        for trial_num in range(workflow['num_sim_data_trials']):
+            trial_num_dir = join(category_dir, '%d' % trial_num)
+            create_dir(trial_num_dir)
+
+            for samp_size in workflow['sample_sizes']:
+                samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+                create_dir(samp_size_dir)
+
+                # Lots of duplicate code between these two blocks...
+                # need to refactor and test.
+                if samp_size <= num_samps:
+                    simsam_rep_num = 1
+
+                    subset_otu_table_fp = join(samp_size_dir, basename(even_otu_table_fp))
+                    subset_map_fp = join(samp_size_dir, basename(map_fp))
+
+                    if not has_results(samp_size_dir, required_files=[basename(subset_otu_table_fp), basename(subset_map_fp)]):
+                        run_command('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s' % (analysis_type, even_otu_table_fp, map_fp, category[0], samp_size, samp_size_dir))
+                    assert get_num_samples_in_table(subset_otu_table_fp) == samp_size
+                    assert get_num_samples_in_map(subset_map_fp) == samp_size
+
+                    for d in workflow['dissim']:
+                        dissim_dir = join(samp_size_dir, repr(d))
+                        create_dir(dissim_dir)
+
+                        simsam_map_fp = join(dissim_dir, add_filename_suffix(subset_map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+                        simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(subset_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+
+                        # Check for simulated table/map and various
+                        # distance matrices / coordinates files.
+                        required_simsam_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                        has_simsam_files = has_results(dissim_dir, required_files=required_simsam_files)
+
+                        has_metric_files = True
+                        for metric in workflow['metrics']:
+                            required_metric_files = ['dm.txt', 'map.txt', 'pc.txt']
+                            if analysis_type == 'gradient':
+                                required_metric_files.append('%s_dm.txt' % category[0])
+
+                            metric_dir = join(dissim_dir, metric[0])
+                            has_metric_files = has_results(metric_dir, required_metric_files)
+                            if not has_metric_files:
+                                break
+
+                        if not (has_simsam_files and has_metric_files):
+                            cmd = ['simsam.py -i %s -t %s -o %s -d %r -n %d -m %s' % (subset_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, subset_map_fp)]
+
+                            for metric in workflow['metrics']:
+                                metric_dir = join(dissim_dir, metric[0])
+                                create_dir(metric_dir)
+
+                                if analysis_type == 'gradient':
+                                    cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (simsam_map_fp, category[0], join(metric_dir, '%s_dm.txt' % category[0])))
+
+                                cmd.append('beta_diversity.py -i %s -o %s -m %s -t %s' % (simsam_otu_table_fp, metric_dir, metric[0], tree_fp))
+                                cmd.append('mv %s %s' % (join(metric_dir, '%s_%s.txt' % (metric[0], splitext(basename(simsam_otu_table_fp))[0])), join(metric_dir, 'dm.txt')))
+                                cmd.append('cp %s %s' % (simsam_map_fp, join(metric_dir, 'map.txt')))
+                                cmd.append('principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt')))
+                            cmds.append(' && '.join(cmd))
+                else:
+                    # We need to simulate more samples than we originally have.
+                    simsam_rep_num = get_simsam_rep_num(samp_size, num_samps)
+
+                    for d in workflow['dissim']:
+                        dissim_dir = join(samp_size_dir, repr(d))
+                        create_dir(dissim_dir)
+
+                        simsam_map_fp = join(dissim_dir, add_filename_suffix(map_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+                        simsam_otu_table_fp = join(dissim_dir, add_filename_suffix(even_otu_table_fp, '_n%d_d%r' % (simsam_rep_num, d)))
+
+                        required_simsam_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                        has_simsam_files = has_results(dissim_dir, required_files=required_simsam_files)
+
+                        required_subset_files = [basename(simsam_map_fp), basename(simsam_otu_table_fp)]
+                        has_subset_files = has_results(join(dissim_dir, 'subset'), required_files=required_subset_files)
+
+                        has_metric_files = True
+                        for metric in workflow['metrics']:
+                            required_metric_files = ['dm.txt', 'map.txt', 'pc.txt']
+                            if analysis_type == 'gradient':
+                                required_metric_files.append('%s_dm.txt' % category[0])
+
+                            metric_dir = join(dissim_dir, metric[0])
+                            has_metric_files = has_results(metric_dir, required_metric_files)
+                            if not has_metric_files:
+                                break
+
+                        if not (has_simsam_files and has_subset_files and has_metric_files):
+                            cmd = ['simsam.py -i %s -t %s -o %s -d %r -n %d -m %s' % (even_otu_table_fp, tree_fp, dissim_dir, d, simsam_rep_num, map_fp)]
+
+                            subset_dir = join(dissim_dir, 'subset')
+                            cmd.append('choose_data_subset.py -t %s -i %s -m %s -c %s -n %d -o %s' % (analysis_type, simsam_otu_table_fp, simsam_map_fp, category[0], samp_size, subset_dir))
+                            subset_otu_table_fp = join(subset_dir, basename(simsam_otu_table_fp))
+                            subset_map_fp = join(subset_dir, basename(simsam_map_fp))
+
+                            for metric in workflow['metrics']:
+                                metric_dir = join(dissim_dir, metric[0])
+                                create_dir(metric_dir)
+
+                                if analysis_type == 'gradient':
+                                    cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (subset_map_fp, category[0], join(metric_dir, '%s_dm.txt' % category[0])))
+
+                                cmd.append('beta_diversity.py -i %s -o %s -m %s -t %s' % (subset_otu_table_fp, metric_dir, metric[0], tree_fp))
+                                cmd.append('mv %s %s' % (join(metric_dir, '%s_%s.txt' % (metric[0], splitext(basename(subset_otu_table_fp))[0])), join(metric_dir, 'dm.txt')))
+                                cmd.append('cp %s %s' % (subset_map_fp, join(metric_dir, 'map.txt')))
+                                cmd.append('principal_coordinates.py -i %s -o %s' % (join(metric_dir, 'dm.txt'), join(metric_dir, 'pc.txt')))
+                            cmds.append(' && '.join(cmd))
+    return cmds
+
+def process_data(in_dir, workflow):
+    """Run statistical methods over generated data.
+
+    For real data, creates category and method dirs for original and shuffled
+    data. Under each method dir, permutation dirs will also be
+    created, e.g.:
+
+    in_dir/
+        ...
+            category/
+                method/
+                    num_perms/
+                        <method>_results.txt
+
+    For simulated data, creates method dirs under metric dirs in in_dir, e.g.:
+
+    in_dir/
+        ...
+            metric/
+                method/
+                    <method>_results.txt
+    """
     # Process each compare_categories.py/compare_distance_matrices.py run in
     # parallel.
-    jobs = []
+    cmds = []
+    for study in workflow:
+        study_dir = join(in_dir, study)
 
-    for study in studies:
-        best_method_env_vars = studies[study]['best_method_env_vars']
+        for depth in workflow[study]['depths']:
+            depth_dir = join(study_dir, '%d' % depth[0])
 
-        for depth in studies[study]['depths']:
-            for method_type in methods:
-                for method in methods[method_type]:
-                    study_dir = join(in_dir, study)
-                    map_fp = join(study_dir, 'map.txt')
-                    depth_dir = join(study_dir, 'bdiv_even%d' % depth)
-                    dm_fps = glob(join(depth_dir, '*_dm*.txt'))
+            cmds.extend(_build_real_data_methods_commands(depth_dir,
+                    workflow[study]))
+            cmds.extend(_build_simulated_data_methods_commands(depth_dir,
+                    workflow[study]))
 
-                    for dm_fp in dm_fps:
-                        if method_type == 'grouping':
-                            for category in \
-                                    studies[study]['grouping_categories']:
-                                jobs.extend(build_grouping_method_commands(
-                                        depth_dir, dm_fp, map_fp, method.Name,
-                                        category, permutations))
-                        elif method_type == 'gradient':
-                            for category in \
-                                    studies[study]['gradient_categories']:
-                                jobs.extend(build_gradient_method_commands(
-                                        study_dir, depth_dir, dm_fp, map_fp,
-                                        method.Name, category, permutations))
+    run_parallel_jobs(cmds, run_command)
 
-                            # Handle special cases here.
-                            if study == 'keyboard':
-                                jobs.extend(
-                                    build_gradient_method_keyboard_commands(
-                                            study_dir, depth_dir, dm_fp,
-                                            method.Name, permutations))
+def _build_real_data_methods_commands(out_dir, workflow):
+    cmds = []
 
-                            if type(method) is Best and best_method_env_vars:
-                                jobs.extend(
-                                    build_best_method_commands(depth_dir,
-                                        dm_fp, map_fp, best_method_env_vars))
-                        else:
-                            raise ValueError("Unknown method type '%s'." %
-                                             method_type)
+    data_type_dir = join(out_dir, 'real')
 
-    run_parallel_jobs(jobs, run_command)
+    num_shuffled_trials = workflow['num_shuffled_trials']
+    num_perms = workflow['num_real_data_perms']
+
+    for metric in workflow['metrics']:
+        metric_dir = join(data_type_dir, metric[0])
+
+        dirs_to_process = ['original'] + map(str, range(num_shuffled_trials))
+        for dir_to_process in dirs_to_process:
+            dir_to_process = join(metric_dir, dir_to_process)
+
+            dm_fp = join(dir_to_process, 'dm.txt')
+            map_fp = join(dir_to_process, 'map.txt')
+
+            for category in workflow['categories']:
+                category_dir = join(dir_to_process, category[0])
+                create_dir(category_dir)
+
+                grad_dm_fp = join(dir_to_process, '%s_dm.txt' % category[0])
+
+                for method in workflow['methods']:
+                    if type(method) is Best or type(method) is PartialMantel:
+                        continue
+
+                    method_dir = join(category_dir, method.Name)
+                    create_dir(method_dir)
+
+                    if type(method) is MoransI:
+                        if not has_results(method_dir):
+                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (method.Name, dm_fp, map_fp, category[0], method_dir))
+                    else:
+                        for perms in num_perms:
+                            perms_dir = join(method_dir, '%d' % perms)
+                            create_dir(perms_dir)
+
+                            if not has_results(perms_dir):
+                                if type(method) is Mantel or type(method) is MantelCorrelogram:
+                                    in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, perms, in_dm_fps, perms_dir))
+                                else:
+                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], perms_dir, perms))
+
+            if Best() in workflow['methods']:
+                best_dir = join(dir_to_process, Best().Name)
+
+                if not has_results(best_dir):
+                    env_vars = ','.join(workflow['best_method_env_vars'])
+                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (Best().Name, dm_fp, map_fp, env_vars, best_dir))
+    return cmds
+
+def _build_simulated_data_methods_commands(out_dir, workflow):
+    cmds = []
+
+    data_type_dir = join(out_dir, 'simulated')
+
+    num_sim_data_trials = workflow['num_sim_data_trials']
+    num_sim_data_perms = workflow['num_sim_data_perms']
+
+    for category in workflow['categories']:
+        category_dir = join(data_type_dir, category[0])
+
+        for trial_num in range(num_sim_data_trials):
+            trial_num_dir = join(category_dir, '%d' % trial_num)
+
+            for samp_size in workflow['sample_sizes']:
+                samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+
+                for d in workflow['dissim']:
+                    dissim_dir = join(samp_size_dir, repr(d))
+
+                    for metric in workflow['metrics']:
+                        metric_dir = join(dissim_dir, metric[0])
+
+                        dm_fp = join(metric_dir, 'dm.txt')
+                        map_fp = join(metric_dir, 'map.txt')
+                        grad_dm_fp = join(metric_dir,
+                                          '%s_dm.txt' % category[0])
+                        assert get_num_samples_in_distance_matrix(dm_fp) == samp_size
+                        assert get_num_samples_in_map(map_fp) == samp_size
+
+                        for method in workflow['methods']:
+                            if type(method) is Best or type(method) is PartialMantel:
+                                continue
+                            method_dir = join(metric_dir, method.Name)
+                            create_dir(method_dir)
+
+                            if not has_results(method_dir):
+                                if type(method) is Mantel or type(method) is MantelCorrelogram:
+                                    assert get_num_samples_in_distance_matrix(grad_dm_fp) == samp_size
+                                    in_dm_fps = ','.join((dm_fp,
+                                                          grad_dm_fp))
+                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_sim_data_perms, in_dm_fps, method_dir))
+                                else:
+                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
+    return cmds
 
 def summarize_results(in_dir, out_dir, studies, methods, heatmap_methods,
                       depth_descs, metrics, permutations, num_shuffled,
@@ -325,182 +620,178 @@ def _collate_category_results(full_results, shuffled_results, ss_results,
             ss_results[subset_size_idx].addResult(
                     median(ss_ess), median(ss_p_vals))
 
-def run_sample_size_tests(in_dir, out_dir, sample_size_tests):
-    """Tests the methods on subsets of the original sample groups.
-
-    For grouping analysis methods:
-
-    Samples will be chosen randomly without replacement to generate groups of
-    samples at the specified subset size.
-
-    For gradient analysis methods:
-
-    Samples will be chosen along the gradient for each subset (which is what a
-    researcher might do instead of randomly picking samples in order to test a
-    gradient).
-
-    Plots will be generated with subset size on the x-axis and test statistic
-    on the y-axis. This will allow us to see if there is a cutoff/threshold
-    based on the number of samples (i.e. where things start to stabilize in
-    terms of the number of samples).
-    """
-    create_dir(out_dir)
-
-    jobs = []
-    for method_type in sample_size_tests:
-        study = sample_size_tests[method_type]['study']
-        depth = sample_size_tests[method_type]['depth']
-        metric = sample_size_tests[method_type]['metric']
-        categories = sample_size_tests[method_type]['categories']
-        subset_sizes = sample_size_tests[method_type]['subset_sizes']
-        num_subsets = sample_size_tests[method_type]['num_subsets']
-        permutation = sample_size_tests[method_type]['permutation']
-        methods = sample_size_tests[method_type]['methods']
-
-        out_method_type_dir = join(out_dir, method_type)
-        out_study_dir = join(out_method_type_dir, study)
-        create_dir(out_method_type_dir)
-        create_dir(out_study_dir)
-
-        map_fp = join(in_dir, study, 'map.txt')
-        dm_fp = join(in_dir, study, 'bdiv_even%d' % depth,
-                     '%s_dm.txt' % metric)
-
-        for category in categories:
-            if method_type == 'grouping':
-                jobs.extend(build_grouping_method_sample_size_testing_commands(
-                        out_study_dir, dm_fp, map_fp, metric, category,
-                        methods, subset_sizes, num_subsets, permutation))
-            elif method_type == 'gradient':
-                env_dm_fp = join(in_dir, study, '%s_dm.txt' % category)
-
-                jobs.extend(build_gradient_method_sample_size_testing_commands(
-                        out_study_dir, dm_fp, env_dm_fp, map_fp, metric,
-                        category, methods, subset_sizes, num_subsets,
-                        permutation))
-            else:
-                raise ValueError("Unknown method type '%s'." % method_type)
-
-    run_parallel_jobs(jobs, run_command)
-
-    create_sample_size_plots(out_dir, out_dir, sample_size_tests)
-
 def main():
     test = True
 
     if test:
         in_dir = 'test_datasets'
         out_dir = 'test_output'
+        out_gradient_dir = join(out_dir, 'gradient')
+        out_cluster_dir = join(out_dir, 'cluster')
         tree_fp = join('test_datasets', 'overview', 'rep_set.tre')
-        depth_descs = ['5_percent', '25_percent', '50_percent']
-        studies = {
-                   'overview': {
-                                'depths': [50, 100, 146],
-                                'grouping_categories': ['Treatment'],
-                                'gradient_categories': ['DOB'],
-                                'group_sizes': [3, 4],
-                                'subset_sizes': [3, 4],
-                                'best_method_env_vars': ['DOB']
-                               },
-                   'overview2': {
-                                 'depths': [50, 100, 146],
-                                 'grouping_categories': ['Treatment'],
-                                 'gradient_categories': [],
-                                 'group_sizes': [3, 4],
-                                 'subset_sizes': [],
-                                 'best_method_env_vars': []
-                                }
-                  }
-        metrics = ['euclidean', 'bray_curtis']
-        methods = {
-            'grouping': [Adonis(), Anosim()],
-            'gradient': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
-                         PartialMantel()]
+
+        gradient_workflow = {
+            'overview': {
+                'categories': [('Gradient', 'Gradient Category')],
+                'best_method_env_vars': ['Gradient'],
+                'depths': [(146, '5_percent'), (148, '25_percent')],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac')],
+                'num_real_data_perms': [99, 999],
+                'num_sim_data_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
+                'sample_sizes': [3, 5, 13],
+                'pcoa_sample_size': 13,
+                'num_sim_data_trials': 3,
+                'num_shuffled_trials': 2,
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+            }
+        }
+
+        cluster_workflow = {
+            'overview': {
+                'categories': [('Treatment', 'Treatment Category',
+                                {'Control': 'Control', 'Fast': 'Fast'})],
+                'depths': [(146, '5_percent'), (148, '25_percent')],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac')],
+                'num_real_data_perms': [99, 999],
+                'num_sim_data_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
+                'sample_sizes': [3, 5, 13],
+                'pcoa_sample_size': 13,
+                'num_sim_data_trials': 3,
+                'num_shuffled_trials': 2,
+                'methods': [Adonis(), Anosim()]
+            }
         }
 
         heatmap_methods = {
             'grouping': [Adonis(), Anosim()],
             'gradient': [Mantel(), MoransI()]
         }
+    else:
+        in_dir = '../data'
+        out_dir = 'microbiogeo_output'
+        out_gradient_dir = join(out_dir, 'gradient')
+        out_cluster_dir = join(out_dir, 'cluster')
+        tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
 
-        permutations = [99, 999]
-        num_shuffled = 2
-        num_subsets = 2
-
-        # For sample size testing.
-        sample_size_tests = {
-            'grouping': {
-                'study': 'overview',
-                'depth': 100,
-                'metric': 'bray_curtis',
-                'subset_sizes': [3, 4],
-                'num_subsets': 10,
-                'permutation': 999,
-                'categories': {
-                    'Treatment': ['b', 'Treatment'],
-                    'DOB': ['r', 'Date of birth']
-                },
-                'methods': [Adonis(), Anosim()]
+        gradient_workflow = {
+            '88_soils': {
+                'categories': [('PH', 'pH'), ('LATITUDE', 'Latitude')],
+                'best_method_env_vars': ['TOT_ORG_CARB', 'SILT_CLAY',
+                    'ELEVATION', 'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO',
+                    'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH',
+                    'CMIN_RATE', 'LONGITUDE', 'LATITUDE'
+                ],
+                'depths': [(400, '5_percent'), (580, '25_percent'),
+                           (660, '50_percent')
+                ],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_real_data_perms': [99, 999],
+                'num_sim_data_perms': 999,
+                # dissim must all be floats!
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                # sample_sizes must all be ints!
+                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+                'pcoa_sample_size': 150,
+                'num_sim_data_trials': 10,
+                'num_shuffled_trials': 5,
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
             },
 
-            'gradient': {
-                'study': 'overview',
-                'depth': 146,
-                'metric': 'euclidean',
-                'subset_sizes': [3, 4],
-                'num_subsets': 20,
-                'permutation': 999,
-                'categories': {
-                    'DOB': ['b', 'Date of birth']
-                },
-                'methods': [Mantel(), MoransI()]
+            'gn': {
+                'categories': [('LAYER', 'Layer')],
+                'best_method_env_vars': ['LAYER', 'START_DEPTH', 'END_DEPTH',
+                    'FERREDOXINSANDASSOCPROTEINS', 'FLAGELLA',
+                    'PHOTOSYNTHESISRELATEDPROTEINS', 'CHEMOTAXIS',
+                    'SUGARDEGRADATIONPATHWAYS', 'METHYLTRANSFERASE',
+                    'ARYLSULFATASEAANDRELENZYMES', 'CHAPERONES',
+                    'CYANOBACTERIALPROTEINDUF820'
+                ],
+                'depths': [(1276, '5_percent'), (1495, '25_percent'),
+                           (1779, '50_percent')],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_real_data_perms': [99, 999],
+                'num_sim_data_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+                'pcoa_sample_size': 150,
+                'num_sim_data_trials': 10,
+                'num_shuffled_trials': 5,
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
             }
         }
-    else:
-        in_dir = 'datasets'
-        out_dir = 'microbiogeo_output'
-        tree_fp = join('gg_otus_4feb2011', 'trees', 'gg_97_otus_4feb2011.tre')
-        depth_descs = ['5_percent', '25_percent', '50_percent']
-        studies = {
-                   '88_soils': {
-                                'depths': [400, 580, 660],
-                                'grouping_categories': ['ENV_BIOME'],
-                                'gradient_categories': ['LATITUDE', 'PH'],
-                                'group_sizes': [5, 10, 20, 40],
-                                'subset_sizes': [10, 20, 30],
-                                'best_method_env_vars': ['TOT_ORG_CARB',
-                                    'SILT_CLAY', 'ELEVATION',
-                                    'SOIL_MOISTURE_DEFICIT',
-                                    'CARB_NITRO_RATIO', 'ANNUAL_SEASON_TEMP',
-                                    'ANNUAL_SEASON_PRECPT', 'PH', 'CMIN_RATE',
-                                    'LONGITUDE', 'LATITUDE']
-                               },
-                   'keyboard': {
-                                'depths': [390, 780, 1015],
-                                'grouping_categories': ['HOST_SUBJECT_ID'],
-                                'gradient_categories': [],
-                                'group_sizes': [5, 10, 20, 40],
-                                'subset_sizes': [10, 20, 30],
-                                'best_method_env_vars': []
-                               },
-                   'whole_body': {
-                                  'depths': [575, 877, 1110],
-                                  'grouping_categories': ['BODY_SITE', 'SEX'],
-                                  'gradient_categories': [],
-                                  'group_sizes': [5, 10, 20, 40],
-                                  'subset_sizes': [10, 20, 30],
-                                  'best_method_env_vars': []
-                                 }
-                  }
 
-        metrics = ['euclidean', 'bray_curtis', 'weighted_unifrac',
-                   'unweighted_unifrac']
+        cluster_workflow = {
+            'keyboard': {
+                'categories': [('HOST_SUBJECT_ID', 'Subject',
+                                {'M2': 'Subject 1',
+                                 'M3': 'Subject 2',
+                                 'M9': 'Subject 3'})
+                ],
+                'depths': [(390, '5_percent'), (780, '25_percent'),
+                           (1015, '50_percent')],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_real_data_perms': [99, 999],
+                'num_sim_data_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
+                'pcoa_sample_size': 150,
+                'num_sim_data_trials': 10,
+                'num_shuffled_trials': 5,
+                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda(),
+                            Permdisp()]
+            },
 
-        methods = {
-            'grouping': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda(),
-                         Permdisp()],
-            'gradient': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
-                         PartialMantel()]
+            'whole_body': {
+                'categories': [('BODY_SITE_COARSE', 'Body Site',
+                                {'gut': 'Gut',
+                                 'oral': 'Oral cavity',
+                                 'skin': 'Skin'}),
+                               ('SEX', 'Sex',
+                                {'female': 'Female', 'male': 'Male'})
+                ],
+                'depths': [(575, '5_percent'), (877, '25_percent'),
+                           (1110, '50_percent')],
+                'metrics': [('unweighted_unifrac', 'Unweighted UniFrac'),
+                            ('weighted_unifrac', 'Weighted UniFrac'),
+                            ('bray_curtis', 'Bray-Curtis'),
+                            ('euclidean', 'Euclidean')
+                ],
+                'num_real_data_perms': [99, 999],
+                'num_sim_data_perms': 999,
+                'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
+                           70.0, 100.0],
+                'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
+                'sample_sizes': [5, 20, 40, 80, 140, 220, 320, 420, 520, 600],
+                'pcoa_sample_size': 150,
+                'num_sim_data_trials': 10,
+                'num_shuffled_trials': 5,
+                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda(),
+                            Permdisp()]
+            }
         }
 
         heatmap_methods = {
@@ -508,53 +799,23 @@ def main():
             'gradient': [Mantel(), MoransI()]
         }
 
-        permutations = [99, 999]
-        num_shuffled = 5
-        num_subsets = 5
+    generate_data('gradient', in_dir, out_gradient_dir, gradient_workflow,
+                  tree_fp)
+    generate_data('cluster', in_dir, out_cluster_dir, cluster_workflow, tree_fp)
 
-        # For sample size testing.
-        sample_size_tests = {
-            'grouping': {
-                'study': 'whole_body',
-                'depth': 575,
-                'metric': 'unweighted_unifrac',
-                'subset_sizes': [5, 10, 20, 40, 60, 80],
-                'num_subsets': 10,
-                'permutation': 999,
-                'categories': {
-                    'BODY_SITE': ['b', 'Body site'],
-                    'SEX': ['r', 'Sex']
-                },
-                'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
-            },
+    process_data(out_gradient_dir, gradient_workflow)
+    process_data(out_cluster_dir, cluster_workflow)
 
-            'gradient': {
-                'study': '88_soils',
-                'depth': 400,
-                'metric': 'unweighted_unifrac',
-                'subset_sizes': [5, 10, 20, 40, 60, 80],
-                'num_subsets': 10,
-                'permutation': 999,
-                'categories': {
-                    'PH': ['b', 'pH'],
-                    'LATITUDE': ['r', 'Latitude']
-                },
-                'methods': [Mantel(), MoransI()]
-            }
-        }
+    #create_real_data_summary_tables('gradient', out_gradient_dir,
+    #                                gradient_workflow)
+    #create_real_data_summary_tables('cluster', out_cluster_dir,
+    #                                cluster_workflow)
 
-    generate_distance_matrices(in_dir, out_dir, studies, metrics, num_shuffled,
-            num_subsets, tree_fp)
+    #create_simulated_data_plots('gradient', out_gradient_dir,
+    #                            gradient_workflow)
+    #create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
 
-    run_methods(out_dir, studies, methods, permutations)
-
-    summarize_results(out_dir, out_dir, studies, methods, heatmap_methods,
-                      depth_descs, metrics, permutations, num_shuffled,
-                      num_subsets)
-
-    run_sample_size_tests(out_dir, join(out_dir, 'sample_size_testing_output'),
-                          sample_size_tests)
-
+    #create_method_heatmaps()
 
 if __name__ == "__main__":
     main()

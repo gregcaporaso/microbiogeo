@@ -59,6 +59,11 @@ class AbstractStatMethodTests(TestCase):
         self.assertRaises(ValueError, self.inst.parse_float, '11.2',
                           max_val=10)
 
+    def test_eq(self):
+        """Test equality check."""
+        self.assertEqual(Best(), Best())
+        self.assertNotEqual(Best(), Mantel())
+
 
 class QiimeStatMethodTests(TestCase):
     """Tests for the QiimeStatMethod class."""
