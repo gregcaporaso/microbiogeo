@@ -105,15 +105,17 @@ def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
                         otu_table_fp, even_otu_table_fp, depth[0]))
 
             cmds.extend(_build_real_data_commands(analysis_type, depth_dir,
-                    even_otu_table_fp, map_fp, workflow[study]))
+                    even_otu_table_fp, map_fp, tree_fp, workflow[study]))
             cmds.extend(_build_simulated_data_commands(analysis_type,
-                    depth_dir, even_otu_table_fp, map_fp, workflow[study]))
+                    depth_dir, even_otu_table_fp, map_fp, tree_fp,
+                    workflow[study]))
 
     run_parallel_jobs(cmds, run_command)
 
 def _build_real_data_commands(analysis_type, out_dir, even_otu_table_fp,
-                              map_fp, workflow):
+                              map_fp, tree_fp, workflow):
     cmds = []
+
     data_type_dir = join(out_dir, 'real')
     create_dir(data_type_dir)
 
@@ -139,31 +141,41 @@ def _build_real_data_commands(analysis_type, out_dir, even_otu_table_fp,
                 break
 
         if not (has_orig_files and has_shuff_files):
-            cmd = ['beta_diversity.py -i %s -o %s -m %s -t %s' % (even_otu_table_fp, orig_dir, metric[0], tree_fp)]
-            cmd.append('mv %s %s' % (join(orig_dir, '%s_%s.txt' % (metric[0], splitext(basename(even_otu_table_fp))[0])), join(orig_dir, 'dm.txt')))
-            cmd.append('cp %s %s' % (map_fp, join(orig_dir, 'map.txt')))
-            cmd.append('principal_coordinates.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(orig_dir, 'pc.txt')))
-
-            if analysis_type == 'gradient':
-                for category in workflow['categories']:
-                    cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(orig_dir, 'map.txt'), category[0], join(orig_dir, '%s_dm.txt' % category[0])))
-
-            for shuff_num in range(workflow['num_shuffled_trials']):
-                shuff_num_dir = join(metric_dir, '%d' % shuff_num)
-                create_dir(shuff_num_dir)
-
-                cmd.append('shuffle_distance_matrix.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(shuff_num_dir, 'dm.txt')))
-                cmd.append('cp %s %s' % (join(orig_dir, 'map.txt'), join(shuff_num_dir, 'map.txt')))
-                cmd.append('principal_coordinates.py -i %s -o %s' % (join(shuff_num_dir, 'dm.txt'), join(shuff_num_dir, 'pc.txt')))
-
-                if analysis_type == 'gradient':
-                    for category in workflow['categories']:
-                        cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(shuff_num_dir, 'map.txt'), category[0], join(shuff_num_dir, '%s_dm.txt' % category[0])))
-            cmds.append(' && '.join(cmd))
+            cmds.append(_build_per_metric_real_data_commands(analysis_type,
+                    metric_dir, even_otu_table_fp, map_fp, tree_fp, metric,
+                    workflow['categories'], workflow['num_shuffled_trials']))
     return cmds
 
+def _build_per_metric_real_data_commands(analysis_type, out_dir,
+                                         even_otu_table_fp, map_fp, tree_fp,
+                                         metric, categories,
+                                         num_shuffled_trials):
+    orig_dir = join(out_dir, 'original')
+
+    cmd = ['beta_diversity.py -i %s -o %s -m %s -t %s' % (even_otu_table_fp, orig_dir, metric[0], tree_fp)]
+    cmd.append('mv %s %s' % (join(orig_dir, '%s_%s.txt' % (metric[0], splitext(basename(even_otu_table_fp))[0])), join(orig_dir, 'dm.txt')))
+    cmd.append('cp %s %s' % (map_fp, join(orig_dir, 'map.txt')))
+    cmd.append('principal_coordinates.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(orig_dir, 'pc.txt')))
+
+    if analysis_type == 'gradient':
+        for category in categories:
+            cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(orig_dir, 'map.txt'), category[0], join(orig_dir, '%s_dm.txt' % category[0])))
+
+    for shuff_num in range(num_shuffled_trials):
+        shuff_num_dir = join(out_dir, '%d' % shuff_num)
+
+        cmd.append('mkdir -p %s' % shuff_num_dir)
+        cmd.append('shuffle_distance_matrix.py -i %s -o %s' % (join(orig_dir, 'dm.txt'), join(shuff_num_dir, 'dm.txt')))
+        cmd.append('cp %s %s' % (join(orig_dir, 'map.txt'), join(shuff_num_dir, 'map.txt')))
+        cmd.append('principal_coordinates.py -i %s -o %s' % (join(shuff_num_dir, 'dm.txt'), join(shuff_num_dir, 'pc.txt')))
+
+        if analysis_type == 'gradient':
+            for category in categories:
+                cmd.append('distance_matrix_from_mapping.py -i %s -c %s -o %s' % (join(shuff_num_dir, 'map.txt'), category[0], join(shuff_num_dir, '%s_dm.txt' % category[0])))
+    return ' && '.join(cmd)
+
 def _build_simulated_data_commands(analysis_type, out_dir, even_otu_table_fp,
-                                   map_fp, workflow):
+                                   map_fp, tree_fp, workflow):
     cmds = []
 
     data_type_dir = join(out_dir, 'simulated')
@@ -314,99 +326,113 @@ def process_data(in_dir, workflow):
 
         for depth in workflow[study]['depths']:
             depth_dir = join(study_dir, '%d' % depth[0])
-            data_type_dir = join(depth_dir, 'simulated')
 
-            num_sim_data_trials = workflow[study]['num_sim_data_trials']
-            num_sim_data_perms = workflow[study]['num_sim_data_perms']
-
-            for category in workflow[study]['categories']:
-                category_dir = join(data_type_dir, category[0])
-
-                for trial_num in range(num_sim_data_trials):
-                    trial_num_dir = join(category_dir, '%d' % trial_num)
-
-                    for samp_size in workflow[study]['sample_sizes']:
-                        samp_size_dir = join(trial_num_dir, '%d' % samp_size)
-
-                        for d in workflow[study]['dissim']:
-                            dissim_dir = join(samp_size_dir, repr(d))
-
-                            for metric in workflow[study]['metrics']:
-                                metric_dir = join(dissim_dir, metric[0])
-
-                                dm_fp = join(metric_dir, 'dm.txt')
-                                map_fp = join(metric_dir, 'map.txt')
-                                grad_dm_fp = join(metric_dir,
-                                                  '%s_dm.txt' % category[0])
-                                assert get_num_samples_in_distance_matrix(dm_fp) == samp_size
-                                assert get_num_samples_in_map(map_fp) == samp_size
-
-                                for method in workflow[study]['methods']:
-                                    if type(method) is Best or type(method) is PartialMantel:
-                                        continue
-                                    method_dir = join(metric_dir, method.Name)
-                                    create_dir(method_dir)
-
-                                    if not has_results(method_dir):
-                                        if type(method) is Mantel or type(method) is MantelCorrelogram:
-                                            assert get_num_samples_in_distance_matrix(grad_dm_fp) == samp_size
-                                            in_dm_fps = ','.join((dm_fp,
-                                                                  grad_dm_fp))
-                                            cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_sim_data_perms, in_dm_fps, method_dir))
-                                        else:
-                                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
-
-            data_type_dir = join(depth_dir, 'real')
-
-            num_shuffled_trials = workflow[study]['num_shuffled_trials']
-            num_real_data_perms = workflow[study]['num_real_data_perms']
-
-            for metric in workflow[study]['metrics']:
-                metric_dir = join(data_type_dir, metric[0])
-
-                dirs_to_process = ['original'] + map(str, range(num_shuffled_trials))
-                for dir_to_process in dirs_to_process:
-                    dir_to_process = join(metric_dir, dir_to_process)
-
-                    dm_fp = join(dir_to_process, 'dm.txt')
-                    map_fp = join(dir_to_process, 'map.txt')
-
-                    for category in workflow[study]['categories']:
-                        category_dir = join(dir_to_process, category[0])
-                        create_dir(category_dir)
-
-                        grad_dm_fp = join(dir_to_process, '%s_dm.txt' % category[0])
-
-                        for method in workflow[study]['methods']:
-                            if type(method) is Best or type(method) is PartialMantel:
-                                continue
-
-                            method_dir = join(category_dir, method.Name)
-                            create_dir(method_dir)
-
-                            if type(method) is MoransI:
-                                if not has_results(method_dir):
-                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (method.Name, dm_fp, map_fp, category[0], method_dir))
-                            else:
-                                for perms in num_real_data_perms:
-                                    perms_dir = join(method_dir, '%d' % perms)
-                                    create_dir(perms_dir)
-
-                                    if not has_results(perms_dir):
-                                        if type(method) is Mantel or type(method) is MantelCorrelogram:
-                                            in_dm_fps = ','.join((dm_fp, grad_dm_fp))
-                                            cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, perms, in_dm_fps, perms_dir))
-                                        else:
-                                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], perms_dir, perms))
-
-                    if Best() in workflow[study]['methods']:
-                        best_dir = join(dir_to_process, Best().Name)
-
-                        if not has_results(best_dir):
-                            env_vars = ','.join(workflow[study]['best_method_env_vars'])
-                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (Best().Name, dm_fp, map_fp, env_vars, best_dir))
+            cmds.extend(_build_real_data_methods_commands(depth_dir,
+                    workflow[study]))
+            cmds.extend(_build_simulated_data_methods_commands(depth_dir,
+                    workflow[study]))
 
     run_parallel_jobs(cmds, run_command)
+
+def _build_real_data_methods_commands(out_dir, workflow):
+    cmds = []
+
+    data_type_dir = join(out_dir, 'real')
+
+    num_shuffled_trials = workflow['num_shuffled_trials']
+    num_perms = workflow['num_real_data_perms']
+
+    for metric in workflow['metrics']:
+        metric_dir = join(data_type_dir, metric[0])
+
+        dirs_to_process = ['original'] + map(str, range(num_shuffled_trials))
+        for dir_to_process in dirs_to_process:
+            dir_to_process = join(metric_dir, dir_to_process)
+
+            dm_fp = join(dir_to_process, 'dm.txt')
+            map_fp = join(dir_to_process, 'map.txt')
+
+            for category in workflow['categories']:
+                category_dir = join(dir_to_process, category[0])
+                create_dir(category_dir)
+
+                grad_dm_fp = join(dir_to_process, '%s_dm.txt' % category[0])
+
+                for method in workflow['methods']:
+                    if type(method) is Best or type(method) is PartialMantel:
+                        continue
+
+                    method_dir = join(category_dir, method.Name)
+                    create_dir(method_dir)
+
+                    if type(method) is MoransI:
+                        if not has_results(method_dir):
+                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (method.Name, dm_fp, map_fp, category[0], method_dir))
+                    else:
+                        for perms in num_perms:
+                            perms_dir = join(method_dir, '%d' % perms)
+                            create_dir(perms_dir)
+
+                            if not has_results(perms_dir):
+                                if type(method) is Mantel or type(method) is MantelCorrelogram:
+                                    in_dm_fps = ','.join((dm_fp, grad_dm_fp))
+                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, perms, in_dm_fps, perms_dir))
+                                else:
+                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], perms_dir, perms))
+
+            if Best() in workflow['methods']:
+                best_dir = join(dir_to_process, Best().Name)
+
+                if not has_results(best_dir):
+                    env_vars = ','.join(workflow['best_method_env_vars'])
+                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (Best().Name, dm_fp, map_fp, env_vars, best_dir))
+    return cmds
+
+def _build_simulated_data_methods_commands(out_dir, workflow):
+    cmds = []
+
+    data_type_dir = join(out_dir, 'simulated')
+
+    num_sim_data_trials = workflow['num_sim_data_trials']
+    num_sim_data_perms = workflow['num_sim_data_perms']
+
+    for category in workflow['categories']:
+        category_dir = join(data_type_dir, category[0])
+
+        for trial_num in range(num_sim_data_trials):
+            trial_num_dir = join(category_dir, '%d' % trial_num)
+
+            for samp_size in workflow['sample_sizes']:
+                samp_size_dir = join(trial_num_dir, '%d' % samp_size)
+
+                for d in workflow['dissim']:
+                    dissim_dir = join(samp_size_dir, repr(d))
+
+                    for metric in workflow['metrics']:
+                        metric_dir = join(dissim_dir, metric[0])
+
+                        dm_fp = join(metric_dir, 'dm.txt')
+                        map_fp = join(metric_dir, 'map.txt')
+                        grad_dm_fp = join(metric_dir,
+                                          '%s_dm.txt' % category[0])
+                        assert get_num_samples_in_distance_matrix(dm_fp) == samp_size
+                        assert get_num_samples_in_map(map_fp) == samp_size
+
+                        for method in workflow['methods']:
+                            if type(method) is Best or type(method) is PartialMantel:
+                                continue
+                            method_dir = join(metric_dir, method.Name)
+                            create_dir(method_dir)
+
+                            if not has_results(method_dir):
+                                if type(method) is Mantel or type(method) is MantelCorrelogram:
+                                    assert get_num_samples_in_distance_matrix(grad_dm_fp) == samp_size
+                                    in_dm_fps = ','.join((dm_fp,
+                                                          grad_dm_fp))
+                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_sim_data_perms, in_dm_fps, method_dir))
+                                else:
+                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
+    return cmds
 
 def summarize_results(in_dir, out_dir, studies, methods, heatmap_methods,
                       depth_descs, metrics, permutations, num_shuffled,
@@ -740,27 +766,10 @@ def main():
             },
 
             'whole_body': {
-                'categories': [('BODY_SITE', 'Body Site',
-                                {'UBERON:ear canal': 'Ear canal',
-                                 'UBERON:feces': 'Feces',
-                                 'UBERON:glans penis': 'Glans penis',
-                                 'UBERON:hair': 'Hair',
-                                 'UBERON:labia minora': 'Labia minora',
-                                 'UBERON:mouth': 'Mouth',
-                                 'UBERON:nose': 'Nose',
-                                 'UBERON:nostril': 'Nostril',
-                                 'UBERON:nostrils': 'Nostrils',
-                                 'UBERON:skin of arm': 'Skin of arm',
-                                 'UBERON:skin of finger': 'Skin of finger',
-                                 'UBERON:skin of forearm': 'Skin of forearm',
-                                 'UBERON:tongue': 'Tongue',
-                                 'UBERON:urine': 'Urine',
-                                 'UBERON:zone of skin of abdomen': 'Skin of abdomen',
-                                 'UBERON:zone of skin of foot': 'Skin of foot',
-                                 'UBERON:zone of skin of hand': 'Skin of hand',
-                                 'UBERON:zone of skin of head': 'Skin of head',
-                                 'UBERON:zone of skin of knee': 'Skin of knee',
-                                 'UBERON:zone of skin of outer ear': 'Skin of outer ear'}),
+                'categories': [('BODY_SITE_COARSE', 'Body Site',
+                                {'gut': 'Gut',
+                                 'oral': 'Oral cavity',
+                                 'skin': 'Skin'}),
                                ('SEX', 'Sex',
                                 {'female': 'Female', 'male': 'Male'})
                 ],
@@ -776,7 +785,7 @@ def main():
                 'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
                            70.0, 100.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
-                'sample_sizes': [5, 20, 40, 80, 150, 250, 350, 450, 550, 600],
+                'sample_sizes': [5, 20, 40, 80, 140, 220, 320, 420, 520, 600],
                 'pcoa_sample_size': 150,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
@@ -802,9 +811,9 @@ def main():
     #create_real_data_summary_tables('cluster', out_cluster_dir,
     #                                cluster_workflow)
 
-    create_simulated_data_plots('gradient', out_gradient_dir,
-                                gradient_workflow)
-    create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
+    #create_simulated_data_plots('gradient', out_gradient_dir,
+    #                            gradient_workflow)
+    #create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
 
     #create_method_heatmaps()
 
