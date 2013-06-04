@@ -21,6 +21,7 @@ from biom.parse import parse_biom_table
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
 from matplotlib.pyplot import figure
+from matplotlib.ticker import FormatStrFormatter
 
 from numpy import ceil, inf, mean, std
 
@@ -230,6 +231,9 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
 
                         color_pool = get_color_pool()
 
+                        min_dissim = min(metric_plots_data.keys())
+                        max_dissim = max(metric_plots_data.keys())
+
                         legend_labels = []
                         legend_lines = []
                         for d, plot_data in sorted(metric_plots_data.items()):
@@ -238,6 +242,11 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             color = color_pool.pop(0)
 
                             label = 'd=%r' % d
+                            if d == min_dissim:
+                                label += ' (pos. control)'
+                            elif d == max_dissim:
+                                label += ' (neg. control)'
+
                             legend_labels.append(label)
                             legend_lines.append(Line2D([0, 1], [0, 0],
                                                 color=color, linewidth=2))
@@ -247,7 +256,7 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             if d == 0.0:
                                 line_width = 3
                             else:
-                                line_width = 0.5
+                                line_width = 1
 
                             # Plot test statistics.
                             ax1.errorbar(plot_data['sample_sizes'],
@@ -262,7 +271,13 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                                     linewidth=line_width, linestyle='--')
                             barlinecols[0].set_linestyles('dashed')
 
+                        ax1.set_xscale('log', nonposx='clip', basex=2)
+                        ax1.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+                        ax2.set_xscale('log', nonposx='clip', basex=2)
+                        ax2.xaxis.set_major_formatter(FormatStrFormatter('%d'))
+
                         ax2.set_yscale('log', nonposy='clip')
+
                         x_label = 'Number of samples'
                         ax1.set_xlabel(x_label)
                         ax2.set_xlabel(x_label)
@@ -272,8 +287,8 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
 
                         min_x = min(workflow[study]['sample_sizes'])
                         max_x = max(workflow[study]['sample_sizes'])
-                        ax1.set_xlim(min_x, max_x)
-                        ax2.set_xlim(min_x, max_x)
+                        ax1.set_xlim(min_x - 0.5, max_x)
+                        ax2.set_xlim(min_x - 0.5, max_x)
 
                         for ax_idx, ax in enumerate((ax1, ax2)):
                             panel_idx = method_idx * 2 + ax_idx
@@ -309,10 +324,12 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
 
                             assert len(legend_lines) == len(workflow[study]['dissim'])
                             assert len(legend_labels) == len(workflow[study]['dissim'])
-                            ax3.legend(legend_lines, legend_labels, ncol=2,
-                                    title='Legend (Panels %s-%s)' % (
-                                        start_panel_label, end_panel_label),
-                                    loc=loc, fancybox=True, shadow=True)
+                            legend_title = ('           Legend (Panels %s-%s)\nd = '
+                                    '"noise" introduced to clusters' % (
+                                        start_panel_label, end_panel_label))
+                            ax3.legend(legend_lines, legend_labels, ncol=1,
+                                    title=legend_title, loc=loc, fancybox=True,
+                                    shadow=True)
 
                 for metric in workflow[study]['metrics']:
                     fig = figs[metric[0]]
@@ -324,6 +341,9 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                     fig.tight_layout(pad=5.0, w_pad=2.0, h_pad=2.0)
                     fig.savefig(join(in_dir, '%s_%s_%d_%s.pdf' % (study,
                             category[0], depth[0], metric[0])), format='pdf')
+                    fig.savefig(join(in_dir, '%s_%s_%d_%s.png' % (study,
+                            category[0], depth[0], metric[0])), format='png',
+                            dpi=100)
 
 def _compute_plot_data_statistics(plot_data, num_trials):
     avg_effect_sizes = []
@@ -372,6 +392,9 @@ def plot_pcoa(analysis_type, fig, in_dir, workflow, category, metric, num_rows,
     trial_num_dir = join(in_dir, '%d' % trial_num)
     samp_size_dir = join(trial_num_dir, '%d' % samp_size)
 
+    min_dissim = min(workflow['pcoa_dissim'])
+    max_dissim = max(workflow['pcoa_dissim'])
+
     legend_symbols = []
     legend_labels = []
     for d_idx, d in enumerate(workflow['pcoa_dissim']):
@@ -416,7 +439,13 @@ def plot_pcoa(analysis_type, fig, in_dir, workflow, category, metric, num_rows,
             raise ValueError("Unrecognized simulated data type '%s'." %
                              analysis_type)
 
-        ax.set_title('d=%r' % d)
+        plot_title = 'd=%r' % d
+        if d == min_dissim:
+            plot_title += ' (pos. control)'
+        elif d == max_dissim:
+            plot_title += ' (neg. control)'
+        ax.set_title(plot_title)
+
         ax.set_xlabel('PC1 (%1.2f%%)' % pc_data[3][0])
         ax.set_ylabel('PC2 (%1.2f%%)' % pc_data[3][1])
         ax.set_xticks([])
