@@ -15,8 +15,10 @@ from collections import defaultdict
 from csv import writer
 from os.path import join
 
-from numpy import mean, ones, std
+from numpy import invert, mean, ones, std, tri
+import numpy.ma
 
+from matplotlib import cm
 from matplotlib.pyplot import (colorbar, figure, imshow, legend, matshow,
                                savefig, subplot, tight_layout, title, xlim,
                                xticks, yticks)
@@ -120,8 +122,9 @@ def create_method_comparison_heatmaps(results, methods, out_dir):
             #   heatmaps-and-matplotlib/
             fig = figure()
             ax = subplot(111)
-            im = ax.matshow(heatmap_data, vmin=0, vmax=1)
-
+            cmap = cm.get_cmap()
+            cmap.set_bad('w') # default value is 'k'
+            im = ax.imshow(heatmap_data, cmap=cmap, interpolation='nearest')
             method_labels = [method.DisplayName
                              for method in methods[method_type]]
 
@@ -129,9 +132,19 @@ def create_method_comparison_heatmaps(results, methods, out_dir):
             xticks(range(len(method_labels)), method_labels, rotation=90)
             yticks(range(len(method_labels)), method_labels)
 
+            for loc, spine in ax.spines.items():
+                if loc in ['right','top']:
+                    spine.set_color('none') # don't draw spine
+
+            ax.xaxis.set_ticks_position('bottom')
+            ax.yaxis.set_ticks_position('left')
+            ax.grid(True, which='minor')
+
             tight_layout()
             savefig(join(out_dir, '%s_analysis_heatmap_%s.pdf' % (method_type,
                     correlation_method)), format='pdf')
+            savefig(join(out_dir, '%s_analysis_heatmap_%s.png' % (method_type,
+                    correlation_method)), format='png', dpi=1000)
 
 def format_method_comparison_heatmaps(results, methods):
     shared_studies = {}
@@ -235,6 +248,11 @@ def format_method_comparison_heatmaps(results, methods):
                             method_data[method_type][method1.Name],
                             method_data[method_type][method2.Name])
                     heatmap_data[method1_idx][method2_idx] = corr_coeff
+
+            # Mask out the upper triangle. Taken from
+            # http://stackoverflow.com/a/2332520
+            mask = invert(tri(heatmap_data.shape[0], k=0, dtype=bool))
+            heatmap_data = numpy.ma.array(heatmap_data, mask=mask)
 
             heatmaps[method_type][correlation_name] = heatmap_data
 
