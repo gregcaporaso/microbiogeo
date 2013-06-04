@@ -797,7 +797,7 @@ def main():
         }
 
         heatmap_methods = {
-            'grouping': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()],
+            'grouping': [Adonis(), Dbrda(), Mrpp(), Permanova(), Anosim()],
             'gradient': [Mantel(), MoransI()]
         }
 
