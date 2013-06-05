@@ -187,7 +187,6 @@ def get_panel_label(idx):
 
 
 class StatsResults(object):
-
     def __init__(self):
         self.effect_size = None
         self.p_values = []

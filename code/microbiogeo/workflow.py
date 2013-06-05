@@ -12,13 +12,14 @@ __email__ = "jai.rideout@gmail.com"
 """Module for executing various workflows/analyses."""
 
 from collections import defaultdict
+from csv import writer
 from os import listdir
 from os.path import basename, exists, join, splitext
 from random import randint, sample
 
 from biom.parse import parse_biom_table
 
-from numpy import ceil, inf, mean, std
+from numpy import ceil, inf, mean, median, std
 
 from qiime.filter import (filter_mapping_file_from_mapping_f,
                           filter_samples_from_otu_table)
@@ -26,6 +27,7 @@ from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          parse_coords, group_by_field)
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 
+from microbiogeo.format import format_method_comparison_table
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
                                 Mrpp, PartialMantel, Permanova, Permdisp,
@@ -36,7 +38,7 @@ from microbiogeo.util import (get_color_pool,
                               get_num_samples_in_distance_matrix,
                               get_num_samples_in_map, get_num_samples_in_table,
                               get_panel_label, get_simsam_rep_num, has_results,
-                              run_command, run_parallel_jobs)
+                              run_command, run_parallel_jobs, StatsResults)
 
 def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
     """Generates real and simulated data for each study.
@@ -434,37 +436,54 @@ def _build_simulated_data_methods_commands(out_dir, workflow):
                                     cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
     return cmds
 
-def summarize_results(in_dir, out_dir, studies, methods, heatmap_methods,
-                      depth_descs, metrics, permutations, num_shuffled,
-                      num_subsets):
-    """Summarizes the results of the various method runs.
+def create_real_data_summary_tables(in_dir, workflow):
+    """Summarizes the results of the various method runs on real data.
 
-    Effect size statistics and p-values are collected for each of the tests
-    that were run and summary tables are created, one for each sampling depth /
-    metric combination (separate tables for grouping and gradient analysis
-    methods). These tables are written to out_dir.
+    Effect sizes and p-values are collected for each of the tests that were run
+    and summary tables are created, one for each sampling depth / metric
+    combination.
+
+    These tables will be in TSV format so that they can be easily imported into
+    Excel for viewing and cleanup for publication.
     """
-    results = _collate_results(in_dir, studies, methods, depth_descs, metrics,
-                               permutations, num_shuffled, num_subsets)
+    results = _collate_results(in_dir, workflow)
 
-    create_results_summary_tables(results, out_dir)
+    for depth_desc, depth_res in results.items():
+        for metric, metric_res in depth_res.items():
+            table_rows = format_method_comparison_table(metric_res)
 
-    create_method_comparison_heatmaps(results, heatmap_methods, out_dir)
+            table_name = 'summary_table_%s_%s.txt' % (depth_desc, metric)
+            with open(join(in_dir, table_name), 'wb') as out_f:
+                # We use \r so that we can force linebreaks within cells
+                # when imported into Excel. Not sure if this will work with
+                # other spreadsheet programs such as Open Office.
+                tsv_writer = writer(out_f, delimiter='\t', lineterminator='\r')
+                tsv_writer.writerows(table_rows)
 
-def _collate_results(in_dir, studies, methods, depth_descs, metrics,
-                     permutations, num_shuffled, num_subsets):
+def _collate_results(in_dir, workflow):
     results = {}
 
-    for depth_idx, depth_desc in enumerate(depth_descs):
-        depth_res = {}
+    for study in workflow:
+        study_dir = join(in_dir, study)
 
-        for metric in metrics:
-            metric_res = {}
+        for depth, depth_desc in workflow[study]['depths']:
+            depth_dir = join(study_dir, '%d' % depth)
 
-            for method_type in methods:
-                method_type_res = {}
+            if depth_desc not in results:
+                results[depth_desc] = {}
+            depth_res = results[depth_desc]
 
-                for method in methods[method_type]:
+            data_type = 'real'
+            data_type_dir = join(depth_dir, data_type)
+
+            for metric, _ in workflow[study]['metrics']:
+                metric_dir = join(data_type_dir, metric)
+
+                if metric not in depth_res:
+                    depth_res[metric] = {}
+                metric_res = depth_res[metric]
+
+                for method in workflow[study]['methods']:
                     if type(method) in (MantelCorrelogram, Best):
                         # Completely ignore Mantel correlogram and BEST (for
                         # now at least). Mantel correlogram is hard to
@@ -477,148 +496,98 @@ def _collate_results(in_dir, studies, methods, depth_descs, metrics,
                         # variables best correlate with the community data.
                         continue
 
-                    method_res = {}
+                    if method.Name not in metric_res:
+                        metric_res[method.Name] = {}
+                    method_res = metric_res[method.Name]
 
-                    for study in studies:
-                        study_res = {}
+                    if data_type not in method_res:
+                        method_res[data_type] = {}
+                    data_type_res = method_res[data_type]
 
-                        # Figure out what our actual depth is for the study,
-                        # and what subset sizes we used.
-                        depth = studies[study]['depths'][depth_idx]
+                    if study not in data_type_res:
+                        data_type_res[study] = {}
+                    study_res = data_type_res[study]
 
-                        if method_type == 'grouping':
-                            subset_sizes = studies[study]['group_sizes']
-                            categories = studies[study]['grouping_categories']
-                        elif method_type == 'gradient':
-                            subset_sizes = studies[study]['subset_sizes']
-                            categories = studies[study]['gradient_categories']
+                    for category in workflow[study]['categories']:
+                        # category can contain either two or three items; we
+                        # only care about the first.
+                        category = category[0]
 
-                            # Add our fictional 'key_distance' category, which
-                            # isn't actually a category (i.e. not in a mapping
-                            # file), but can be treated the same way as the
-                            # others in this case.
-                            if study == 'keyboard':
-                                categories = categories + ['key_distance']
+                        if category not in study_res:
+                            study_res[category] = {}
+                        category_res = study_res[category]
+
+                        orig_res = StatsResults()
+
+                        # Moran's I does not use permutations.
+                        if type(method) is MoransI:
+                            _parse_original_results_file(metric_dir, method,
+                                                         category, orig_res)
                         else:
-                            raise ValueError("Unknown method type '%s'." %
-                                             method_type)
+                            for permutation in \
+                                    workflow[study]['num_real_data_perms']:
+                                _parse_original_results_file(metric_dir,
+                                        method, category, orig_res,
+                                        permutation)
 
-                        for category in categories:
-                            category_res = {}
-                            full_results = StatsResults()
-                            shuffled_results = StatsResults()
-                            ss_results = [StatsResults()
-                                          for i in range(len(subset_sizes))]
+                        category_res['original'] = orig_res
 
-                            # Moran's I does not use permutations.
-                            if type(method) is MoransI:
-                                _collate_category_results(full_results,
-                                        shuffled_results, ss_results, in_dir,
-                                        study, depth, metric, method_type,
-                                        method, category, subset_sizes,
-                                        num_shuffled, num_subsets,
-                                        permutation=None)
-                            else:
-                                for permutation in permutations:
-                                    _collate_category_results(full_results,
-                                            shuffled_results, ss_results,
-                                            in_dir, study, depth, metric,
-                                            method_type, method, category,
-                                            subset_sizes, num_shuffled,
-                                            num_subsets,
-                                            permutation=permutation)
+                        # Collect results for shuffled distance matrices.
+                        shuff_res = StatsResults()
 
-                            category_res['full'] = full_results
-                            category_res['shuffled'] = shuffled_results
-                            category_res['subsampled'] = ss_results
-
-                            study_res[category] = category_res
-                        method_res[study] = study_res
-                    method_type_res[method.Name] = method_res
-                metric_res[method_type] = method_type_res
-            depth_res[metric] = metric_res
-        results[depth_desc] = depth_res
-
+                        if type(method) is MoransI:
+                            _parse_shuffled_results_files(metric_dir, method,
+                                    category, shuff_res,
+                                    workflow[study]['num_shuffled_trials'])
+                        else:
+                            for permutation in \
+                                    workflow[study]['num_real_data_perms']:
+                                _parse_shuffled_results_files(metric_dir,
+                                        method, category, shuff_res,
+                                        workflow[study]['num_shuffled_trials'],
+                                        permutation)
+                        category_res['shuffled'] = shuff_res
     return results
 
-def _collate_category_results(full_results, shuffled_results, ss_results,
-                              in_dir, study, depth, metric, method_type,
-                              method, category, subset_sizes, num_shuffled,
-                              num_subsets, permutation=None):
-    depth_dir = join(in_dir, study, 'bdiv_even%d' % depth)
-
-    # Collect results for full distance matrices.
-    results_dir = join(depth_dir, '%s_dm_%s_%s' % (metric, method.Name,
-                                                   category))
-    if permutation is not None:
-        results_dir += '_%d' % permutation
-
-    results_fp = join(results_dir, '%s_results.txt' % method.Name)
+def _parse_original_results_file(in_dir, method, category, stats_results,
+                                 permutation=None):
+    if permutation is None:
+        results_fp = join(in_dir, 'original', category, method.Name, '%s_results.txt' % method.Name)
+    else:
+        results_fp = join(in_dir, 'original', category, method.Name,
+                          '%d' % permutation, '%s_results.txt' % method.Name)
 
     # We will not always have results for every combination of parameters (e.g.
     # partial Mantel).
     if exists(results_fp):
-        full_res_f = open(results_fp, 'U')
-        full_es, full_p_val = method.parse(full_res_f)
-        full_res_f.close()
-        full_results.addResult(full_es, full_p_val)
+        res_f = open(results_fp, 'U')
+        es, p_val = method.parse(res_f)
+        res_f.close()
+        stats_results.addResult(es, p_val)
 
-    # Collect results for shuffled distance matrices.
+def _parse_shuffled_results_files(in_dir, method, category, stats_results,
+                                  num_shuffled_trials, permutation=None):
     shuff_ess = []
     shuff_p_vals = []
-    for shuff_num in range(1, num_shuffled + 1):
-        results_dir = join(depth_dir, '%s_dm_shuffled%d_%s_%s' % (metric,
-                                                                  shuff_num,
-                                                                  method.Name,
-                                                                  category))
-        if permutation is not None:
-            results_dir += '_%d' % permutation
 
-        results_fp = join(results_dir, '%s_results.txt' % method.Name)
+    for shuff_num in range(num_shuffled_trials):
+        if permutation is None:
+            results_fp = join(in_dir, '%d' % shuff_num, category,
+                              method.Name, '%s_results.txt' % method.Name)
+        else:
+            results_fp = join(in_dir, '%d' % shuff_num, category,
+                              method.Name, '%d' % permutation,
+                              '%s_results.txt' % method.Name)
 
         if exists(results_fp):
-            shuff_res_f = open(results_fp, 'U')
-            shuff_es, shuff_p_val = method.parse(shuff_res_f)
-            shuff_res_f.close()
-            shuff_ess.append(shuff_es)
-            shuff_p_vals.append(shuff_p_val)
+            res_f = open(results_fp, 'U')
+            es, p_val = method.parse(res_f)
+            res_f.close()
+            shuff_ess.append(es)
+            shuff_p_vals.append(p_val)
 
     if shuff_ess and shuff_p_vals:
-        shuffled_results.addResult(median(shuff_ess), median(shuff_p_vals))
-
-    # Collect results for subset distance matrices.
-    for subset_size_idx, subset_size in enumerate(subset_sizes):
-        ss_ess = []
-        ss_p_vals = []
-
-        for ss_num in range(1, num_subsets + 1):
-            if method_type == 'grouping':
-                subset_path = '%s_dm_%s_gs%d_%d_%s_%s' % (metric, category,
-                                                          subset_size, ss_num,
-                                                          method.Name, category)
-            elif method_type == 'gradient':
-                subset_path = '%s_dm_n%d_%d_%s_%s' % (metric, subset_size,
-                                                      ss_num, method.Name,
-                                                      category)
-            else:
-                raise ValueError("Unknown method type '%s'." % method_type)
-
-            results_dir = join(depth_dir, subset_path)
-            if permutation is not None:
-                results_dir += '_%d' % permutation
-
-            results_fp = join(results_dir, '%s_results.txt' % method.Name)
-
-            if exists(results_fp):
-                ss_res_f = open(results_fp, 'U')
-                ss_es, ss_p_val = method.parse(ss_res_f)
-                ss_res_f.close()
-                ss_ess.append(ss_es)
-                ss_p_vals.append(ss_p_val)
-
-        if ss_ess and ss_p_vals:
-            ss_results[subset_size_idx].addResult(
-                    median(ss_ess), median(ss_p_vals))
+        stats_results.addResult(median(shuff_ess), median(shuff_p_vals))
 
 def main():
     test = True
@@ -808,16 +777,15 @@ def main():
     process_data(out_gradient_dir, gradient_workflow)
     process_data(out_cluster_dir, cluster_workflow)
 
-    #create_real_data_summary_tables('gradient', out_gradient_dir,
-    #                                gradient_workflow)
-    #create_real_data_summary_tables('cluster', out_cluster_dir,
-    #                                cluster_workflow)
+    create_real_data_summary_tables(out_gradient_dir, gradient_workflow)
+    create_real_data_summary_tables(out_cluster_dir, cluster_workflow)
 
-    #create_simulated_data_plots('gradient', out_gradient_dir,
-    #                            gradient_workflow)
-    #create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
+    create_simulated_data_plots('gradient', out_gradient_dir,
+                                gradient_workflow)
+    create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
 
-    #create_method_heatmaps()
+    #create_method_comparison_heatmaps(results, heatmap_methods, out_dir)
+
 
 if __name__ == "__main__":
     main()
