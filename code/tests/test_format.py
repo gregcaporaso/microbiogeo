@@ -89,18 +89,21 @@ class FormatTests(TestCase):
 
         self.per_method_results1 = {
             'adonis': {
-                'whole_body': {
-                    'BODY_SITE': {
-                        'full': sr_full1,
-                        'shuffled': sr_shuff1,
-                        'subsampled': sr_ss1_empty
+                'real': {
+                    'whole_body': {
+                        'BODY_SITE': {
+                            'original': sr_full1,
+                            'shuffled': sr_shuff1
+                        }
                     }
                 }
             },
 
             'anosim': {
-                'whole_body': {
-                    'BODY_SITE': {}
+                'real': {
+                    'whole_body': {
+                        'BODY_SITE': {}
+                    }
                 }
             }
         }
@@ -108,8 +111,10 @@ class FormatTests(TestCase):
         self.per_method_results2 = {
             'adonis': self.per_method_results1['adonis'],
             'anosim': {
-                'whole_body': {
-                    'SEX': {}
+                'real': {
+                    'whole_body': {
+                        'SEX': {}
+                    }
                 }
             }
         }
@@ -117,8 +122,10 @@ class FormatTests(TestCase):
         self.per_method_results3 = {
             'adonis': self.per_method_results1['adonis'],
             'anosim': {
-                '88_soils': {
-                    'BODY_SITE': {}
+                'real': {
+                    '88_soils': {
+                        'BODY_SITE': {}
+                    }
                 }
             }
         }
@@ -245,11 +252,9 @@ class FormatTests(TestCase):
 
 
 exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',
-                                 'whole_body\rBODY_SITE (shuffled)',
-                                 'whole_body\rBODY_SITE (subsampled)'],
-                                ['adonis', '0.27; ***, ****', '0.02; x, x',
-                                 '0.24; **, ***\r0.20; **, **\rN/A'],
-                                ['anosim', 'N/A', 'N/A', 'N/A']]
+                                 'whole_body\rBODY_SITE (shuffled)'],
+                                ['adonis', '0.27; ***, ****', '0.02; x, x'],
+                                ['anosim', 'N/A', 'N/A']]
 
 exp_method_comparison_heatmaps1 = {
     'grouping': {
