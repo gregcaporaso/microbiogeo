@@ -518,29 +518,17 @@ def _collate_results(in_dir, workflow):
                         category_res = study_res[category]
 
                         orig_res = StatsResults()
-                        method_dir = join(metric_dir, 'original', category,
-                                          method.Name)
 
                         # Moran's I does not use permutations.
                         if type(method) is MoransI:
-                            results_fp = join(method_dir, '%s_results.txt' % method.Name)
-
-                            # We will not always have results for every combination of parameters (e.g.
-                            # partial Mantel).
-                            if exists(results_fp):
-                                orig_res_f = open(results_fp, 'U')
-                                orig_es, orig_p_val = method.parse(orig_res_f)
-                                orig_res_f.close()
-                                orig_res.addResult(orig_es, orig_p_val)
+                            _parse_original_results_file(metric_dir, method,
+                                                         category, orig_res)
                         else:
-                            for permutation in workflow[study]['num_real_data_perms']:
-                                results_fp = join(method_dir, '%d' % permutation, '%s_results.txt' % method.Name)
-
-                                if exists(results_fp):
-                                    orig_res_f = open(results_fp, 'U')
-                                    orig_es, orig_p_val = method.parse(orig_res_f)
-                                    orig_res_f.close()
-                                    orig_res.addResult(orig_es, orig_p_val)
+                            for permutation in \
+                                    workflow[study]['num_real_data_perms']:
+                                _parse_original_results_file(metric_dir,
+                                        method, category, orig_res,
+                                        permutation)
 
                         category_res['original'] = orig_res
 
@@ -548,41 +536,58 @@ def _collate_results(in_dir, workflow):
                         shuff_res = StatsResults()
 
                         if type(method) is MoransI:
-                            shuff_ess = []
-                            shuff_p_vals = []
-
-                            for shuff_num in range(workflow[study]['num_shuffled_trials']):
-                                results_fp = join(metric_dir, '%d' % shuff_num, category, method.Name, '%s_results.txt' % method.Name)
-
-                                # We will not always have results for every combination of parameters (e.g. partial Mantel).
-                                if exists(results_fp):
-                                    shuff_res_f = open(results_fp, 'U')
-                                    shuff_es, shuff_p_val = method.parse(shuff_res_f)
-                                    shuff_res_f.close()
-                                    shuff_ess.append(shuff_es)
-                                    shuff_p_vals.append(shuff_p_val)
-
-                            if shuff_ess and shuff_p_vals:
-                                shuff_res.addResult(median(shuff_ess), median(shuff_p_vals))
+                            _parse_shuffled_results_files(metric_dir, method,
+                                    category, shuff_res,
+                                    workflow[study]['num_shuffled_trials'])
                         else:
-                            for permutation in workflow[study]['num_real_data_perms']:
-                                shuff_ess = []
-                                shuff_p_vals = []
-
-                                for shuff_num in range(workflow[study]['num_shuffled_trials']):
-                                    results_fp = join(metric_dir, '%d' % shuff_num, category, method.Name, '%d' % permutation, '%s_results.txt' % method.Name)
-
-                                    if exists(results_fp):
-                                        shuff_res_f = open(results_fp, 'U')
-                                        shuff_es, shuff_p_val = method.parse(shuff_res_f)
-                                        shuff_res_f.close()
-                                        shuff_ess.append(shuff_es)
-                                        shuff_p_vals.append(shuff_p_val)
-
-                                if shuff_ess and shuff_p_vals:
-                                    shuff_res.addResult(median(shuff_ess), median(shuff_p_vals))
+                            for permutation in \
+                                    workflow[study]['num_real_data_perms']:
+                                _parse_shuffled_results_files(metric_dir,
+                                        method, category, shuff_res,
+                                        workflow[study]['num_shuffled_trials'],
+                                        permutation)
                         category_res['shuffled'] = shuff_res
     return results
+
+def _parse_original_results_file(in_dir, method, category, stats_results,
+                                 permutation=None):
+    if permutation is None:
+        results_fp = join(in_dir, 'original', category, method.Name, '%s_results.txt' % method.Name)
+    else:
+        results_fp = join(in_dir, 'original', category, method.Name,
+                          '%d' % permutation, '%s_results.txt' % method.Name)
+
+    # We will not always have results for every combination of parameters (e.g.
+    # partial Mantel).
+    if exists(results_fp):
+        res_f = open(results_fp, 'U')
+        es, p_val = method.parse(res_f)
+        res_f.close()
+        stats_results.addResult(es, p_val)
+
+def _parse_shuffled_results_files(in_dir, method, category, stats_results,
+                                  num_shuffled_trials, permutation=None):
+    shuff_ess = []
+    shuff_p_vals = []
+
+    for shuff_num in range(num_shuffled_trials):
+        if permutation is None:
+            results_fp = join(in_dir, '%d' % shuff_num, category,
+                              method.Name, '%s_results.txt' % method.Name)
+        else:
+            results_fp = join(in_dir, '%d' % shuff_num, category,
+                              method.Name, '%d' % permutation,
+                              '%s_results.txt' % method.Name)
+
+        if exists(results_fp):
+            res_f = open(results_fp, 'U')
+            es, p_val = method.parse(res_f)
+            res_f.close()
+            shuff_ess.append(es)
+            shuff_p_vals.append(p_val)
+
+    if shuff_ess and shuff_p_vals:
+        stats_results.addResult(median(shuff_ess), median(shuff_p_vals))
 
 def main():
     test = True
