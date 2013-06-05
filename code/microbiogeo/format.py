@@ -12,7 +12,6 @@ __email__ = "jai.rideout@gmail.com"
 """Module to format data for presentation."""
 
 from collections import defaultdict
-from csv import writer
 from os.path import join
 
 from numpy import invert, mean, ones, std, tri
@@ -29,66 +28,32 @@ from qiime.util import create_dir
 
 from microbiogeo.util import is_empty
 
-# Not unit-tested.
-def create_results_summary_tables(results, out_dir):
-    """Creates tables to summarize the results of the statistical methods.
-
-    These tables will be in TSV format so that they can be easily imported into
-    Excel for viewing and cleanup for publication.
-
-    A table will be created for each sampling depth / metric combination, for
-    each method type (grouping or gradient).
-    """
-    for depth_desc, depth_res in results.items():
-        for metric, metric_res in depth_res.items():
-            for method_type, method_type_res in metric_res.items():
-                table_rows = format_method_comparison_table(method_type_res)
-
-                table_name = ('%s_analysis_method_comparison_table_%s_%s.txt' %
-                              (method_type, depth_desc, metric))
-                with open(join(out_dir, table_name), 'wb') as out_f:
-                    # We use \r so that we can force linebreaks within cells
-                    # when imported into Excel. Not sure if this will work with
-                    # other spreadsheet programs such as Open Office.
-                    tsv_writer = writer(out_f, delimiter='\t',
-                                        lineterminator='\r')
-                    tsv_writer.writerows(table_rows)
-
-def format_method_comparison_table(per_method_results):
+def format_method_comparison_table(methods_results):
     constructed_header = None
     rows = []
 
-    for method, method_res in sorted(per_method_results.items()):
+    for method, method_res in sorted(methods_results.items()):
         header = ['Method']
         row = [method]
 
-        for study, study_res in sorted(method_res.items()):
+        for study, study_res in sorted(method_res['real'].items()):
             for category, category_res in sorted(study_res.items()):
                 header_column_title = '%s\r%s' % (study, category)
                 header.append(header_column_title)
                 header.append(header_column_title + ' (shuffled)')
-                header.append(header_column_title + ' (subsampled)')
 
                 if len(category_res) == 0:
-                    row.extend(['N/A'] * 3)
+                    row.extend(['N/A'] * 2)
                 else:
-                    if category_res['full'].isEmpty():
+                    if category_res['original'].isEmpty():
                         row.append('N/A')
                     else:
-                        row.append(str(category_res['full']))
+                        row.append(str(category_res['original']))
 
                     if category_res['shuffled'].isEmpty():
                         row.append('N/A')
                     else:
                         row.append(str(category_res['shuffled']))
-
-                    cells = []
-                    for res in category_res['subsampled']:
-                        if res.isEmpty():
-                            cells.append('N/A')
-                        else:
-                            cells.append(str(res))
-                    row.append('\r'.join(cells))
 
         if constructed_header is None:
             rows.append(header)
