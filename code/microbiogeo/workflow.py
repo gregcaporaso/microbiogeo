@@ -585,6 +585,53 @@ def _parse_shuffled_results_files(in_dir, method, category, stats_results,
     if shuff_ess and shuff_p_vals:
         stats_results.addResult(median(shuff_ess), median(shuff_p_vals))
 
+def create_method_comparison_heatmaps(in_dir, workflow, heatmap_methods):
+    """Generates heatmaps showing the correlation between each pair of methods.
+
+    Generates two heatmaps (one for Pearson correlation, one for Spearman
+    correlation). Uses all available results (e.g. all even sampling depths,
+    metrics, and datasets) that match between each pair of methods as input to
+    the correlation coefficient methods. This includes both real data (e.g.
+    original datasets and shuffled datasets) as well as simulated data.
+    """
+    real_data_results = _collate_real_data_results(in_dir, workflow)
+    sim_data_results = _collate_simulated_data_results(in_dir, workflow)
+    heatmap_data = format_method_comparison_heatmaps(real_data_results,
+                                                     sim_data_results,
+                                                     heatmap_methods)
+
+    for correlation_method, data in heatmap_data.items():
+        # Generate the heatmap. Code based on
+        # http://matplotlib.org/users/tight_layout_guide.html and
+        # http://psaffrey.wordpress.com/2010/07/05/chromosome-interactions-
+        #   heatmaps-and-matplotlib/
+        fig = figure()
+        ax = subplot(111)
+        cmap = cm.get_cmap()
+        # default value is 'k' (black)
+        cmap.set_bad('w')
+        im = ax.imshow(data, cmap=cmap, interpolation='nearest')
+        labels = [method.DisplayName for method in heatmap_methods]
+
+        colorbar(im, use_gridspec=True)
+        xticks(range(len(labels)), labels, rotation=90)
+        yticks(range(len(labels)), labels)
+
+        for loc, spine in ax.spines.items():
+            if loc in ['right','top']:
+                # don't draw spine
+                spine.set_color('none')
+
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        ax.grid(True, which='minor')
+
+        tight_layout()
+        savefig(join(in_dir, '%s_heatmap.pdf' % correlation_method),
+                format='pdf')
+        savefig(join(in_dir, '%s_heatmap.png' % correlation_method),
+                format='png', dpi=1000)
+
 def main():
     test = True
 

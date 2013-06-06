@@ -66,51 +66,6 @@ def format_method_comparison_table(methods_results):
 
     return rows
 
-# Not unit-tested.
-def create_method_comparison_heatmaps(results, methods, out_dir):
-    """Generates heatmaps showing the correlation between each pair of methods.
-
-    Generates two heatmaps (one for Pearson correlation, one for Spearman
-    correlation). Uses all available results (e.g. all even sampling depths,
-    metrics, and datasets) that match between each pair of methods as input to
-    the correlation coefficient methods.
-
-    A heatmap will be written to out_dir for each type of method (grouping or
-    gradient).
-    """
-    for method_type, data in \
-            format_method_comparison_heatmaps(results, methods).items():
-        for correlation_method, heatmap_data in data.items():
-            # Generate the heatmap. Code based on
-            # http://matplotlib.org/users/tight_layout_guide.html and
-            # http://psaffrey.wordpress.com/2010/07/05/chromosome-interactions-
-            #   heatmaps-and-matplotlib/
-            fig = figure()
-            ax = subplot(111)
-            cmap = cm.get_cmap()
-            cmap.set_bad('w') # default value is 'k'
-            im = ax.imshow(heatmap_data, cmap=cmap, interpolation='nearest')
-            method_labels = [method.DisplayName
-                             for method in methods[method_type]]
-
-            colorbar(im, use_gridspec=True)
-            xticks(range(len(method_labels)), method_labels, rotation=90)
-            yticks(range(len(method_labels)), method_labels)
-
-            for loc, spine in ax.spines.items():
-                if loc in ['right','top']:
-                    spine.set_color('none') # don't draw spine
-
-            ax.xaxis.set_ticks_position('bottom')
-            ax.yaxis.set_ticks_position('left')
-            ax.grid(True, which='minor')
-
-            tight_layout()
-            savefig(join(out_dir, '%s_analysis_heatmap_%s.pdf' % (method_type,
-                    correlation_method)), format='pdf')
-            savefig(join(out_dir, '%s_analysis_heatmap_%s.png' % (method_type,
-                    correlation_method)), format='png', dpi=1000)
-
 def format_method_comparison_heatmaps(results, methods):
     shared_studies = {}
     shared_categories = {}
