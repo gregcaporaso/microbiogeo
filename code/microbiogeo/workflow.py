@@ -461,6 +461,18 @@ def create_real_data_summary_tables(in_dir, workflow):
                 tsv_writer.writerows(table_rows)
 
 def _collate_real_data_results(in_dir, workflow):
+    """Returns a heavily-nested dictionary of parsed results.
+
+    Structure:
+        depth description
+            metric
+                method
+                    study
+                        category
+                            'original': StatsResults instance
+                            'shuffled': StatsResults instance (containing
+                                median from multiple shuffled runs)
+    """
     results = {}
 
     for study in workflow:
@@ -583,6 +595,7 @@ def _parse_shuffled_results_files(in_dir, method, category, stats_results,
             shuff_p_vals.append(p_val)
 
     if shuff_ess and shuff_p_vals:
+        assert len(shuff_ess) == len(shuff_p_vals)
         stats_results.addResult(median(shuff_ess), median(shuff_p_vals))
 
 def create_method_comparison_heatmaps(in_dir, workflow, heatmap_methods):
@@ -631,6 +644,100 @@ def create_method_comparison_heatmaps(in_dir, workflow, heatmap_methods):
                 format='pdf')
         savefig(join(in_dir, '%s_heatmap.png' % correlation_method),
                 format='png', dpi=1000)
+
+def _collate_simulated_data_results(in_dir, workflow):
+    """Returns a heavily-nested dictionary of parsed results.
+
+    Structure:
+        method
+            study
+                depth
+                    category
+                        trial
+                            sample size
+                                dissimilarity
+                                    metric
+                                        StatsResults instance
+    """
+    results = {}
+
+    for study in workflow:
+        study_dir = join(in_dir, study)
+
+        for method in workflow[study]['methods']:
+            if type(method) in (MantelCorrelogram, Best):
+                continue
+
+            if method.Name not in results:
+                results[method.Name] = {}
+            method_res = results[method.Name]
+
+            if study not in method_res:
+                method_res[study] = {}
+            study_res = method_res[study]
+
+            for depth, _ in workflow[study]['depths']:
+                depth_dir = join(study_dir, '%d' % depth)
+
+                if depth not in study_res:
+                    study_res[depth] = {}
+                depth_res = study_res[depth]
+
+                data_type = 'simulated'
+                data_type_dir = join(depth_dir, data_type)
+
+                for category in workflow[study]['categories']:
+                    category = category[0]
+                    category_dir = join(data_type_dir, category)
+
+                    if category not in depth_res:
+                        depth_res[category] = {}
+                    category_res = depth_res[category]
+
+                    for trial_num in \
+                            range(workflow[study]['num_sim_data_trials']):
+                        trial_num_dir = join(category_dir, '%d' % trial_num)
+
+                        if trial_num not in category_res:
+                            category_res[trial_num] = {}
+                        trial_num_res = category_res[trial_num]
+
+                        for samp_size in workflow[study]['sample_sizes']:
+                            samp_size_dir = join(trial_num_dir,
+                                                 '%d' % samp_size)
+
+                            if samp_size not in trial_num_res:
+                                trial_num_res[samp_size] = {}
+                            samp_size_res = trial_num_res[samp_size]
+
+                            for d in workflow[study]['dissim']:
+                                dissim_dir = join(samp_size_dir, repr(d))
+
+                                if d not in samp_size_res:
+                                    samp_size_res[d] = {}
+                                dissim_res = samp_size_res[d]
+
+                                for metric, _ in workflow[study]['metrics']:
+                                    metric_dir = join(dissim_dir, metric)
+
+                                    results_fp = join(metric_dir, method.Name,
+                                            '%s_results.txt' % method.Name)
+                                    stats_results = StatsResults()
+
+                                    if exists(results_fp):
+                                        res_f = open(results_fp, 'U')
+                                        es, p_val = method.parse(res_f)
+                                        res_f.close()
+                                        stats_results.addResult(es, p_val)
+
+                                    if metric in dissim_res:
+                                        raise ValueError("More than one set "
+                                                "of results for a unique set "
+                                                "of parameters. Check your "
+                                                "workflow.")
+                                    else:
+                                        dissim_res[metric] = stats_results
+    return results
 
 def main():
     test = True

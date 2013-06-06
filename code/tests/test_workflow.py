@@ -24,6 +24,7 @@ from microbiogeo.method import Adonis, Anosim, Mantel, MantelCorrelogram, Best
 from microbiogeo.util import StatsResults
 from microbiogeo.workflow import (_build_per_metric_real_data_commands,
                                   _collate_real_data_results,
+                                  _collate_simulated_data_results,
                                   _parse_original_results_file,
                                   _parse_shuffled_results_files)
 
@@ -40,11 +41,11 @@ class WorkflowTests(TestCase):
                 'metrics': [('unweighted_unifrac', 'Unweighted UniFrac')],
                 'num_real_data_perms': [99, 999],
                 'num_sim_data_perms': 999,
-                'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
-                'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-                'sample_sizes': [3, 5, 13],
-                'pcoa_sample_size': 13,
-                'num_sim_data_trials': 3,
+                'dissim': [0.0, 10.0],
+                'pcoa_dissim': [10.0],
+                'sample_sizes': [3, 13],
+                'pcoa_sample_size': 3,
+                'num_sim_data_trials': 2,
                 'num_shuffled_trials': 2,
                 'methods': [Adonis(), Anosim()]
             }
@@ -85,7 +86,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(obs, exp)
 
     def test_collate_real_data_results(self):
-        """Test collating method results."""
+        """Test collating real data results."""
         # These methods should be skipped.
         obs = _collate_real_data_results('/foobarbaz123',
                                          self.gradient_workflow)
@@ -102,6 +103,20 @@ class WorkflowTests(TestCase):
         inner_obs = obs['25_percent']['unweighted_unifrac']['adonis']['overview']['Treatment']
         self.assertTrue(inner_obs['original'].isEmpty())
         self.assertTrue(inner_obs['shuffled'].isEmpty())
+
+    def test_collate_simulated_data_results(self):
+        """Test collating simulated data results."""
+        # These methods should be skipped.
+        obs = _collate_simulated_data_results('/foobarbaz123',
+                                              self.gradient_workflow)
+        self.assertEqual(obs, {})
+
+        # Bogus paths/input, so should get empty results back.
+        obs = _collate_simulated_data_results('/foobarbaz123',
+                                              self.cluster_workflow)
+
+        self.assertTrue(obs['anosim']['overview'][146]['Treatment'][0][3][0.0]['unweighted_unifrac'].isEmpty())
+        self.assertTrue(obs['adonis']['overview'][146]['Treatment'][1][13][10.0]['unweighted_unifrac'].isEmpty())
 
     def test_parse_original_results_file(self):
         res = StatsResults()
@@ -125,6 +140,8 @@ class WorkflowTests(TestCase):
 
 
 exp_collate_real_data_results1 = {'5_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}, '25_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}, '2_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}}
+
+exp_collate_sim_data_results1 = {'anosim': {'overview': {146: {'Treatment': {0: {3: {0.0: {}, 10.0: {}}, 13: {0.0: {}, 10.0: {}}}, 1: {3: {0.0: {}, 10.0: {}}, 13: {0.0: {}, 10.0: {}}}}}}}, 'adonis': {'overview': {146: {'Treatment': {0: {3: {0.0: {}, 10.0: {}}, 13: {0.0: {}, 10.0: {}}}, 1: {3: {0.0: {}, 10.0: {}}, 13: {0.0: {}, 10.0: {}}}}}}}}
 
 
 if __name__ == "__main__":
