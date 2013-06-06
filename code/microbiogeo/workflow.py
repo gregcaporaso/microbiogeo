@@ -19,6 +19,11 @@ from random import randint, sample
 
 from biom.parse import parse_biom_table
 
+from matplotlib import cm
+from matplotlib.pyplot import (colorbar, figure, imshow, legend, matshow,
+                               savefig, subplot, tight_layout, title, xlim,
+                               xticks, yticks)
+
 from numpy import ceil, inf, mean, median, std
 
 from qiime.filter import (filter_mapping_file_from_mapping_f,
@@ -27,7 +32,8 @@ from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          parse_coords, group_by_field)
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 
-from microbiogeo.format import format_method_comparison_table
+from microbiogeo.format import (format_method_comparison_heatmaps,
+                                format_method_comparison_table)
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
                                 Mrpp, PartialMantel, Permanova, Permdisp,
@@ -446,7 +452,7 @@ def create_real_data_summary_tables(in_dir, workflow):
     These tables will be in TSV format so that they can be easily imported into
     Excel for viewing and cleanup for publication.
     """
-    results = _collate_results(in_dir, workflow)
+    results = _collate_real_data_results(in_dir, workflow)
 
     for depth_desc, depth_res in results.items():
         for metric, metric_res in depth_res.items():
@@ -460,7 +466,19 @@ def create_real_data_summary_tables(in_dir, workflow):
                 tsv_writer = writer(out_f, delimiter='\t', lineterminator='\r')
                 tsv_writer.writerows(table_rows)
 
-def _collate_results(in_dir, workflow):
+def _collate_real_data_results(in_dir, workflow):
+    """Returns a heavily-nested dictionary of parsed results.
+
+    Structure:
+        depth description
+            metric
+                method
+                    study
+                        category
+                            'original': StatsResults instance
+                            'shuffled': StatsResults instance (containing
+                                median from multiple shuffled runs)
+    """
     results = {}
 
     for study in workflow:
@@ -500,13 +518,9 @@ def _collate_results(in_dir, workflow):
                         metric_res[method.Name] = {}
                     method_res = metric_res[method.Name]
 
-                    if data_type not in method_res:
-                        method_res[data_type] = {}
-                    data_type_res = method_res[data_type]
-
-                    if study not in data_type_res:
-                        data_type_res[study] = {}
-                    study_res = data_type_res[study]
+                    if study not in method_res:
+                        method_res[study] = {}
+                    study_res = method_res[study]
 
                     for category in workflow[study]['categories']:
                         # category can contain either two or three items; we
@@ -587,7 +601,149 @@ def _parse_shuffled_results_files(in_dir, method, category, stats_results,
             shuff_p_vals.append(p_val)
 
     if shuff_ess and shuff_p_vals:
+        assert len(shuff_ess) == len(shuff_p_vals)
         stats_results.addResult(median(shuff_ess), median(shuff_p_vals))
+
+def create_method_comparison_heatmaps(in_dir, workflow, heatmap_methods):
+    """Generates heatmaps showing the correlation between each pair of methods.
+
+    Generates two heatmaps (one for Pearson correlation, one for Spearman
+    correlation). Uses all available results (e.g. all even sampling depths,
+    metrics, and datasets) that match between each pair of methods as input to
+    the correlation coefficient methods. This includes both real data (e.g.
+    original datasets and shuffled datasets) as well as simulated data.
+    """
+    real_data_results = _collate_real_data_results(in_dir, workflow)
+    sim_data_results = _collate_simulated_data_results(in_dir, workflow)
+    heatmap_data = format_method_comparison_heatmaps(real_data_results,
+                                                     sim_data_results,
+                                                     heatmap_methods)
+
+    for correlation_method, data in heatmap_data.items():
+        # Generate the heatmap. Code based on
+        # http://matplotlib.org/users/tight_layout_guide.html and
+        # http://psaffrey.wordpress.com/2010/07/05/chromosome-interactions-
+        #   heatmaps-and-matplotlib/
+        fig = figure()
+        ax = subplot(111)
+        cmap = cm.get_cmap()
+        # default value is 'k' (black)
+        cmap.set_bad('w')
+        im = ax.imshow(data, cmap=cmap, interpolation='nearest')
+        labels = [method.DisplayName for method in heatmap_methods]
+
+        colorbar(im, use_gridspec=True)
+        xticks(range(len(labels)), labels, rotation=90)
+        yticks(range(len(labels)), labels)
+
+        for loc, spine in ax.spines.items():
+            if loc in ['right','top']:
+                # don't draw spine
+                spine.set_color('none')
+
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        ax.grid(True, which='minor')
+
+        tight_layout()
+        savefig(join(in_dir, '%s_heatmap.pdf' % correlation_method),
+                format='pdf')
+        savefig(join(in_dir, '%s_heatmap.png' % correlation_method),
+                format='png', dpi=1000)
+
+def _collate_simulated_data_results(in_dir, workflow):
+    """Returns a heavily-nested dictionary of parsed results.
+
+    Structure:
+        method
+            study
+                depth
+                    category
+                        trial
+                            sample size
+                                dissimilarity
+                                    metric
+                                        StatsResults instance
+    """
+    results = {}
+
+    for study in workflow:
+        study_dir = join(in_dir, study)
+
+        for method in workflow[study]['methods']:
+            if type(method) in (MantelCorrelogram, Best):
+                continue
+
+            if method.Name not in results:
+                results[method.Name] = {}
+            method_res = results[method.Name]
+
+            if study not in method_res:
+                method_res[study] = {}
+            study_res = method_res[study]
+
+            for depth, _ in workflow[study]['depths']:
+                depth_dir = join(study_dir, '%d' % depth)
+
+                if depth not in study_res:
+                    study_res[depth] = {}
+                depth_res = study_res[depth]
+
+                data_type = 'simulated'
+                data_type_dir = join(depth_dir, data_type)
+
+                for category in workflow[study]['categories']:
+                    category = category[0]
+                    category_dir = join(data_type_dir, category)
+
+                    if category not in depth_res:
+                        depth_res[category] = {}
+                    category_res = depth_res[category]
+
+                    for trial_num in \
+                            range(workflow[study]['num_sim_data_trials']):
+                        trial_num_dir = join(category_dir, '%d' % trial_num)
+
+                        if trial_num not in category_res:
+                            category_res[trial_num] = {}
+                        trial_num_res = category_res[trial_num]
+
+                        for samp_size in workflow[study]['sample_sizes']:
+                            samp_size_dir = join(trial_num_dir,
+                                                 '%d' % samp_size)
+
+                            if samp_size not in trial_num_res:
+                                trial_num_res[samp_size] = {}
+                            samp_size_res = trial_num_res[samp_size]
+
+                            for d in workflow[study]['dissim']:
+                                dissim_dir = join(samp_size_dir, repr(d))
+
+                                if d not in samp_size_res:
+                                    samp_size_res[d] = {}
+                                dissim_res = samp_size_res[d]
+
+                                for metric, _ in workflow[study]['metrics']:
+                                    metric_dir = join(dissim_dir, metric)
+
+                                    results_fp = join(metric_dir, method.Name,
+                                            '%s_results.txt' % method.Name)
+                                    stats_results = StatsResults()
+
+                                    if exists(results_fp):
+                                        res_f = open(results_fp, 'U')
+                                        es, p_val = method.parse(res_f)
+                                        res_f.close()
+                                        stats_results.addResult(es, p_val)
+
+                                    if metric in dissim_res:
+                                        raise ValueError("More than one set "
+                                                "of results for a unique set "
+                                                "of parameters. Check your "
+                                                "workflow.")
+                                    else:
+                                        dissim_res[metric] = stats_results
+    return results
 
 def main():
     test = True
@@ -637,10 +793,8 @@ def main():
             }
         }
 
-        heatmap_methods = {
-            'grouping': [Adonis(), Anosim()],
-            'gradient': [Mantel(), MoransI()]
-        }
+        gradient_heatmap_methods = [Mantel(), MoransI()]
+        cluster_heatmap_methods = [Adonis(), Anosim()]
     else:
         in_dir = '../data'
         out_dir = 'microbiogeo_output'
@@ -765,11 +919,11 @@ def main():
             }
         }
 
-        heatmap_methods = {
-            'grouping': [Adonis(), Dbrda(), Mrpp(), Permanova(), Anosim()],
-            'gradient': [Mantel(), MoransI()]
-        }
+        gradient_heatmap_methods = [Mantel(), MoransI()]
+        cluster_heatmap_methods = [Adonis(), Dbrda(), Mrpp(), Permanova(),
+                                   Anosim()]
 
+    # Run workflows.
     generate_data('gradient', in_dir, out_gradient_dir, gradient_workflow,
                   tree_fp)
     generate_data('cluster', in_dir, out_cluster_dir, cluster_workflow, tree_fp)
@@ -784,7 +938,10 @@ def main():
                                 gradient_workflow)
     create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
 
-    #create_method_comparison_heatmaps(results, heatmap_methods, out_dir)
+    create_method_comparison_heatmaps(out_gradient_dir, gradient_workflow,
+                                      gradient_heatmap_methods)
+    create_method_comparison_heatmaps(out_cluster_dir, cluster_workflow,
+                                      cluster_heatmap_methods)
 
 
 if __name__ == "__main__":
