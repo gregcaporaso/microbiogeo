@@ -633,10 +633,8 @@ def main():
             }
         }
 
-        heatmap_methods = {
-            'grouping': [Adonis(), Anosim()],
-            'gradient': [Mantel(), MoransI()]
-        }
+        gradient_heatmap_methods = [Mantel(), MoransI()]
+        cluster_heatmap_methods = [Adonis(), Anosim()]
     else:
         in_dir = '../data'
         out_dir = 'microbiogeo_output'
@@ -761,11 +759,11 @@ def main():
             }
         }
 
-        heatmap_methods = {
-            'grouping': [Adonis(), Dbrda(), Mrpp(), Permanova(), Anosim()],
-            'gradient': [Mantel(), MoransI()]
-        }
+        gradient_heatmap_methods = [Mantel(), MoransI()]
+        cluster_heatmap_methods = [Adonis(), Dbrda(), Mrpp(), Permanova(),
+                                   Anosim()]
 
+    # Run workflows.
     generate_data('gradient', in_dir, out_gradient_dir, gradient_workflow,
                   tree_fp)
     generate_data('cluster', in_dir, out_cluster_dir, cluster_workflow, tree_fp)
@@ -780,7 +778,10 @@ def main():
                                 gradient_workflow)
     create_simulated_data_plots('cluster', out_cluster_dir, cluster_workflow)
 
-    #create_method_comparison_heatmaps(results, heatmap_methods, out_dir)
+    create_method_comparison_heatmaps(out_gradient_dir, gradient_workflow,
+                                      gradient_heatmap_methods)
+    create_method_comparison_heatmaps(out_cluster_dir, cluster_workflow,
+                                      cluster_heatmap_methods)
 
 
 if __name__ == "__main__":
