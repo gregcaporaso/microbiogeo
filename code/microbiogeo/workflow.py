@@ -446,7 +446,7 @@ def create_real_data_summary_tables(in_dir, workflow):
     These tables will be in TSV format so that they can be easily imported into
     Excel for viewing and cleanup for publication.
     """
-    results = _collate_results(in_dir, workflow)
+    results = _collate_real_data_results(in_dir, workflow)
 
     for depth_desc, depth_res in results.items():
         for metric, metric_res in depth_res.items():
@@ -460,7 +460,7 @@ def create_real_data_summary_tables(in_dir, workflow):
                 tsv_writer = writer(out_f, delimiter='\t', lineterminator='\r')
                 tsv_writer.writerows(table_rows)
 
-def _collate_results(in_dir, workflow):
+def _collate_real_data_results(in_dir, workflow):
     results = {}
 
     for study in workflow:
@@ -500,13 +500,9 @@ def _collate_results(in_dir, workflow):
                         metric_res[method.Name] = {}
                     method_res = metric_res[method.Name]
 
-                    if data_type not in method_res:
-                        method_res[data_type] = {}
-                    data_type_res = method_res[data_type]
-
-                    if study not in data_type_res:
-                        data_type_res[study] = {}
-                    study_res = data_type_res[study]
+                    if study not in method_res:
+                        method_res[study] = {}
+                    study_res = method_res[study]
 
                     for category in workflow[study]['categories']:
                         # category can contain either two or three items; we

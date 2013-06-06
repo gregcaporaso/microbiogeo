@@ -23,7 +23,7 @@ from qiime.util import create_dir, get_qiime_temp_dir
 from microbiogeo.method import Adonis, Anosim, Mantel, MantelCorrelogram, Best
 from microbiogeo.util import StatsResults
 from microbiogeo.workflow import (_build_per_metric_real_data_commands,
-                                  _collate_results,
+                                  _collate_real_data_results,
                                   _parse_original_results_file,
                                   _parse_shuffled_results_files)
 
@@ -84,20 +84,22 @@ class WorkflowTests(TestCase):
                 ('unweighted_unifrac', 'Unweighted UniFrac'), ['A', 'B'], 2)
         self.assertEqual(obs, exp)
 
-    def test_collate_results(self):
+    def test_collate_real_data_results(self):
         """Test collating method results."""
         # These methods should be skipped.
-        obs = _collate_results('/foobarbaz123', self.gradient_workflow)
-        self.assertEqual(obs, exp_collate_results1)
+        obs = _collate_real_data_results('/foobarbaz123',
+                                         self.gradient_workflow)
+        self.assertEqual(obs, exp_collate_real_data_results1)
 
         # Bogus paths/input, so should get empty results back.
-        obs = _collate_results('/foobarbaz123', self.cluster_workflow)
+        obs = _collate_real_data_results('/foobarbaz123',
+                                         self.cluster_workflow)
 
-        inner_obs = obs['25_percent']['unweighted_unifrac']['anosim']['real']['overview']['Treatment']
+        inner_obs = obs['25_percent']['unweighted_unifrac']['anosim']['overview']['Treatment']
         self.assertTrue(inner_obs['original'].isEmpty())
         self.assertTrue(inner_obs['shuffled'].isEmpty())
 
-        inner_obs = obs['25_percent']['unweighted_unifrac']['adonis']['real']['overview']['Treatment']
+        inner_obs = obs['25_percent']['unweighted_unifrac']['adonis']['overview']['Treatment']
         self.assertTrue(inner_obs['original'].isEmpty())
         self.assertTrue(inner_obs['shuffled'].isEmpty())
 
@@ -122,7 +124,7 @@ class WorkflowTests(TestCase):
         self.assertTrue(res.isEmpty())
 
 
-exp_collate_results1 = {'5_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}, '25_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}, '2_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}}
+exp_collate_real_data_results1 = {'5_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}, '25_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}, '2_percent': {'weighted_unifrac': {}, 'unweighted_unifrac': {}}}
 
 
 if __name__ == "__main__":

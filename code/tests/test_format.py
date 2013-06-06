@@ -89,21 +89,17 @@ class FormatTests(TestCase):
 
         self.per_method_results1 = {
             'adonis': {
-                'real': {
-                    'whole_body': {
-                        'BODY_SITE': {
-                            'original': sr_full1,
-                            'shuffled': sr_shuff1
-                        }
+                'whole_body': {
+                    'BODY_SITE': {
+                        'original': sr_full1,
+                        'shuffled': sr_shuff1
                     }
                 }
             },
 
             'anosim': {
-                'real': {
-                    'whole_body': {
-                        'BODY_SITE': {}
-                    }
+                'whole_body': {
+                    'BODY_SITE': {}
                 }
             }
         }
@@ -111,10 +107,8 @@ class FormatTests(TestCase):
         self.per_method_results2 = {
             'adonis': self.per_method_results1['adonis'],
             'anosim': {
-                'real': {
-                    'whole_body': {
-                        'SEX': {}
-                    }
+                'whole_body': {
+                    'SEX': {}
                 }
             }
         }
@@ -122,10 +116,8 @@ class FormatTests(TestCase):
         self.per_method_results3 = {
             'adonis': self.per_method_results1['adonis'],
             'anosim': {
-                'real': {
-                    '88_soils': {
-                        'BODY_SITE': {}
-                    }
+                '88_soils': {
+                    'BODY_SITE': {}
                 }
             }
         }

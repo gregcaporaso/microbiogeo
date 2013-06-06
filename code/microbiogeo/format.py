@@ -36,7 +36,7 @@ def format_method_comparison_table(methods_results):
         header = ['Method']
         row = [method]
 
-        for study, study_res in sorted(method_res['real'].items()):
+        for study, study_res in sorted(method_res.items()):
             for category, category_res in sorted(study_res.items()):
                 header_column_title = '%s\r%s' % (study, category)
                 header.append(header_column_title)
