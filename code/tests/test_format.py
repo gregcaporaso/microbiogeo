@@ -151,6 +151,76 @@ class FormatTests(TestCase):
             }
         }
 
+        self.sim_results1 = {
+            'adonis': {
+                'whole_body': {
+                    146: {
+                        'BODY_SITE': {
+                            1: {
+                                10: {
+                                    0.02: {
+                                        'unweighted_unifrac': sr_orig1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            'anosim': {
+                'whole_body': {
+                    146: {
+                        'BODY_SITE': {
+                            1: {
+                                10: {
+                                    0.02: {
+                                        'unweighted_unifrac': sr_orig1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        # Invalid results (wrong number of effect sizes).
+        self.sim_results2 = {
+            'adonis': {
+                'whole_body': {
+                    146: {
+                        'BODY_SITE': {
+                            1: {
+                                10: {
+                                    0.02: {
+                                        'unweighted_unifrac': sr_orig1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            'anosim': {
+                'whole_body': {
+                    146: {
+                        'BODY_SITE': {
+                            1: {
+                                10: {
+                                    0.02: {
+                                        'unweighted_unifrac': sr_orig1,
+                                        'weighted_unifrac': sr_orig2,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
     def test_format_method_comparison_table(self):
         """Test formatting a methods summary table."""
         obs = format_method_comparison_table(self.per_method_results1)
@@ -163,12 +233,15 @@ class FormatTests(TestCase):
                           self.per_method_results3)
 
     def test_format_method_comparison_heatmaps(self):
-        obs = format_method_comparison_heatmaps(self.real_results1, {},
-                                                [Adonis(), Anosim()])
+        obs = format_method_comparison_heatmaps(self.real_results1,
+                self.sim_results1, [Adonis(), Anosim()])
         self.assertEqual(obs, exp_method_comparison_heatmaps1)
 
         self.assertRaises(ValueError, format_method_comparison_heatmaps,
                 self.real_results2, {}, [Adonis(), Anosim()])
+
+        self.assertRaises(ValueError, format_method_comparison_heatmaps,
+                self.real_results1, self.sim_results2, [Adonis(), Anosim()])
 
 
 exp_method_comparison_table1 = [['Method', 'whole_body\rBODY_SITE',

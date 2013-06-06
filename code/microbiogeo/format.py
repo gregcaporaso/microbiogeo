@@ -100,7 +100,7 @@ def format_method_comparison_heatmaps(real_data_results, sim_data_results,
                         else:
                             shared_categories[study] &= set(categories)
 
-    # Gather all test statistics for each method (in the same order for each
+    # Gather real data effect sizes for each method (in the same order for each
     # method!).
     method_data = defaultdict(list)
     for depth_desc, depth_res in real_data_results.items():
@@ -122,6 +122,31 @@ def format_method_comparison_heatmaps(real_data_results, sim_data_results,
                                     category_res['original'].effect_size)
                             method_data[method].append(
                                     category_res['shuffled'].effect_size)
+
+    # Gather simulated data effect sizes.
+    for method, method_res in sim_data_results.items():
+        matched_method = False
+        for m in heatmap_methods:
+            if method == m.Name:
+                matched_method = True
+                break
+
+        if not matched_method:
+            continue
+
+        for study, study_res in sorted(method_res.items()):
+            for depth, depth_res in sorted(study_res.items()):
+                for category, category_res in sorted(depth_res.items()):
+                    for trial_num, trial_num_res in sorted(category_res.items()):
+                        for samp_size, samp_size_res in sorted(trial_num_res.items()):
+                            for dissim, dissim_res in sorted(samp_size_res.items()):
+                                for metric, metric_res in sorted(dissim_res.items()):
+                                    if metric_res.isEmpty():
+                                        raise ValueError("Encountered empty "
+                                                "simulated data results.")
+                                    else:
+                                        method_data[method].append(
+                                                metric_res.effect_size)
 
     # Make sure our data looks sane. We should have the same number of
     # observations (i.e. effect sizes) for each method.
