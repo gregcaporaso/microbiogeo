@@ -43,27 +43,18 @@ class UtilTests(TestCase):
         nonempty.addResult(0.1, 0.001)
 
         self.cat_res1 = {
-            'full': empty,
-            'shuffled': nonempty,
-            'subsampled': [nonempty, nonempty]
+            'original': empty,
+            'shuffled': nonempty
         }
 
         self.cat_res2 = {
-            'full': nonempty,
-            'shuffled': empty,
-            'subsampled': [nonempty, nonempty]
+            'original': nonempty,
+            'shuffled': empty
         }
 
         self.cat_res3 = {
-            'full': nonempty,
-            'shuffled': nonempty,
-            'subsampled': [nonempty, empty]
-        }
-
-        self.cat_res4 = {
-            'full': nonempty,
-            'shuffled': nonempty,
-            'subsampled': [nonempty, nonempty]
+            'original': nonempty,
+            'shuffled': nonempty
         }
 
         # The prefix to use for temporary files/dirs. This prefix may be added
@@ -256,9 +247,8 @@ class UtilTests(TestCase):
         """Test checking if category results are empty or not."""
         self.assertTrue(is_empty(self.cat_res1))
         self.assertTrue(is_empty(self.cat_res2))
-        self.assertTrue(is_empty(self.cat_res3))
+        self.assertFalse(is_empty(self.cat_res3))
         self.assertTrue(is_empty({}))
-        self.assertFalse(is_empty(self.cat_res4))
 
     def test_get_color_pool(self):
         """Test grabbing list of good colors to use."""

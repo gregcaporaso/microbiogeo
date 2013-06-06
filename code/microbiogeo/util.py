@@ -170,9 +170,8 @@ def choose_gradient_subsets(dm_f, map_f, gradient, subset_sizes, num_subsets):
 
 def is_empty(category_results):
     return (len(category_results) == 0) or \
-           category_results['full'].isEmpty() or \
-           category_results['shuffled'].isEmpty() or \
-           [e for e in category_results['subsampled'] if e.isEmpty()]
+           category_results['original'].isEmpty() or \
+           category_results['shuffled'].isEmpty()
 
 def get_color_pool():
     # We don't like yellow...

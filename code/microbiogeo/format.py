@@ -66,114 +66,96 @@ def format_method_comparison_table(methods_results):
 
     return rows
 
-def format_method_comparison_heatmaps(results, methods):
-    shared_studies = {}
+def format_method_comparison_heatmaps(real_data_results, sim_data_results,
+                                      heatmap_methods):
+    shared_studies = None
     shared_categories = {}
 
-    for depth_desc, depth_res in results.items():
+    for depth_desc, depth_res in real_data_results.items():
         for metric, metric_res in depth_res.items():
-            for method_type, method_type_res in metric_res.items():
-                if method_type not in shared_categories:
-                    shared_categories[method_type] = {}
+            for method, method_res in metric_res.items():
+                matched_method = False
+                for m in heatmap_methods:
+                    if method == m.Name:
+                        matched_method = True
+                        break
 
-                for method, method_res in method_type_res.items():
-                    matched_method = False
-                    for m in methods[method_type]:
-                        if method == m.Name:
-                            matched_method = True
-                            break
+                if matched_method:
+                    studies = sorted(method_res.keys())
 
-                    if matched_method:
-                        studies = sorted(method_res.keys())
+                    if shared_studies is None:
+                        shared_studies = studies
+                    elif studies != shared_studies:
+                        raise ValueError("Not all methods to include in "
+                                         "the heatmap have results for "
+                                         "the same studies.")
 
-                        if method_type not in shared_studies:
-                            shared_studies[method_type] = studies
-                        elif studies != shared_studies[method_type]:
-                            raise ValueError("Not all methods to include in "
-                                             "the heatmap have results for "
-                                             "the same studies.")
+                    for study, study_res in sorted(method_res.items()):
+                        categories = [cat for cat, cat_res in \
+                                      sorted(study_res.items()) if not
+                                      is_empty(cat_res)]
 
-                        for study, study_res in sorted(method_res.items()):
-                            categories = [cat for cat, cat_res in \
-                                          sorted(study_res.items()) if not
-                                          is_empty(cat_res)]
-
-                            if study not in shared_categories[method_type]:
-                                shared_categories[method_type][study] = \
-                                        set(categories)
-                            else:
-                                shared_categories[method_type][study] &= \
-                                        set(categories)
+                        if study not in shared_categories:
+                            shared_categories[study] = set(categories)
+                        else:
+                            shared_categories[study] &= set(categories)
 
     # Gather all test statistics for each method (in the same order for each
     # method!).
-    method_data = defaultdict(lambda: defaultdict(list))
-    for depth_desc, depth_res in results.items():
+    method_data = defaultdict(list)
+    for depth_desc, depth_res in real_data_results.items():
         for metric, metric_res in depth_res.items():
-            for method_type, method_type_res in metric_res.items():
-                for method, method_res in method_type_res.items():
-                    matched_method = False
-                    for m in methods[method_type]:
-                        if method == m.Name:
-                            matched_method = True
-                            break
+            for method, method_res in metric_res.items():
+                matched_method = False
+                for m in heatmap_methods:
+                    if method == m.Name:
+                        matched_method = True
+                        break
 
-                    if not matched_method:
-                        continue
+                if not matched_method:
+                    continue
 
-                    for study, study_res in sorted(method_res.items()):
-                        for category, category_res in \
-                                sorted(study_res.items()):
-                            if category in \
-                                    shared_categories[method_type][study]:
-                                method_data[method_type][method].append(
-                                        category_res['full'].effect_size)
-                                method_data[method_type][method].append(
-                                        category_res['shuffled'].effect_size)
-
-                                for res in category_res['subsampled']:
-                                    method_data[method_type][method].append(
-                                            res.effect_size)
+                for study, study_res in sorted(method_res.items()):
+                    for category, category_res in sorted(study_res.items()):
+                        if category in shared_categories[study]:
+                            method_data[method].append(
+                                    category_res['original'].effect_size)
+                            method_data[method].append(
+                                    category_res['shuffled'].effect_size)
 
     # Make sure our data looks sane. We should have the same number of
-    # observations for each method.
-    for method_type, results in method_data.items():
-        data_length = None
-
-        for method, data in results.items():
-            if data_length is None:
-                data_length = len(data)
-            elif len(data) != data_length:
-                raise ValueError("The number of test statistics is not the "
-                                 "same between all methods, so we can't "
-                                 "compare them.")
+    # observations (i.e. effect sizes) for each method.
+    data_length = None
+    for method, data in method_data.items():
+        if data_length is None:
+            data_length = len(data)
+        elif len(data) != data_length:
+            raise ValueError("The number of observations (i.e. effect sizes) "
+                             "is not the same between all methods, so we "
+                             "can't compare them.")
 
     # Compute the correlation coefficient between each pair of methods and put
     # the output in an array. This array can then be used to generate a
     # text-based table or heatmap.
-    heatmaps = {}
-    for method_type in methods:
-        heatmaps[method_type] = {}
+    results = {}
+    for correlation_name, correlation_fn in \
+            ('pearson', pearson), ('spearman', spearman):
+        num_methods = len(heatmap_methods)
+        heatmap_data = ones((num_methods, num_methods))
 
-        for correlation_name, correlation_fn in \
-                ('pearson', pearson), ('spearman', spearman):
-            num_methods = len(methods[method_type])
-            heatmap_data = ones((num_methods, num_methods))
+        # I know this is inefficient, but it really doesn't matter for what
+        # we're doing here.
+        for method1_idx, method1 in enumerate(heatmap_methods):
+            for method2_idx, method2 in enumerate(heatmap_methods):
+                corr_coeff = correlation_fn(method_data[method1.Name],
+                                            method_data[method2.Name])
+                heatmap_data[method1_idx][method2_idx] = corr_coeff
 
-            # I know this is inefficient, but it really doesn't matter for what
-            # we're doing here.
-            for method1_idx, method1 in enumerate(methods[method_type]):
-                for method2_idx, method2 in enumerate(methods[method_type]):
-                    corr_coeff = correlation_fn(
-                            method_data[method_type][method1.Name],
-                            method_data[method_type][method2.Name])
-                    heatmap_data[method1_idx][method2_idx] = corr_coeff
+        # Mask out the upper triangle. Taken from
+        # http://stackoverflow.com/a/2332520
+        mask = invert(tri(heatmap_data.shape[0], k=0, dtype=bool))
+        heatmap_data = numpy.ma.array(heatmap_data, mask=mask)
 
-            # Mask out the upper triangle. Taken from
-            # http://stackoverflow.com/a/2332520
-            mask = invert(tri(heatmap_data.shape[0], k=0, dtype=bool))
-            heatmap_data = numpy.ma.array(heatmap_data, mask=mask)
+        results[correlation_name] = heatmap_data
 
-            heatmaps[method_type][correlation_name] = heatmap_data
-
-    return heatmaps
+    return results
