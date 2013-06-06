@@ -17,11 +17,6 @@ from os.path import join
 from numpy import invert, mean, ones, std, tri
 import numpy.ma
 
-from matplotlib import cm
-from matplotlib.pyplot import (colorbar, figure, imshow, legend, matshow,
-                               savefig, subplot, tight_layout, title, xlim,
-                               xticks, yticks)
-
 from cogent.maths.stats.test import pearson, spearman
 
 from qiime.util import create_dir

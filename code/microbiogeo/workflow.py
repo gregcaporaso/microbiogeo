@@ -19,6 +19,11 @@ from random import randint, sample
 
 from biom.parse import parse_biom_table
 
+from matplotlib import cm
+from matplotlib.pyplot import (colorbar, figure, imshow, legend, matshow,
+                               savefig, subplot, tight_layout, title, xlim,
+                               xticks, yticks)
+
 from numpy import ceil, inf, mean, median, std
 
 from qiime.filter import (filter_mapping_file_from_mapping_f,
@@ -27,7 +32,8 @@ from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          parse_coords, group_by_field)
 from qiime.util import add_filename_suffix, create_dir, MetadataMap
 
-from microbiogeo.format import format_method_comparison_table
+from microbiogeo.format import (format_method_comparison_heatmaps,
+                                format_method_comparison_table)
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
                                 Mrpp, PartialMantel, Permanova, Permdisp,
