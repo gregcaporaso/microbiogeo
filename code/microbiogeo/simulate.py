@@ -199,7 +199,7 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             samp_size_dir = join(trial_num_dir,
                                                  '%d' % samp_size)
 
-                            for d in workflow[study]['dissim']:
+                            for d in workflow[study]['plot_dissim']:
                                 dissim_dir = join(samp_size_dir, repr(d))
 
                                 for metric in workflow[study]['metrics']:
@@ -322,8 +322,8 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             elif analysis_type == 'cluster':
                                 loc='center left'
 
-                            assert len(legend_lines) == len(workflow[study]['dissim'])
-                            assert len(legend_labels) == len(workflow[study]['dissim'])
+                            assert len(legend_lines) == len(workflow[study]['plot_dissim'])
+                            assert len(legend_labels) == len(workflow[study]['plot_dissim'])
                             legend_title = ('           Legend (Panels %s-%s)\nd = '
                                     '"noise" introduced to clusters' % (
                                         start_panel_label, end_panel_label))
