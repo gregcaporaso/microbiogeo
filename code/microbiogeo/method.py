@@ -265,7 +265,11 @@ class MoransI(AbstractStatMethod):
                 if len(line.strip().split()) != 2:
                     raise UnparsableLineError(line)
 
-                p_value = self.parse_float(line.strip().split()[1], 0, 1)
+                # Moran's I will sometimes calculate a p-value of 2.0. From
+                # looking at the R code, it seems like this is a bug, and that
+                # the p-value should be 1.0.
+                p_value = self.parse_float(line.strip().split()[1], 0, 2)
+                p_value = min(p_value, 1.0)
                 p_value_next = False
 
         if es is None or p_value is None:
