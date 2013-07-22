@@ -58,6 +58,7 @@ class AbstractStatMethodTests(TestCase):
         self.assertRaises(ValueError, self.inst.parse_float, '-0.1', 0)
         self.assertRaises(ValueError, self.inst.parse_float, '11.2',
                           max_val=10)
+        self.assertRaises(TypeError, self.inst.parse_float, 'nan')
 
     def test_eq(self):
         """Test equality check."""
@@ -221,11 +222,20 @@ class MoransITests(TestCase):
         self.inst = MoransI()
 
         self.morans_i_results_str1 = morans_i_results_str1.split('\n')
+        self.morans_i_results_str2 = morans_i_results_str2.split('\n')
 
     def test_parse(self):
         """Test parsing moran's i results file."""
         obs = self.inst.parse(self.morans_i_results_str1)
         self.assertFloatEqual(obs, (-0.06005486, 4.442088e-05))
+
+    def test_parse_invalid_p_value(self):
+        """Test parsing moran's i results file with invalid p-value."""
+        # Moran's I will sometimes calculate a p-value of 2.0. From looking at
+        # the R code, it seems like this is a bug, and that the p-value should
+        # be 1.0.
+        obs = self.inst.parse(self.morans_i_results_str2)
+        self.assertFloatEqual(obs, (-0.25, 1.0))
 
 
 class BestTests(TestCase):
@@ -421,6 +431,21 @@ $sd
 
 $p.value
 [1] 4.442088e-05
+"""
+
+morans_i_results_str2 = """
+$observed
+[1] -0.25
+
+$expected
+[1] -0.25
+
+$sd
+[1] 0
+
+$p.value
+[1] 2
+
 """
 
 
