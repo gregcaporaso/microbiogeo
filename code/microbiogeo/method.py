@@ -11,6 +11,8 @@ __email__ = "jai.rideout@gmail.com"
 
 """Module for biogeo statistical methods used in workflows."""
 
+from numpy import isnan
+
 class UnparsableLineError(Exception):
     def __init__(self, line):
         self.args = ("Encountered unparsable line: '%s'" % line,)
@@ -29,7 +31,8 @@ class AbstractStatMethod(object):
     def parse(self, results_f):
         raise NotImplementedError
 
-    def parse_float(self, float_str, min_val=None, max_val=None):
+    def parse_float(self, float_str, min_val=None, max_val=None,
+                    suppress_nan_check=False):
         """Converts a float (as a string) into a float.
 
         Performs optional sanity checks to ensure the float is in
@@ -40,6 +43,10 @@ class AbstractStatMethod(object):
         except ValueError:
             raise ValueError("Could not convert float string '%s' to float."
                              % float_str)
+
+        if not suppress_nan_check and isnan(result):
+            raise TypeError("Encountered NaN instead of a valid float.")
+
         if (min_val is not None and result < min_val) or \
            (max_val is not None and result > max_val):
             raise ValueError("Float %.4f does not fall in valid range." % result)
@@ -213,7 +220,14 @@ class Mantel(AbstractStatMethod):
             raise UnparsableLineError(line)
 
         es, p_value = tokens[3:5]
-        return self.parse_float(es, -1, 1), self.parse_float(p_value, 0, 1)
+        es = self.parse_float(es, -1, 1, suppress_nan_check=True)
+        p_value = self.parse_float(p_value, 0, 1)
+
+        if isnan(es):
+            es = 0.0
+            p_value = 1.0
+
+        return es, p_value
 
 
 class PartialMantel(AbstractStatMethod):
@@ -265,7 +279,11 @@ class MoransI(AbstractStatMethod):
                 if len(line.strip().split()) != 2:
                     raise UnparsableLineError(line)
 
-                p_value = self.parse_float(line.strip().split()[1], 0, 1)
+                # Moran's I will sometimes calculate a p-value of 2.0. From
+                # looking at the R code, it seems like this is a bug, and that
+                # the p-value should be 1.0.
+                p_value = self.parse_float(line.strip().split()[1], 0, 2)
+                p_value = min(p_value, 1.0)
                 p_value_next = False
 
         if es is None or p_value is None:

@@ -199,7 +199,7 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             samp_size_dir = join(trial_num_dir,
                                                  '%d' % samp_size)
 
-                            for d in workflow[study]['dissim']:
+                            for d in workflow[study]['plot_dissim']:
                                 dissim_dir = join(samp_size_dir, repr(d))
 
                                 for metric in workflow[study]['metrics']:
@@ -242,10 +242,10 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             color = color_pool.pop(0)
 
                             label = 'd=%r' % d
-                            if d == min_dissim:
-                                label += ' (pos. control)'
-                            elif d == max_dissim:
-                                label += ' (neg. control)'
+                            if d == 0.0:
+                                label += ' (original data)'
+                            #elif d == max_dissim:
+                            #    label += ' (neg. control)'
 
                             legend_labels.append(label)
                             legend_lines.append(Line2D([0, 1], [0, 0],
@@ -322,10 +322,10 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             elif analysis_type == 'cluster':
                                 loc='center left'
 
-                            assert len(legend_lines) == len(workflow[study]['dissim'])
-                            assert len(legend_labels) == len(workflow[study]['dissim'])
+                            assert len(legend_lines) == len(workflow[study]['plot_dissim'])
+                            assert len(legend_labels) == len(workflow[study]['plot_dissim'])
                             legend_title = ('           Legend (Panels %s-%s)\nd = '
-                                    '"noise" introduced to clusters' % (
+                                    '"noise" introduced to samples' % (
                                         start_panel_label, end_panel_label))
                             ax3.legend(legend_lines, legend_labels, ncol=1,
                                     title=legend_title, loc=loc, fancybox=True,
@@ -364,15 +364,23 @@ def _compute_plot_data_statistics(plot_data, num_trials):
             raise ValueError("Data length doesn't match the number of trials.")
 
         avg_p_val = mean(e)
-        avg_p_vals.append(avg_p_val)
-
         std_p_val = std(e)
-        std_p_vals[1].append(std_p_val)
+        lower_std_p_val = std_p_val
+        upper_std_p_val = std_p_val
 
-        # Cut off lower bound at 1e-5.
-        if avg_p_val - std_p_val < 1e-5:
-            std_p_val = avg_p_val - 1e-5
-        std_p_vals[0].append(std_p_val)
+        # Cut off lower bound at 1e-5. This is important for some methods such
+        # as Moran's I where the p-value can get *very* close to zero since it
+        # isn't based on permutations.
+        if avg_p_val < 1e-5:
+            avg_p_val = 1e-5
+            lower_std_p_val = 0.0
+            upper_std_p_val = 0.0
+        elif avg_p_val - std_p_val < 1e-5:
+            lower_std_p_val = avg_p_val - 1e-5
+
+        avg_p_vals.append(avg_p_val)
+        std_p_vals[0].append(lower_std_p_val)
+        std_p_vals[1].append(upper_std_p_val)
 
     if len(plot_data['sample_sizes']) != len(avg_effect_sizes):
         raise ValueError("%d != %d" % (len(plot_data['sample_sizes']),
@@ -440,10 +448,10 @@ def plot_pcoa(analysis_type, fig, in_dir, workflow, category, metric, num_rows,
                              analysis_type)
 
         plot_title = 'd=%r' % d
-        if d == min_dissim:
-            plot_title += ' (pos. control)'
-        elif d == max_dissim:
-            plot_title += ' (neg. control)'
+        if d == 0.0:
+            plot_title += ' (original data)'
+        #elif d == max_dissim:
+        #    plot_title += ' (neg. control)'
         ax.set_title(plot_title)
 
         ax.set_xlabel('PC1 (%1.2f%%)' % pc_data[3][0])

@@ -746,7 +746,7 @@ def _collate_simulated_data_results(in_dir, workflow):
     return results
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
@@ -765,6 +765,7 @@ def main():
                 'num_real_data_perms': [99, 999],
                 'num_sim_data_perms': 999,
                 'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+                'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
                 'sample_sizes': [3, 5, 13],
                 'pcoa_sample_size': 13,
@@ -784,6 +785,7 @@ def main():
                 'num_real_data_perms': [99, 999],
                 'num_sim_data_perms': 999,
                 'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
+                'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
                 'sample_sizes': [3, 5, 13],
                 'pcoa_sample_size': 13,
@@ -822,7 +824,7 @@ def main():
                 # dissim must all be floats!
                 'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
                            70.0, 100.0],
-                #'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
+                'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
                 # sample_sizes must all be ints!
                 'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
@@ -851,7 +853,7 @@ def main():
                 'num_sim_data_perms': 999,
                 'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
                            70.0, 100.0],
-                #'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
+                'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
                 'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
                 'pcoa_sample_size': 150,
@@ -878,7 +880,7 @@ def main():
                 'num_sim_data_perms': 999,
                 'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
                            70.0, 100.0],
-                #'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
+                'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
                 'sample_sizes': [5, 10, 20, 40, 60, 80, 100, 150, 200, 300],
                 'pcoa_sample_size': 150,
@@ -905,10 +907,10 @@ def main():
                 'num_sim_data_perms': 999,
                 'dissim': [0.0, 0.001, 0.01, 0.1, 0.4, 0.7, 1.0, 10.0, 40.0,
                            70.0, 100.0],
-                #'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
+                'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
                 'sample_sizes': [5, 20, 40, 80, 140, 220, 320, 420, 520, 600],
-                'pcoa_sample_size': 150,
+                'pcoa_sample_size': 140,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
                 'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]
