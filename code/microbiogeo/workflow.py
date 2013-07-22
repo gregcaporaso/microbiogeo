@@ -910,7 +910,7 @@ def main():
                 'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 100.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 100.0],
                 'sample_sizes': [5, 20, 40, 80, 140, 220, 320, 420, 520, 600],
-                'pcoa_sample_size': 150,
+                'pcoa_sample_size': 140,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
                 'methods': [Adonis(), Anosim(), Mrpp(), Permanova(), Dbrda()]

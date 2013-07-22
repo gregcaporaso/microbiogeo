@@ -47,6 +47,12 @@ class SimulateTests(TestCase):
             'p_vals': [[0.00001, 0.00002, 0.00001], [0.2, 0.01, 0.1]]
         }
 
+        self.plot_data3 = {
+            'sample_sizes': [10, 30],
+            'effect_sizes': [[0.5, 0.4, 0.5], [0.3, 0.3, 0.3]],
+            'p_vals': [[0.000001, 0.000002, 0.000001], [0.2, 0.01, 0.1]]
+        }
+
     def test_choose_cluster_subsets(self):
         """Test picking subsets of sample groups."""
         # Too many samples.
@@ -194,6 +200,15 @@ class SimulateTests(TestCase):
                [[3.33333e-06, 0.077603],
                 [4.71404e-06, 0.077603]])
         obs = _compute_plot_data_statistics(self.plot_data2, 3)
+        self.assertFloatEqual(obs, exp)
+
+        # Three trials, 2 sample sizes (with avg *and* std p-val cutoff).
+        exp = ([0.466667, 0.3],
+               [0.04714045, 0.0],
+               [1e-5, 0.1033333],
+               [[0.0, 0.077603],
+                [0.0, 0.077603]])
+        obs = _compute_plot_data_statistics(self.plot_data3, 3)
         self.assertFloatEqual(obs, exp)
 
     def test_compute_plot_data_statistics_invalid_input(self):
