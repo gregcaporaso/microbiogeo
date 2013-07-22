@@ -58,6 +58,7 @@ class AbstractStatMethodTests(TestCase):
         self.assertRaises(ValueError, self.inst.parse_float, '-0.1', 0)
         self.assertRaises(ValueError, self.inst.parse_float, '11.2',
                           max_val=10)
+        self.assertRaises(TypeError, self.inst.parse_float, 'nan')
 
     def test_eq(self):
         """Test equality check."""

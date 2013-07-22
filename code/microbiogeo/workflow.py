@@ -746,7 +746,7 @@ def _collate_simulated_data_results(in_dir, workflow):
     return results
 
 def main():
-    test = True
+    test = False
 
     if test:
         in_dir = 'test_datasets'
