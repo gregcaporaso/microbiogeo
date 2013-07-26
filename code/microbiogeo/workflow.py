@@ -46,7 +46,8 @@ from microbiogeo.util import (get_color_pool,
                               get_panel_label, get_simsam_rep_num, has_results,
                               run_command, run_parallel_jobs, StatsResults)
 
-def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
+def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp,
+                  ipython_profile=None):
     """Generates real and simulated data for each study.
 
     Distance matrices will be created at each even sampling depth and metric
@@ -118,7 +119,7 @@ def generate_data(analysis_type, in_dir, out_dir, workflow, tree_fp):
                     depth_dir, even_otu_table_fp, map_fp, tree_fp,
                     workflow[study]))
 
-    run_parallel_jobs(cmds, run_command)
+    run_parallel_jobs(cmds, run_command, ipython_profile=ipython_profile)
 
 def _build_real_data_commands(analysis_type, out_dir, even_otu_table_fp,
                               map_fp, tree_fp, workflow):
@@ -304,7 +305,7 @@ def _build_simulated_data_commands(analysis_type, out_dir, even_otu_table_fp,
                             cmds.append(' && '.join(cmd))
     return cmds
 
-def process_data(in_dir, workflow):
+def process_data(in_dir, workflow, ipython_profile=None):
     """Run statistical methods over generated data.
 
     For real data, creates category and method dirs for original and shuffled
@@ -340,7 +341,7 @@ def process_data(in_dir, workflow):
             cmds.extend(_build_simulated_data_methods_commands(depth_dir,
                     workflow[study]))
 
-    run_parallel_jobs(cmds, run_command)
+    run_parallel_jobs(cmds, run_command, ipython_profile=ipython_profile)
 
 def _build_real_data_methods_commands(out_dir, workflow):
     cmds = []
@@ -746,7 +747,8 @@ def _collate_simulated_data_results(in_dir, workflow):
     return results
 
 def main():
-    test = False
+    test = True
+    ipython_profile = None
 
     if test:
         in_dir = 'test_datasets'
@@ -767,7 +769,7 @@ def main():
                 'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
                 'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-                'sample_sizes': [3, 5, 13],
+                'sample_sizes': [5, 13],
                 'pcoa_sample_size': 13,
                 'num_sim_data_trials': 3,
                 'num_shuffled_trials': 2,
@@ -787,7 +789,7 @@ def main():
                 'dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
                 'plot_dissim': [0.0, 0.001, 0.01, 0.1, 1.0, 10.0],
                 'pcoa_dissim': [0.0, 0.001, 1.0, 10.0],
-                'sample_sizes': [3, 5, 13],
+                'sample_sizes': [5, 13],
                 'pcoa_sample_size': 13,
                 'num_sim_data_trials': 3,
                 'num_shuffled_trials': 2,
@@ -923,11 +925,14 @@ def main():
 
     # Run workflows.
     generate_data('gradient', in_dir, out_gradient_dir, gradient_workflow,
-                  tree_fp)
-    generate_data('cluster', in_dir, out_cluster_dir, cluster_workflow, tree_fp)
+                  tree_fp, ipython_profile=ipython_profile)
+    generate_data('cluster', in_dir, out_cluster_dir, cluster_workflow,
+                  tree_fp, ipython_profile=ipython_profile)
 
-    process_data(out_gradient_dir, gradient_workflow)
-    process_data(out_cluster_dir, cluster_workflow)
+    process_data(out_gradient_dir, gradient_workflow,
+                 ipython_profile=ipython_profile)
+    process_data(out_cluster_dir, cluster_workflow,
+                 ipython_profile=ipython_profile)
 
     create_real_data_summary_tables(out_gradient_dir, gradient_workflow)
     create_real_data_summary_tables(out_cluster_dir, cluster_workflow)
