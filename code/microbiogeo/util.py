@@ -41,10 +41,14 @@ def run_command(cmd):
                                          "Stderr:\n\n%s\n" % (cmd,
                                          ret_val, stdout, stderr))
 
-def run_parallel_jobs(jobs, job_fn):
+def run_parallel_jobs(jobs, job_fn, ipython_profile=None):
     # IPython will error out if jobs is empty.
     if jobs:
-        c = Client()
+        if ipython_profile is None:
+            c = Client()
+        else:
+            c = Client(profile=ipython_profile)
+
         lview = c.load_balanced_view()
         lview.block = True
         lview.map(job_fn, jobs)
