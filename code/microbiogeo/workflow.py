@@ -36,9 +36,11 @@ from microbiogeo.format import (format_method_comparison_heatmaps,
                                 format_method_comparison_table)
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
-                                Mrpp, PartialMantel, Permanova, Permdisp,
-                                QiimeStatMethod, UnparsableFileError,
-                                UnparsableLineError)
+                                Mrpp, PartialMantel,
+                                PearsonOrdinationCorrelation, Permanova,
+                                Permdisp, QiimeStatMethod,
+                                SpearmanOrdinationCorrelation,
+                                UnparsableFileError, UnparsableLineError)
 from microbiogeo.simulate import create_simulated_data_plots
 from microbiogeo.util import (get_color_pool,
                               get_num_samples_in_distance_matrix,
@@ -359,6 +361,7 @@ def _build_real_data_methods_commands(out_dir, workflow):
             dir_to_process = join(metric_dir, dir_to_process)
 
             dm_fp = join(dir_to_process, 'dm.txt')
+            pc_fp = join(dir_to_process, 'pc.txt')
             map_fp = join(dir_to_process, 'map.txt')
 
             for category in workflow['categories']:
@@ -386,6 +389,10 @@ def _build_real_data_methods_commands(out_dir, workflow):
                                 if type(method) is Mantel or type(method) is MantelCorrelogram:
                                     in_dm_fps = ','.join((dm_fp, grad_dm_fp))
                                     cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.DirectoryName, perms, in_dm_fps, perms_dir))
+                                elif type(method) is PearsonOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t pearson' % (perms, pc_fp, map_fp, category[0], perms_dir))
+                                elif type(method) is SpearmanOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t spearman' % (perms, pc_fp, map_fp, category[0], perms_dir))
                                 else:
                                     cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.DirectoryName, dm_fp, map_fp, category[0], perms_dir, perms))
 
@@ -421,6 +428,7 @@ def _build_simulated_data_methods_commands(out_dir, workflow):
                         metric_dir = join(dissim_dir, metric[0])
 
                         dm_fp = join(metric_dir, 'dm.txt')
+                        pc_fp = join(metric_dir, 'pc.txt')
                         map_fp = join(metric_dir, 'map.txt')
                         grad_dm_fp = join(metric_dir,
                                           '%s_dm.txt' % category[0])
@@ -439,6 +447,10 @@ def _build_simulated_data_methods_commands(out_dir, workflow):
                                     in_dm_fps = ','.join((dm_fp,
                                                           grad_dm_fp))
                                     cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.DirectoryName, num_sim_data_perms, in_dm_fps, method_dir))
+                                elif type(method) is PearsonOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t pearson' % (num_sim_data_perms, pc_fp, map_fp, category[0], method_dir))
+                                elif type(method) is SpearmanOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t spearman' % (num_sim_data_perms, pc_fp, map_fp, category[0], method_dir))
                                 else:
                                     cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.DirectoryName, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
     return cmds
@@ -774,7 +786,9 @@ def main():
                 'pcoa_sample_size': 13,
                 'num_sim_data_trials': 3,
                 'num_shuffled_trials': 2,
-                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                            PearsonOrdinationCorrelation(),
+                            SpearmanOrdinationCorrelation()]
             }
         }
 
@@ -798,7 +812,9 @@ def main():
             }
         }
 
-        gradient_heatmap_methods = [Mantel(), MoransI()]
+        gradient_heatmap_methods = [Mantel(), MoransI(),
+                                    PearsonOrdinationCorrelation(),
+                                    SpearmanOrdinationCorrelation()]
         cluster_heatmap_methods = [Adonis(), Anosim()]
     else:
         in_dir = '../data'
@@ -834,7 +850,9 @@ def main():
                 'pcoa_sample_size': 150,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
-                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                            PearsonOrdinationCorrelation(),
+                            SpearmanOrdinationCorrelation()]
             },
 
             'gn': {
@@ -862,7 +880,9 @@ def main():
                 'pcoa_sample_size': 150,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
-                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                            PearsonOrdinationCorrelation(),
+                            SpearmanOrdinationCorrelation()]
             }
         }
 
@@ -920,7 +940,9 @@ def main():
             }
         }
 
-        gradient_heatmap_methods = [Mantel(), MoransI()]
+        gradient_heatmap_methods = [Mantel(), MoransI(),
+                                    PearsonOrdinationCorrelation(),
+                                    SpearmanOrdinationCorrelation()]
         cluster_heatmap_methods = [Adonis(), Dbrda(), Mrpp(), Permanova(),
                                    Anosim()]
 
