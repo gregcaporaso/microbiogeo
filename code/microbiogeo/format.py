@@ -71,7 +71,7 @@ def format_method_comparison_heatmaps(real_data_results, sim_data_results,
             for method, method_res in metric_res.items():
                 matched_method = False
                 for m in heatmap_methods:
-                    if method == m.Name:
+                    if method == m.DirectoryName:
                         matched_method = True
                         break
 
@@ -103,7 +103,7 @@ def format_method_comparison_heatmaps(real_data_results, sim_data_results,
             for method, method_res in metric_res.items():
                 matched_method = False
                 for m in heatmap_methods:
-                    if method == m.Name:
+                    if method == m.DirectoryName:
                         matched_method = True
                         break
 
@@ -122,7 +122,7 @@ def format_method_comparison_heatmaps(real_data_results, sim_data_results,
     for method, method_res in sim_data_results.items():
         matched_method = False
         for m in heatmap_methods:
-            if method == m.Name:
+            if method == m.DirectoryName:
                 matched_method = True
                 break
 
@@ -167,8 +167,8 @@ def format_method_comparison_heatmaps(real_data_results, sim_data_results,
         # we're doing here.
         for method1_idx, method1 in enumerate(heatmap_methods):
             for method2_idx, method2 in enumerate(heatmap_methods):
-                corr_coeff = correlation_fn(method_data[method1.Name],
-                                            method_data[method2.Name])
+                corr_coeff = correlation_fn(method_data[method1.DirectoryName],
+                                            method_data[method2.DirectoryName])
                 heatmap_data[method1_idx][method2_idx] = corr_coeff
 
         # Mask out the upper triangle. Taken from

@@ -204,10 +204,12 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
 
                                 for metric in workflow[study]['metrics']:
                                     metric_dir = join(dissim_dir, metric[0])
-                                    method_dir = join(metric_dir, method.Name)
+                                    method_dir = join(metric_dir,
+                                                      method.DirectoryName)
 
                                     results_fp = join(method_dir,
-                                            '%s_results.txt' % method.Name)
+                                                      '%s_results.txt' %
+                                                      method.ResultsName)
                                     effect_size, p_val = method.parse(
                                             open(results_fp, 'U'))
 
