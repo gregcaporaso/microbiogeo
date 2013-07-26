@@ -36,9 +36,11 @@ from microbiogeo.format import (format_method_comparison_heatmaps,
                                 format_method_comparison_table)
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
-                                Mrpp, PartialMantel, Permanova, Permdisp,
-                                QiimeStatMethod, UnparsableFileError,
-                                UnparsableLineError)
+                                Mrpp, PartialMantel,
+                                PearsonOrdinationCorrelation, Permanova,
+                                Permdisp, QiimeStatMethod,
+                                SpearmanOrdinationCorrelation,
+                                UnparsableFileError, UnparsableLineError)
 from microbiogeo.simulate import create_simulated_data_plots
 from microbiogeo.util import (get_color_pool,
                               get_num_samples_in_distance_matrix,
@@ -359,6 +361,7 @@ def _build_real_data_methods_commands(out_dir, workflow):
             dir_to_process = join(metric_dir, dir_to_process)
 
             dm_fp = join(dir_to_process, 'dm.txt')
+            pc_fp = join(dir_to_process, 'pc.txt')
             map_fp = join(dir_to_process, 'map.txt')
 
             for category in workflow['categories']:
@@ -371,12 +374,12 @@ def _build_real_data_methods_commands(out_dir, workflow):
                     if type(method) is Best or type(method) is PartialMantel:
                         continue
 
-                    method_dir = join(category_dir, method.Name)
+                    method_dir = join(category_dir, method.DirectoryName)
                     create_dir(method_dir)
 
                     if type(method) is MoransI:
                         if not has_results(method_dir):
-                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (method.Name, dm_fp, map_fp, category[0], method_dir))
+                            cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (method.DirectoryName, dm_fp, map_fp, category[0], method_dir))
                     else:
                         for perms in num_perms:
                             perms_dir = join(method_dir, '%d' % perms)
@@ -385,16 +388,20 @@ def _build_real_data_methods_commands(out_dir, workflow):
                             if not has_results(perms_dir):
                                 if type(method) is Mantel or type(method) is MantelCorrelogram:
                                     in_dm_fps = ','.join((dm_fp, grad_dm_fp))
-                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, perms, in_dm_fps, perms_dir))
+                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.DirectoryName, perms, in_dm_fps, perms_dir))
+                                elif type(method) is PearsonOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t pearson' % (perms, pc_fp, map_fp, category[0], perms_dir))
+                                elif type(method) is SpearmanOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t spearman' % (perms, pc_fp, map_fp, category[0], perms_dir))
                                 else:
-                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], perms_dir, perms))
+                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.DirectoryName, dm_fp, map_fp, category[0], perms_dir, perms))
 
             if Best() in workflow['methods']:
-                best_dir = join(dir_to_process, Best().Name)
+                best_dir = join(dir_to_process, Best().DirectoryName)
 
                 if not has_results(best_dir):
                     env_vars = ','.join(workflow['best_method_env_vars'])
-                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (Best().Name, dm_fp, map_fp, env_vars, best_dir))
+                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s' % (Best().DirectoryName, dm_fp, map_fp, env_vars, best_dir))
     return cmds
 
 def _build_simulated_data_methods_commands(out_dir, workflow):
@@ -421,6 +428,7 @@ def _build_simulated_data_methods_commands(out_dir, workflow):
                         metric_dir = join(dissim_dir, metric[0])
 
                         dm_fp = join(metric_dir, 'dm.txt')
+                        pc_fp = join(metric_dir, 'pc.txt')
                         map_fp = join(metric_dir, 'map.txt')
                         grad_dm_fp = join(metric_dir,
                                           '%s_dm.txt' % category[0])
@@ -430,7 +438,7 @@ def _build_simulated_data_methods_commands(out_dir, workflow):
                         for method in workflow['methods']:
                             if type(method) is Best or type(method) is PartialMantel:
                                 continue
-                            method_dir = join(metric_dir, method.Name)
+                            method_dir = join(metric_dir, method.DirectoryName)
                             create_dir(method_dir)
 
                             if not has_results(method_dir):
@@ -438,9 +446,13 @@ def _build_simulated_data_methods_commands(out_dir, workflow):
                                     assert get_num_samples_in_distance_matrix(grad_dm_fp) == samp_size
                                     in_dm_fps = ','.join((dm_fp,
                                                           grad_dm_fp))
-                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.Name, num_sim_data_perms, in_dm_fps, method_dir))
+                                    cmds.append('compare_distance_matrices.py --method %s -n %d -i %s -o %s' % (method.DirectoryName, num_sim_data_perms, in_dm_fps, method_dir))
+                                elif type(method) is PearsonOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t pearson' % (num_sim_data_perms, pc_fp, map_fp, category[0], method_dir))
+                                elif type(method) is SpearmanOrdinationCorrelation:
+                                    cmds.append('ordination_correlation.py -n %d -i %s -m %s -c %s -o %s -t spearman' % (num_sim_data_perms, pc_fp, map_fp, category[0], method_dir))
                                 else:
-                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.Name, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
+                                    cmds.append('compare_categories.py --method %s -i %s -m %s -c %s -o %s -n %d' % (method.DirectoryName, dm_fp, map_fp, category[0], method_dir, num_sim_data_perms))
     return cmds
 
 def create_real_data_summary_tables(in_dir, workflow):
@@ -515,9 +527,9 @@ def _collate_real_data_results(in_dir, workflow):
                         # variables best correlate with the community data.
                         continue
 
-                    if method.Name not in metric_res:
-                        metric_res[method.Name] = {}
-                    method_res = metric_res[method.Name]
+                    if method.DirectoryName not in metric_res:
+                        metric_res[method.DirectoryName] = {}
+                    method_res = metric_res[method.DirectoryName]
 
                     if study not in method_res:
                         method_res[study] = {}
@@ -567,10 +579,9 @@ def _collate_real_data_results(in_dir, workflow):
 def _parse_original_results_file(in_dir, method, category, stats_results,
                                  permutation=None):
     if permutation is None:
-        results_fp = join(in_dir, 'original', category, method.Name, '%s_results.txt' % method.Name)
+        results_fp = join(in_dir, 'original', category, method.DirectoryName, '%s_results.txt' % method.ResultsName)
     else:
-        results_fp = join(in_dir, 'original', category, method.Name,
-                          '%d' % permutation, '%s_results.txt' % method.Name)
+        results_fp = join(in_dir, 'original', category, method.DirectoryName, '%d' % permutation, '%s_results.txt' % method.ResultsName)
 
     # We will not always have results for every combination of parameters (e.g.
     # partial Mantel).
@@ -588,11 +599,12 @@ def _parse_shuffled_results_files(in_dir, method, category, stats_results,
     for shuff_num in range(num_shuffled_trials):
         if permutation is None:
             results_fp = join(in_dir, '%d' % shuff_num, category,
-                              method.Name, '%s_results.txt' % method.Name)
+                              method.DirectoryName,
+                              '%s_results.txt' % method.ResultsName)
         else:
             results_fp = join(in_dir, '%d' % shuff_num, category,
-                              method.Name, '%d' % permutation,
-                              '%s_results.txt' % method.Name)
+                              method.DirectoryName, '%d' % permutation,
+                              '%s_results.txt' % method.ResultsName)
 
         if exists(results_fp):
             res_f = open(results_fp, 'U')
@@ -675,9 +687,9 @@ def _collate_simulated_data_results(in_dir, workflow):
             if type(method) in (MantelCorrelogram, Best):
                 continue
 
-            if method.Name not in results:
-                results[method.Name] = {}
-            method_res = results[method.Name]
+            if method.DirectoryName not in results:
+                results[method.DirectoryName] = {}
+            method_res = results[method.DirectoryName]
 
             if study not in method_res:
                 method_res[study] = {}
@@ -727,8 +739,9 @@ def _collate_simulated_data_results(in_dir, workflow):
                                 for metric, _ in workflow[study]['metrics']:
                                     metric_dir = join(dissim_dir, metric)
 
-                                    results_fp = join(metric_dir, method.Name,
-                                            '%s_results.txt' % method.Name)
+                                    results_fp = join(metric_dir,
+                                        method.DirectoryName,
+                                        '%s_results.txt' % method.ResultsName)
                                     stats_results = StatsResults()
 
                                     if exists(results_fp):
@@ -773,7 +786,9 @@ def main():
                 'pcoa_sample_size': 13,
                 'num_sim_data_trials': 3,
                 'num_shuffled_trials': 2,
-                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                            PearsonOrdinationCorrelation(),
+                            SpearmanOrdinationCorrelation()]
             }
         }
 
@@ -797,7 +812,9 @@ def main():
             }
         }
 
-        gradient_heatmap_methods = [Mantel(), MoransI()]
+        gradient_heatmap_methods = [Mantel(), MoransI(),
+                                    PearsonOrdinationCorrelation(),
+                                    SpearmanOrdinationCorrelation()]
         cluster_heatmap_methods = [Adonis(), Anosim()]
     else:
         in_dir = '../data'
@@ -833,7 +850,9 @@ def main():
                 'pcoa_sample_size': 150,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
-                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                            PearsonOrdinationCorrelation(),
+                            SpearmanOrdinationCorrelation()]
             },
 
             'gn': {
@@ -861,7 +880,9 @@ def main():
                 'pcoa_sample_size': 150,
                 'num_sim_data_trials': 10,
                 'num_shuffled_trials': 5,
-                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI()]
+                'methods': [Best(), Mantel(), MantelCorrelogram(), MoransI(),
+                            PearsonOrdinationCorrelation(),
+                            SpearmanOrdinationCorrelation()]
             }
         }
 
@@ -919,7 +940,9 @@ def main():
             }
         }
 
-        gradient_heatmap_methods = [Mantel(), MoransI()]
+        gradient_heatmap_methods = [Mantel(), MoransI(),
+                                    PearsonOrdinationCorrelation(),
+                                    SpearmanOrdinationCorrelation()]
         cluster_heatmap_methods = [Adonis(), Dbrda(), Mrpp(), Permanova(),
                                    Anosim()]
 
