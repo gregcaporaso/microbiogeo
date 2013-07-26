@@ -49,7 +49,8 @@ class AbstractStatMethod(object):
 
         if (min_val is not None and result < min_val) or \
            (max_val is not None and result > max_val):
-            raise ValueError("Float %.4f does not fall in valid range." % result)
+            raise ValueError(
+                    "Float %.4f does not fall in valid range." % result)
 
         return result
 
