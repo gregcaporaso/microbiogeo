@@ -24,7 +24,8 @@ class UnparsableFileError(Exception):
 
 
 class AbstractStatMethod(object):
-    Name = None
+    DirectoryName = None
+    ResultsName = None
     DisplayName = None
     StatDisplayName = None
 
@@ -55,7 +56,10 @@ class AbstractStatMethod(object):
         return result
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__)
+        return type(self) == type(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class QiimeStatMethod(AbstractStatMethod):
@@ -80,19 +84,22 @@ class QiimeStatMethod(AbstractStatMethod):
 
 
 class Anosim(QiimeStatMethod):
-    Name = 'anosim'
+    DirectoryName = 'anosim'
+    ResultsName = 'anosim'
     DisplayName = 'ANOSIM'
     StatDisplayName = r'$R$'
 
 
 class Permanova(QiimeStatMethod):
-    Name = 'permanova'
+    DirectoryName = 'permanova'
+    ResultsName = 'permanova'
     DisplayName = 'PERMANOVA'
     StatDisplayName = r'$F$'
 
 
 class Adonis(AbstractStatMethod):
-    Name = 'adonis'
+    DirectoryName = 'adonis'
+    ResultsName = 'adonis'
     DisplayName = 'Adonis'
     StatDisplayName = r'$R^2$'
 
@@ -117,7 +124,8 @@ class Adonis(AbstractStatMethod):
 
 
 class Mrpp(AbstractStatMethod):
-    Name = 'mrpp'
+    DirectoryName = 'mrpp'
+    ResultsName = 'mrpp'
     DisplayName = 'MRPP'
     StatDisplayName = r'$A$'
 
@@ -148,7 +156,8 @@ class Mrpp(AbstractStatMethod):
 
 
 class Dbrda(AbstractStatMethod):
-    Name = 'dbrda'
+    DirectoryName = 'dbrda'
+    ResultsName = 'dbrda'
     DisplayName = 'db-RDA'
     StatDisplayName = r'$R^2$'
 
@@ -179,7 +188,8 @@ class Dbrda(AbstractStatMethod):
 
 
 class Permdisp(AbstractStatMethod):
-    Name = 'permdisp'
+    DirectoryName = 'permdisp'
+    ResultsName = 'permdisp'
     DisplayName = 'PERMDISP'
     StatDisplayName = r'$F$'
 
@@ -207,7 +217,8 @@ class Permdisp(AbstractStatMethod):
 
 
 class Mantel(AbstractStatMethod):
-    Name = 'mantel'
+    DirectoryName = 'mantel'
+    ResultsName = 'mantel'
     DisplayName = 'Mantel'
     StatDisplayName = r'$r$'
 
@@ -232,7 +243,8 @@ class Mantel(AbstractStatMethod):
 
 
 class PartialMantel(AbstractStatMethod):
-    Name = 'partial_mantel'
+    DirectoryName = 'partial_mantel'
+    ResultsName = 'partial_mantel'
     DisplayName = 'Partial Mantel'
     StatDisplayName = r'$r$'
 
@@ -250,12 +262,13 @@ class PartialMantel(AbstractStatMethod):
 
 
 class MantelCorrelogram(AbstractStatMethod):
-    Name = 'mantel_corr'
+    DirectoryName = 'mantel_corr'
     DisplayName = 'Mantel Correlogram'
 
 
 class MoransI(AbstractStatMethod):
-    Name = 'morans_i'
+    DirectoryName = 'morans_i'
+    ResultsName = 'morans_i'
     DisplayName = 'Moran\'s I'
     StatDisplayName = r'$I$'
 
@@ -294,5 +307,42 @@ class MoransI(AbstractStatMethod):
 
 
 class Best(AbstractStatMethod):
-    Name = 'best'
+    DirectoryName = 'best'
     DisplayName = 'BEST'
+
+
+class OrdinationCorrelation(AbstractStatMethod):
+    ResultsName = 'ord_corr'
+
+    def parse(self, results_f):
+        for line in results_f:
+            pass
+
+        tokens = line.strip().split('\t')
+
+        if len(tokens) != 3:
+            raise UnparsableLineError(line)
+
+        es = tokens[0]
+        p_value = tokens[2]
+
+        es = self.parse_float(es, -1, 1)
+
+        if 'Too few iters to compute p-value' in p_value or p_value == 'N/A':
+            raise UnparsableLineError(line)
+        else:
+            p_value = self.parse_float(p_value, 0, 1)
+
+        return es, p_value
+
+
+class PearsonOrdinationCorrelation(OrdinationCorrelation):
+    DirectoryName = 'ord_corr_pearson'
+    DisplayName = 'Ordination Correlation (Pearson)'
+    StatDisplayName = r'$r$'
+
+
+class SpearmanOrdinationCorrelation(OrdinationCorrelation):
+    DirectoryName = 'ord_corr_spearman'
+    DisplayName = 'Ordination Correlation (Spearman)'
+    StatDisplayName = r'$\rho$'

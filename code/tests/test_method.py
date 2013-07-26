@@ -15,9 +15,9 @@ from cogent.util.unit_test import TestCase, main
 
 from microbiogeo.method import (AbstractStatMethod, Adonis, Anosim, Best,
                                 Dbrda, Mantel, MantelCorrelogram, MoransI,
-                                Mrpp, PartialMantel, Permanova, Permdisp,
-                                QiimeStatMethod, UnparsableFileError,
-                                UnparsableLineError)
+                                Mrpp, OrdinationCorrelation, PartialMantel,
+                                Permanova, Permdisp, QiimeStatMethod,
+                                UnparsableFileError, UnparsableLineError)
 
 class AbstractStatMethodTests(TestCase):
     """Tests for the AbstractStatMethod class."""
@@ -62,8 +62,19 @@ class AbstractStatMethodTests(TestCase):
 
     def test_eq(self):
         """Test equality check."""
-        self.assertEqual(Best(), Best())
-        self.assertNotEqual(Best(), Mantel())
+        self.assertTrue(Best() == Best())
+        self.assertTrue(QiimeStatMethod() == QiimeStatMethod())
+        self.assertFalse(Best() == Mantel())
+        self.assertFalse(QiimeStatMethod() == Anosim())
+        self.assertFalse(Anosim() == QiimeStatMethod())
+
+    def test_ne(self):
+        """Test inequality check."""
+        self.assertFalse(Best() != Best())
+        self.assertFalse(QiimeStatMethod() != QiimeStatMethod())
+        self.assertTrue(Best() != Mantel())
+        self.assertTrue(QiimeStatMethod() != Anosim())
+        self.assertTrue(Anosim() != QiimeStatMethod())
 
 
 class QiimeStatMethodTests(TestCase):
@@ -248,6 +259,35 @@ class BestTests(TestCase):
     def test_parse(self):
         """Test raises error."""
         self.assertRaises(NotImplementedError, self.inst.parse, 'foo')
+
+
+class OrdinationCorrelationTests(TestCase):
+    """Tests for the OrdinationCorrelation class."""
+
+    def setUp(self):
+        """Define some sample data that will be used by the tests."""
+        self.inst = OrdinationCorrelation()
+
+        self.ord_corr_results_str1 = ord_corr_results_str1.split('\n')
+        self.ord_corr_results_str2 = ord_corr_results_str2.split('\n')
+
+    def test_parse(self):
+        """Test parsing ordination-correlation results file."""
+        obs = self.inst.parse(self.ord_corr_results_str1)
+        self.assertFloatEqual(obs, (0.9138, 0.001))
+
+        self.assertRaises(UnparsableLineError, self.inst.parse,
+                          self.ord_corr_results_str2)
+
+
+class PearsonOrdinationCorrelationTests(TestCase):
+    """Nothing to test."""
+    pass
+
+
+class SpearmanOrdinationCorrelationTests(TestCase):
+    """Nothing to test."""
+    pass
 
 
 anosim_results_str1 = """Method name\tR statistic\tp-value\tNumber of permutations
@@ -447,6 +487,12 @@ $p.value
 [1] 2
 
 """
+
+ord_corr_results_str1 = """Correlation coefficient\tParametric p-value\tNonparametric p-value
+0.9138\t0.0000\t0.001"""
+
+ord_corr_results_str2 = """Correlation coefficient\tParametric p-value\tNonparametric p-value
+0.9138\t0.0000\tToo few iters to compute p-value (num_iters=2)"""
 
 
 if __name__ == "__main__":
