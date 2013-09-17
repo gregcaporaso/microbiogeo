@@ -245,7 +245,7 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
 
                             label = 'd=%r' % d
                             if d == 0.0:
-                                label += ' (original data)'
+                                label += ' (actual data)'
                             #elif d == max_dissim:
                             #    label += ' (neg. control)'
 
@@ -253,7 +253,7 @@ def create_simulated_data_plots(analysis_type, in_dir, workflow):
                             legend_lines.append(Line2D([0, 1], [0, 0],
                                                 color=color, linewidth=2))
 
-                            # Make the original data plot a bit thicker than
+                            # Make the actual data plot a bit thicker than
                             # the rest.
                             if d == 0.0:
                                 line_width = 3
@@ -451,7 +451,7 @@ def plot_pcoa(analysis_type, fig, in_dir, workflow, category, metric, num_rows,
 
         plot_title = 'd=%r' % d
         if d == 0.0:
-            plot_title += ' (original data)'
+            plot_title += ' (actual data)'
         #elif d == max_dissim:
         #    plot_title += ' (neg. control)'
         ax.set_title(plot_title)
