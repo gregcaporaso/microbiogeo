@@ -3,14 +3,32 @@ microbiogeo
 Repository for code, data, and analysis results of the biogeographical
 statistical methods comparison project (aka ```microbiogeo```).
 
-To run the code in this repository, you will need the latest development
-versions of QIIME and IPython installed, with ```microbiogeo/code``` added to
-your ```PYTHONPATH``` and ```microbiogeo/code/scripts``` added to your ```PATH```.
+To run the code in this repository, you will need the following dependencies
+installed (versions tested against are in parentheses):
 
-You can run all of the unit tests with the following command (assuming you are
-in the ```microbiogeo``` directory):
+- [QIIME base install](http://qiime.org/) (1.8.0)
+- [IPython](http://ipython.org/) (1.2.1)
+- [pyzmq](http://zeromq.github.io/pyzmq/) (14.0.1)
+- [nose](https://nose.readthedocs.org/en/latest/) (1.3.0)
+- [R](http://www.r-project.org/) (3.0.2)
+- R [optparse](http://cran.fhcrc.org/web/packages/optparse/index.html) package (1.0.2)
+- R [vegan](http://cran.r-project.org/web/packages/vegan/index.html) package (2.0-10)
+- R [ape](http://cran.r-project.org/web/packages/ape/index.html) package (3.0-11)
 
-    python code/tests/all_tests.py
+The easiest way to install the Python dependencies is via pip, e.g.:
+
+    pip install numpy
+    pip install qiime
+    pip install ipython
+    pip install pyzmq
+    pip install nose
+
+You will also need ```microbiogeo/code``` added to your ```PYTHONPATH``` and
+```microbiogeo/code/scripts``` added to your ```PATH```.
+
+To run the unit tests, assuming you are in the ```microbiogeo``` directory:
+
+    nosetests code
 
 To run the actual workflows, you will need to ```cd``` into the
 ```microbiogeo/code``` directory and start an IPython cluster with the number
