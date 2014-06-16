@@ -4,14 +4,23 @@ Keyboards
 QIIME commands
 --------------
 
-TODO
-----
+The following commands were run with QIIME 1.8.0:
 
-Once we have the new table and mapping file, need to do the following
-filtering:
+```bash
 
-Original OTU table is otu_table.biom.orig
-Filtered out all samples that didn't come from the three primary subjects
-(M2, M3, M9).
+# Original OTU table is table.biom.orig. Filter out all samples that didn't
+# come from the three primary subjects (M2, M3, M9). Also do this for the
+# rarefied tables, which were created from the original, unfiltered OTU table.
+filter_samples_from_otu_table.py -i table.biom.orig -o table.biom -m map.txt -s 'HOST_SUBJECT_ID:232:M2,232:M3,232:M9'
 
-    filter_samples_from_otu_table.py -i otu_table.biom.orig -o otu_table.biom -m map.txt -s 'HOST_SUBJECT_ID:M2,M3,M9'
+for DEPTH in 200 500 1000
+do
+  for REP in {0..9}
+  do
+    INFP=rarefied-orig/${DEPTH}/rarefaction_${DEPTH}_${REP}.biom
+    OUTFP=rarefied/${DEPTH}/rarefaction_${DEPTH}_${REP}.biom
+    filter_samples_from_otu_table.py -i ${INFP} -o ${OUTFP} -m map.txt -s 'HOST_SUBJECT_ID:232:M2,232:M3,232:M9'
+  done
+done
+
+```

@@ -4,22 +4,9 @@ Whole Body
 QIIME commands
 --------------
 
-TODO
-----
+Metadata preprocessing
+----------------------
 
-Once we have the new table and mapping file, need to do the following
-filtering:
-
-Original OTU table is otu_table.biom.orig
-Original mapping file is map.txt.orig
-
-Created copy of original mapping file (map.clean.txt) and added
-BODY_SITE_CLEAN category, which is the same as BODY_SITE except that UBERON:
-has been removed. This was necessary to perform filtering of samples using
-QIIME.
-
-Filtered out all genital, urine, and nostril samples (based on BODY_SITE
-category). Added BODY_SITE_COARSE category to designate skin, oral, and gut
-samples.
-
-    filter_samples_from_otu_table.py -i otu_table.biom.orig -o otu_table.biom -m map.clean.txt --output_mapping_fp map.txt -s 'BODY_SITE_CLEAN:feces,mouth,nose,skin of arm,skin of finger,skin of forearm,tongue,zone of skin of abdomen,zone of skin of foot,zone of skin of hand,zone of skin of head,zone of skin of knee,zone of skin of outer ear'
+Original mapping file is `map.txt.orig`. Added new column `body_habitat_basic`
+to designate three basic groups: gut, oral, and skin/other. Saved new mapping
+file as `map.txt`. See `metadata-preprocessing.ipynb` for more details.
