@@ -1,6 +1,11 @@
 Keyboards
 =========
 
+Metadata columns of interest
+----------------------------
+
+- `HOST_SUBJECT_ID` (positive control)
+
 QIIME commands
 --------------
 
