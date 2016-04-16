@@ -1,5 +1,9 @@
+
+This project is not currently active. We recommend referring to [GustaME](http://mb3is.megx.net/gustame), which provides useful documentation of many of the methods we were exploring here. 
+
 microbiogeo
 ===========
+
 Repository for code, data, and analysis results of the biogeographical
 statistical methods comparison project (aka ```microbiogeo```).
 
